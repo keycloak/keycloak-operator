@@ -10,3 +10,14 @@
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+# Temporary Build Files
+build/_output
+build/_test
+
+# Dependency folder
+/vendor
+
+# IDE files
+.idea
+.vscode
