@@ -1,0 +1,27 @@
+linters-settings:
+  govet:
+    # report about shadowed variables
+    check-shadowing: true
+  golint:
+    # set the confidence level of a problem before it is reported. Setting it to 0 will show every issue from golint.
+    min-confidence: 0
+  gocyclo:
+    # a minimal complexity of function to report it
+    min-complexity: 60
+  dupl:
+    # minimum token sequence size as a clone. Into other words it helps to find clones in the source code
+    threshold: 100
+  goconst:
+    # only report strings with the minimum given length
+    min-len: 2
+    # report from how many occurrence
+    min-occurrences: 2
+
+linters:
+  enable-all: true
+  disable:
+    - maligned
+    - unparam
+    - lll
+    - gochecknoinits
+    - gochecknoglobals
