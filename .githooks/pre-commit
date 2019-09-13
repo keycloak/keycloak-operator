@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Run some pre commit checks on the Go source code.
+echo "Running pre-commit checks on your code..."
+
+# Format the Go code
+make code/fix
