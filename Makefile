@@ -1,11 +1,28 @@
-ORG=keycloak
-NAMESPACE=sso
-PROJECT=keycloak-operator
+# Image build contants
 REG=quay.io
-SHELL=/bin/bash
+ORG=keycloak
+PROJECT=keycloak-operator
 TAG?=latest
-PKG=github.com/keycloak/keycloak-operator
+
+#Compile constants
 COMPILE_TARGET=./tmp/_output/bin/$(PROJECT)
+GOOS=linux
+GOARCH=amd64 
+CGO_ENABLED=0
+
+#Other contants
+NAMESPACE=keycloak
+PKG=github.com/keycloak/keycloak-operator
+OPERATOR_SDK_VERSION=v0.10.0
+OPERATOR_SDK_DOWNLOAD_URL=https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk-$(OPERATOR_SDK_VERSION)-x86_64-linux-gnu
+
+.PHONY: setup
+setup: setup/mod setup/githooks code/gen
+
+.PHONY: setup/githooks
+setup/githooks:
+	@echo Setting up Git hooks:
+	ln -sf $$PWD/.githooks/* $$PWD/.git/hooks/
 
 .PHONY: setup/mod
 setup/mod:
@@ -16,7 +33,7 @@ setup/mod:
 .PHONY: setup/travis
 setup/travis:
 	@echo Installing Operator SDK
-	@curl -Lo operator-sdk https://github.com/operator-framework/operator-sdk/releases/download/v0.10.0/operator-sdk-v0.10.0-x86_64-linux-gnu && chmod +x operator-sdk && sudo mv operator-sdk /usr/local/bin/
+	@curl -Lo operator-sdk ${OPERATOR_SDK_DOWNLOAD_URL} && chmod +x operator-sdk && sudo mv operator-sdk /usr/local/bin/
 
 .PHONY: code/run
 code/run:
@@ -24,15 +41,17 @@ code/run:
 
 .PHONY: code/compile
 code/compile:
-	@GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o=$(COMPILE_TARGET) ./cmd/manager
+	@GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=${CGO_ENABLED} go build -o=$(COMPILE_TARGET) ./cmd/manager
 
 .PHONY: code/gen
 code/gen:
 	operator-sdk generate k8s
+	operator-sdk generate openapi
 
 .PHONY: code/check
 code/check:
-	@diff -u <(echo -n) <(gofmt -d `find . -type f -name '*.go' -not -path "./vendor/*"`)
+	@echo go fmt
+	go fmt $$(go list ./... | grep -v /vendor/)
 
 .PHONY: code/fix
 code/fix:
