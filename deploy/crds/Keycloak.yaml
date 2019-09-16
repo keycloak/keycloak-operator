@@ -29,6 +29,25 @@ spec:
           type: object
         spec:
           type: object
+          required: []
+          properties:
+            externalDatabaseSecret:
+              description: 'Opotional. A Secret containing the connection string and credentials to an external database. If not provided a Postgres
+                instance will be created in the same namespace'
+              type: string
+            adminCredentialSecret:
+              description: 'Optional. The name of the Secret that contains the admin password in a `password` property. If not provided a password will be
+                auto generated and written to a Secret with the name `admin-credentials`'
+              type: string
+            instances:
+              description: 'The number of Keycloak instances in a HA setup. Defaults to one if not provided.'
+              type: number
+            extensions:
+              description: 'A list of extensions to be loaded by Keycloak on startup. Can be either in the form of a URL from where the extension will be downloaded
+                or a Maven Group:Artifact:Version'
+              type: array
+              items:
+                type: string
         status:
           type: object
   version: v1alpha1
