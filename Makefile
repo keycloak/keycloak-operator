@@ -64,3 +64,11 @@ image/build/push: image/build image/push
 test/unit:
 	@echo Running tests:
 	go test -v -race -cover ./pkg/...
+
+.PHONY: code/lint
+code/lint:
+	@echo "--> Running golangci-lint"
+	@which golangci-lint 2>/dev/null ; if [ $$? -eq 1 ]; then \
+		go get -u github.com/golangci/golangci-lint/cmd/golangci-lint; \
+	fi
+	golangci-lint run
