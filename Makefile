@@ -57,14 +57,6 @@ code/check:
 code/fix:
 	@gofmt -w `find . -type f -name '*.go' -not -path "./vendor/*"`
 
-.PHONY: image/build
-image/build: code/compile
-	@operator-sdk build ${REG}/${ORG}/${PROJECT}:${TAG}
-
-.PHONY: image/push
-image/push:
-	docker push ${REG}/${ORG}/${PROJECT}:${TAG}
-
 .PHONY: image/build/push
 image/build/push: image/build image/push
 
