@@ -18,9 +18,6 @@ tmp
 build/_output
 build/_test
 
-# Dependency folder
-/vendor
-
 # IDE files
 .idea
 .vscode
