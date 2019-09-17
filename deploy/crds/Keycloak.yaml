@@ -32,19 +32,42 @@ spec:
           required: []
           properties:
             externalDatabaseSecret:
-              description: 'Opotional. A Secret containing the connection string and credentials to an external database. If not provided a Postgres
-                instance will be created in the same namespace'
+              description: |
+                A Secret containing the connection string and credentials to an external database. The Secret should be in the following format:
+
+                 apiVersion: v1
+                 kind: Secret
+                 metadata:
+                   name: <adminCredentialSecret>
+                 type: Opaque
+                 data:
+                   connectionString: <database connection string>
+                   user: <database user>
+                   password: <password>
+                   database: <database name>
+
+                If not provided a Postgres instance will be created in the same namespace.
               type: string
             adminCredentialSecret:
-              description: 'Optional. The name of the Secret that contains the admin password in a `password` property. If not provided a password will be
-                auto generated and written to a Secret with the name `admin-credentials`'
+              description: |
+                The name of the Secret that contains the admin password in a `password` property. The Secret should be in the following format:
+
+                 apiVersion: v1
+                 kind: Secret
+                 metadata:
+                   name: <adminCredentialSecret>
+                 type: Opaque
+                 data:
+                   password: <admin user password>
+
+                If not provided a password will be auto generated and written to a Secret with the name `admin-credentials`.
               type: string
             instances:
               description: 'The number of Keycloak instances in a HA setup. Defaults to one if not provided.'
               type: number
             extensions:
-              description: 'A list of extensions to be loaded by Keycloak on startup. Can be either in the form of a URL from where the extension will be downloaded
-                or a Maven Group:Artifact:Version'
+              description: 'A list of extensions to be loaded by Keycloak on startup. Extensions are bundled with an Operator release and the list should contain
+                the names of the extensions required at startup'
               type: array
               items:
                 type: string
