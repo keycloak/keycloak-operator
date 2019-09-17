@@ -41,7 +41,7 @@ code/run:
 
 .PHONY: code/compile
 code/compile:
-	@GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=${CGO_ENABLED} go build -o=$(COMPILE_TARGET) ./cmd/manager
+	@GOOS=${GOOS} GOARCH=${GOARCH} CGO_ENABLED=${CGO_ENABLED} go build -o=$(COMPILE_TARGET) -mod=vendor ./cmd/manager
 
 .PHONY: code/gen
 code/gen:
@@ -63,7 +63,7 @@ image/build/push: image/build image/push
 .PHONY: test/unit
 test/unit:
 	@echo Running tests:
-	go test -v -race -cover ./pkg/...
+	go test -v -race -cover -mod=vendor ./pkg/...
 
 .PHONY: code/lint
 code/lint:
