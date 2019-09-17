@@ -7,7 +7,7 @@ TAG?=latest
 #Compile constants
 COMPILE_TARGET=./tmp/_output/bin/$(PROJECT)
 GOOS=linux
-GOARCH=amd64 
+GOARCH=amd64
 CGO_ENABLED=0
 
 #Other contants
