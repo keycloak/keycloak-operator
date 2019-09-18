@@ -19,10 +19,29 @@ type KeycloakSpec struct {
 // KeycloakStatus defines the observed state of Keycloak
 // +k8s:openapi-gen=true
 type KeycloakStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
 	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
+
+	// Current phase of the operator.
+	Phase StatusPhase `json:"phase"`
+	// Human-readable message indicating details about current operator phase or error.
+	Message string `json:"message"`
+	// True if all resources are in a ready state and all work is done.
+	Ready bool `json:"ready"`
+	// A map of all the secondary resources types and names created for this CR. e.g "Deployment": [ "DeploymentName1", "DeploymentName2" ]
+	SecondaryResources map[string][]string `json:"secondaryResources,omitempty"`
+	// Version of Keycloak or RHSSO running on the cluster
+	Version string `json:"version"`
 }
+
+type StatusPhase string
+
+var (
+	NoPhase          StatusPhase
+	PhaseReconciling StatusPhase = "reconciling"
+	PhaseFailing     StatusPhase = "failing"
+	PhaseInProgress  StatusPhase = "inprogress"
+)
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
