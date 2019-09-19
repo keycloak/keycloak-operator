@@ -3,10 +3,11 @@ package e2e
 import (
 	goctx "context"
 	"fmt"
-	apis "github.com/keycloak/keycloak-operator/pkg/apis"
-	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"testing"
 	"time"
+
+	apis "github.com/keycloak/keycloak-operator/pkg/apis"
+	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
 	"github.com/operator-framework/operator-sdk/pkg/test/e2eutil"
