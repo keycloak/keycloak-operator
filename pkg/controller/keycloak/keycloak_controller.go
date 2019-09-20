@@ -115,8 +115,8 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 	currentState.Read(instance)
 
 	// Reconcile with desired state
-	keycloakReconciler := NewKeycloakReconciler(currentState, r.runner)
-	err = keycloakReconciler.Reconcile(instance)
+	reconciler := NewKeycloakReconciler(currentState, r.runner)
+	err = reconciler.Reconcile(instance)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
