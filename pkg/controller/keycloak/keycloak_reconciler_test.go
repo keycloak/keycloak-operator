@@ -16,7 +16,10 @@ func TestKeycloakReconciler_Reconcile(t *testing.T) {
 	}
 
 	reconciler := NewKeycloakReconciler(currentState, actionRunner)
-	reconciler.Reconcile(&mockCr)
+	err := reconciler.Reconcile(&mockCr)
+	if err != nil {
+		t.Error(err)
+	}
 
 	runner := reconciler.runner.(*test.MockActionRunner)
 	if runner.ResourcesCreated != 1 {

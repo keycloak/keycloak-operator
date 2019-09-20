@@ -1,13 +1,11 @@
 package test
 
 import (
-	"github.com/go-logr/logr"
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type MockActionRunner struct {
-	logger           logr.Logger
 	ResourcesCreated int
 	ResourcesUpdated int
 }
@@ -20,12 +18,12 @@ func NewMockActionRunner() common.ActionRunner {
 }
 
 func (i *MockActionRunner) Create(obj runtime.Object) error {
-	i.ResourcesCreated = i.ResourcesCreated + 1
+	i.ResourcesCreated++
 	return nil
 }
 
 func (i *MockActionRunner) Update(obj runtime.Object) error {
-	i.ResourcesUpdated = i.ResourcesUpdated + 1
+	i.ResourcesUpdated++
 	return nil
 }
 

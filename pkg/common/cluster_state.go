@@ -30,12 +30,13 @@ func (i *ClusterState) Read(cr *kc.Keycloak) {
 
 // Keycloak service
 func (i *ClusterState) readKeycloakServiceCurrentState(cr *kc.Keycloak) {
-	keycloakService := keycloak.KeycloakService(cr)
+	keycloakService := keycloak.Service(cr)
 
 	selector := client.ObjectKey{
 		Name:      keycloakService.Name,
 		Namespace: keycloakService.Namespace,
 	}
+
 	err := i.client.Get(context.TODO(), selector, keycloakService)
 	if err != nil {
 		i.KeycloakService = nil
