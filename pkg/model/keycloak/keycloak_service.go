@@ -7,7 +7,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func KeycloakService(cr *v1alpha1.Keycloak) *v1.Service {
+func Service(cr *v1alpha1.Keycloak) *v1.Service {
 	return &v1.Service{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      ApplicationName,
