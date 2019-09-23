@@ -10,7 +10,7 @@ type Reconciler interface {
 	Reconcile(clusterState *common.ClusterState, cr *kc.Keycloak) (common.DesiredClusterState, error)
 }
 
-type KeycloakReconciler struct {
+type KeycloakReconciler struct { // nolint
 }
 
 func NewKeycloakReconciler() *KeycloakReconciler {
