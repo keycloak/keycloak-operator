@@ -5,6 +5,7 @@ import (
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/model/keycloak"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -14,33 +15,36 @@ type DesiredClusterState []ClusterAction
 
 type ClusterState struct {
 	KeycloakService *v1.Service
-	client          client.Client
 }
 
-func NewClusterState(client client.Client) *ClusterState {
+func NewClusterState() *ClusterState {
 	return &ClusterState{
 		KeycloakService: nil,
-		client:          client,
 	}
 }
 
-func (i *ClusterState) Read(cr *kc.Keycloak) {
-	i.readKeycloakServiceCurrentState(cr)
+func (i *ClusterState) Read(cr *kc.Keycloak, controllerClient client.Client) error {
+	return i.readKeycloakServiceCurrentState(cr, controllerClient)
 }
 
 // Keycloak service
-func (i *ClusterState) readKeycloakServiceCurrentState(cr *kc.Keycloak) {
+func (i *ClusterState) readKeycloakServiceCurrentState(cr *kc.Keycloak, controllerClient client.Client) error {
 	keycloakService := keycloak.Service(cr)
 
 	selector := client.ObjectKey{
 		Name:      keycloakService.Name,
 		Namespace: keycloakService.Namespace,
 	}
+	err := controllerClient.Get(context.TODO(), selector, keycloakService)
 
-	err := i.client.Get(context.TODO(), selector, keycloakService)
 	if err != nil {
-		i.KeycloakService = nil
+		if errors.IsNotFound(err) {
+			i.KeycloakService = nil
+		} else {
+			return err
+		}
 	} else {
 		i.KeycloakService = keycloakService.DeepCopy()
 	}
+	return nil
 }

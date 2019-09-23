@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-logr/logr"
-	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -66,25 +65,10 @@ type GenericUpdateAction struct {
 	Msg string
 }
 
-// Services need to have a valid ClusterIP and ResourceVersion in
-// order to be updated
-type ServiceUpdateAction struct {
-	Ref             *v1.Service
-	Msg             string
-	ClusterIP       string
-	ResourceVersion string
-}
-
 func (i GenericCreateAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.Create(i.Ref)
 }
 
 func (i GenericUpdateAction) Run(runner ActionRunner) (string, error) {
-	return i.Msg, runner.Update(i.Ref)
-}
-
-func (i ServiceUpdateAction) Run(runner ActionRunner) (string, error) {
-	i.Ref.ResourceVersion = i.ResourceVersion
-	i.Ref.Spec.ClusterIP = i.ClusterIP
 	return i.Msg, runner.Update(i.Ref)
 }
