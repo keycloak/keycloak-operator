@@ -3,30 +3,24 @@ package keycloak
 import (
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
-	"github.com/keycloak/keycloak-operator/pkg/test"
+	"github.com/keycloak/keycloak-operator/pkg/model/keycloak"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-var actionRunner = test.NewMockActionRunner()
-var mockCr = v1alpha1.Keycloak{}
-
-func TestKeycloakReconciler_Reconcile(t *testing.T) {
+func TestKeycloakReconciler_Test_Creating_Example_Service(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
 	currentState := &common.ClusterState{
 		KeycloakService: nil,
 	}
 
-	reconciler := NewKeycloakReconciler(currentState, actionRunner)
-	err := reconciler.Reconcile(&mockCr)
-	if err != nil {
-		t.Error(err)
-	}
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState, error := reconciler.Reconcile(currentState, cr)
 
-	runner := reconciler.runner.(*test.MockActionRunner)
-	if runner.ResourcesCreated != 1 {
-		t.Error("invalid number of resources created")
-	}
-
-	if runner.ResourcesUpdated != 0 {
-		t.Error("invalid number of resources updated")
-	}
+	// then
+	assert.Nil(t, error)
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[0])
+	assert.IsType(t, keycloak.Service(cr), desiredState[0].(common.GenericCreateAction).Ref)
 }

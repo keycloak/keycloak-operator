@@ -6,47 +6,39 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/model/keycloak"
 )
 
-type Reconciler struct {
-	clusterState *common.ClusterState
-	runner       common.ActionRunner
+type Reconciler interface {
+	Reconcile(clusterState *common.ClusterState, cr *kc.Keycloak) (common.DesiredClusterState, error)
 }
 
-func NewKeycloakReconciler(state *common.ClusterState, runner common.ActionRunner) *Reconciler {
-	return &Reconciler{
-		clusterState: state,
-		runner:       runner,
-	}
+type KeycloakReconciler struct {
 }
 
-func (i *Reconciler) Reconcile(cr *kc.Keycloak) error {
-	// Create the desired cluster state as a list of modifications to the
-	// current state
-	desiredState := i.buildDesiredState(cr)
-
-	// Run all the modifications (actions)
-	return i.runner.RunAll(desiredState)
+func NewKeycloakReconciler() *KeycloakReconciler {
+	return &KeycloakReconciler{}
 }
 
-func (i *Reconciler) buildDesiredState(cr *kc.Keycloak) common.DesiredClusterState {
+func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc.Keycloak) (common.DesiredClusterState, error) {
 	desired := common.DesiredClusterState{}
-	desired = append(desired, i.getKeycloakServiceDesiredState(cr))
-	return desired
+	desired = append(desired, i.getKeycloakServiceDesiredState(clusterState, cr))
+	return desired, nil
 }
 
-func (i *Reconciler) getKeycloakServiceDesiredState(cr *kc.Keycloak) common.ClusterAction {
+func (i *KeycloakReconciler) getKeycloakServiceDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
 	service := keycloak.Service(cr)
 
-	if i.clusterState.KeycloakService == nil {
+	if clusterState.KeycloakService == nil {
 		return common.GenericCreateAction{
 			Ref: service,
 			Msg: "create keycloak service",
 		}
 	}
 
-	return common.ServiceUpdateAction{
-		Ref:             service,
-		Msg:             "update keycloak service",
-		ClusterIP:       i.clusterState.KeycloakService.Spec.ClusterIP,
-		ResourceVersion: i.clusterState.KeycloakService.ResourceVersion,
+	// This part may change in the future once we have more resources to reconcile.
+	// Perhaps there should be another method, like `keycloak.Service(cr, clusterState)`?
+	service.Spec.ClusterIP = clusterState.KeycloakService.Spec.ClusterIP
+	service.ResourceVersion = clusterState.KeycloakService.ResourceVersion
+	return common.GenericUpdateAction{
+		Ref: service,
+		Msg: "update keycloak service",
 	}
 }
