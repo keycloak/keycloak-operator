@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/model/keycloak"
 	v1 "k8s.io/api/core/v1"

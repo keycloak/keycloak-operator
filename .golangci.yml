@@ -20,4 +20,3 @@ linters:
     - lll
     - gochecknoinits
     - gochecknoglobals
-    - goimports
