@@ -24,19 +24,19 @@ func NewClusterState() *ClusterState {
 	}
 }
 
-func (i *ClusterState) Read(cr *kc.Keycloak, controllerClient client.Client) error {
-	return i.readKeycloakServiceCurrentState(cr, controllerClient)
+func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	return i.readKeycloakServiceCurrentState(context, cr, controllerClient)
 }
 
 // Keycloak service
-func (i *ClusterState) readKeycloakServiceCurrentState(cr *kc.Keycloak, controllerClient client.Client) error {
+func (i *ClusterState) readKeycloakServiceCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
 	keycloakService := keycloak.Service(cr)
 
 	selector := client.ObjectKey{
 		Name:      keycloakService.Name,
 		Namespace: keycloakService.Namespace,
 	}
-	err := controllerClient.Get(context.TODO(), selector, keycloakService)
+	err := controllerClient.Get(context, selector, keycloakService)
 
 	if err != nil {
 		if errors.IsNotFound(err) {

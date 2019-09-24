@@ -59,7 +59,7 @@ var TestServiceSelector = client.ObjectKey{
 func TestClusterActionRunner_Test_Create_Action(t *testing.T) {
 	// given
 	mockClient := fake.NewFakeClient()
-	actionRunner := NewClusterActionRunner(mockClient)
+	actionRunner := NewClusterActionRunner(context.TODO(), mockClient)
 
 	testedAction := GenericCreateAction{
 		Ref: TestService.DeepCopy(),
@@ -78,7 +78,7 @@ func TestClusterActionRunner_Test_Create_Action(t *testing.T) {
 func TestClusterActionRunner_Test_Update_Action(t *testing.T) {
 	// given
 	mockClient := fake.NewFakeClient(TestServiceWithModifiedPort.DeepCopy())
-	actionRunner := NewClusterActionRunner(mockClient)
+	actionRunner := NewClusterActionRunner(context.TODO(), mockClient)
 
 	testedAction := GenericUpdateAction{
 		Ref: TestService.DeepCopy(),
