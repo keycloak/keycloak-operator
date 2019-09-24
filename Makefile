@@ -96,3 +96,18 @@ code/lint:
 setup/travis:
 	@echo Installing Operator SDK
 	@curl -Lo operator-sdk ${OPERATOR_SDK_DOWNLOAD_URL} && chmod +x operator-sdk && sudo mv operator-sdk /usr/local/bin/
+
+.PHONY: code/coverage
+code/coverage:
+	@echo "--> Running go coverage"
+	@which cover 2>/dev/null ; if [ $$? -eq 1 ]; then \
+		go get golang.org/x/tools/cmd/cover; \
+	fi
+	@go test -coverprofile cover.out -mod=vendor ./pkg/...
+	@go tool cover -html=cover.out -o cover.html
+
+.PHONY: code/goveralls
+code/goveralls: code/coverage
+	go get -u github.com/mattn/goveralls
+	@echo "--> Running goveralls"
+	@goveralls -coverprofile=cover.out -service=travis-ci
