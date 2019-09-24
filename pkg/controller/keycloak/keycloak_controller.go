@@ -37,13 +37,15 @@ func Add(mgr manager.Manager) error {
 
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
 	client := mgr.GetClient()
-	runner := common.NewClusterActionRunner(client)
 
 	return &ReconcileKeycloak{
-		client: client,
-		scheme: mgr.GetScheme(),
-		runner: runner,
+		client:  client,
+		scheme:  mgr.GetScheme(),
+		context: ctx,
+		cancel:  cancel,
 	}
 }
 
@@ -81,9 +83,10 @@ var _ reconcile.Reconciler = &ReconcileKeycloak{}
 type ReconcileKeycloak struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client client.Client
-	scheme *runtime.Scheme
-	runner common.ActionRunner
+	client  client.Client
+	scheme  *runtime.Scheme
+	context context.Context
+	cancel  context.CancelFunc
 }
 
 // Reconcile reads that state of the cluster for a Keycloak object and makes changes based on the state read
@@ -99,7 +102,7 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 
 	// Fetch the Keycloak instance
 	instance := &keycloakv1alpha1.Keycloak{}
-	err := r.client.Get(context.TODO(), request.NamespacedName, instance)
+	err := r.client.Get(r.context, request.NamespacedName, instance)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
@@ -113,7 +116,7 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 
 	// Read current state
 	currentState := common.NewClusterState()
-	err = currentState.Read(instance, r.client)
+	err = currentState.Read(r.context, instance, r.client)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -125,7 +128,7 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 		return reconcile.Result{}, err
 	}
 
-	actionRunner := common.NewClusterActionRunner(r.client)
+	actionRunner := common.NewClusterActionRunner(r.context, r.client)
 	err = actionRunner.RunAll(desiredState)
 	if err != nil {
 		return reconcile.Result{}, err

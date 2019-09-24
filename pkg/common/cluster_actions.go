@@ -22,12 +22,14 @@ type ClusterAction interface {
 }
 
 type ClusterActionRunner struct {
-	client client.Client
+	client  client.Client
+	context context.Context
 }
 
-func NewClusterActionRunner(client client.Client) ActionRunner {
+func NewClusterActionRunner(context context.Context, client client.Client) ActionRunner {
 	return &ClusterActionRunner{
-		client: client,
+		client:  client,
+		context: context,
 	}
 }
 
@@ -45,11 +47,11 @@ func (i *ClusterActionRunner) RunAll(desiredState DesiredClusterState) error {
 }
 
 func (i *ClusterActionRunner) Create(obj runtime.Object) error {
-	return i.client.Create(context.TODO(), obj)
+	return i.client.Create(i.context, obj)
 }
 
 func (i *ClusterActionRunner) Update(obj runtime.Object) error {
-	return i.client.Update(context.TODO(), obj)
+	return i.client.Update(i.context, obj)
 }
 
 // An action to create generic kubernetes resources
