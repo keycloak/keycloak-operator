@@ -38,6 +38,8 @@ github.com/dgrijalva/jwt-go
 # github.com/emicklei/go-restful v2.9.3+incompatible
 github.com/emicklei/go-restful
 github.com/emicklei/go-restful/log
+# github.com/evanphx/json-patch v4.1.0+incompatible
+github.com/evanphx/json-patch
 # github.com/ghodss/yaml v1.0.0
 github.com/ghodss/yaml
 # github.com/go-logr/logr v0.1.0
@@ -453,6 +455,7 @@ k8s.io/client-go/tools/auth
 k8s.io/client-go/tools/clientcmd/api/latest
 k8s.io/client-go/util/homedir
 k8s.io/client-go/tools/reference
+k8s.io/client-go/testing
 k8s.io/client-go/discovery/cached
 k8s.io/client-go/third_party/forked/golang/template
 k8s.io/client-go/tools/clientcmd/api/v1
@@ -492,6 +495,7 @@ sigs.k8s.io/controller-runtime/pkg/recorder
 sigs.k8s.io/controller-runtime/pkg/runtime/inject
 sigs.k8s.io/controller-runtime/pkg/webhook/admission
 sigs.k8s.io/controller-runtime/pkg/webhook/admission/types
+sigs.k8s.io/controller-runtime/pkg/client/fake
 sigs.k8s.io/controller-runtime/pkg/internal/controller
 sigs.k8s.io/controller-runtime/pkg/predicate
 sigs.k8s.io/controller-runtime/pkg/event
@@ -500,8 +504,8 @@ sigs.k8s.io/controller-runtime/pkg/cache/internal
 sigs.k8s.io/controller-runtime/pkg/patch
 sigs.k8s.io/controller-runtime/pkg/webhook/internal/metrics
 sigs.k8s.io/controller-runtime/pkg/webhook/types
-sigs.k8s.io/controller-runtime/pkg/internal/controller/metrics
 sigs.k8s.io/controller-runtime/pkg/internal/objectutil
+sigs.k8s.io/controller-runtime/pkg/internal/controller/metrics
 # sigs.k8s.io/controller-tools v0.1.10 => sigs.k8s.io/controller-tools v0.1.11-0.20190411181648-9d55346c2bde
 sigs.k8s.io/controller-tools/pkg/crd/generator
 sigs.k8s.io/controller-tools/pkg/crd/util
