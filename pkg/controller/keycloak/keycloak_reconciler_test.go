@@ -1,11 +1,12 @@
 package keycloak
 
 import (
+	"testing"
+
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"github.com/keycloak/keycloak-operator/pkg/model/keycloak"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestKeycloakReconciler_Test_Creating_Example_Service(t *testing.T) {
