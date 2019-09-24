@@ -37,7 +37,7 @@ func Add(mgr manager.Manager) error {
 // newReconciler returns a new reconcile.Reconciler
 func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	client := mgr.GetClient()
-	runner := common.NewClusterActionRunner(client, log)
+	runner := common.NewClusterActionRunner(client)
 
 	return &ReconcileKeycloak{
 		client: client,
@@ -124,7 +124,7 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 		return reconcile.Result{}, err
 	}
 
-	actionRunner := common.NewClusterActionRunner(r.client, log)
+	actionRunner := common.NewClusterActionRunner(r.client)
 	err = actionRunner.RunAll(desiredState)
 	if err != nil {
 		return reconcile.Result{}, err

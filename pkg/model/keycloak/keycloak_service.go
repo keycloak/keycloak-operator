@@ -5,6 +5,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func Service(cr *v1alpha1.Keycloak) *v1.Service {
@@ -24,5 +25,12 @@ func Service(cr *v1alpha1.Keycloak) *v1.Service {
 				},
 			},
 		},
+	}
+}
+
+func ServiceSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
+	return client.ObjectKey{
+		Name:      ApplicationName,
+		Namespace: cr.Namespace,
 	}
 }

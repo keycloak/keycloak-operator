@@ -3,10 +3,12 @@ package common
 import (
 	"context"
 	"fmt"
-	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 )
+
+var log = logf.Log.WithName("action_runner")
 
 type ActionRunner interface {
 	RunAll(desiredState DesiredClusterState) error
@@ -20,13 +22,11 @@ type ClusterAction interface {
 
 type ClusterActionRunner struct {
 	client client.Client
-	logger logr.Logger
 }
 
-func NewClusterActionRunner(client client.Client, logger logr.Logger) ActionRunner {
+func NewClusterActionRunner(client client.Client) ActionRunner {
 	return &ClusterActionRunner{
 		client: client,
-		logger: logger,
 	}
 }
 
@@ -34,10 +34,10 @@ func (i *ClusterActionRunner) RunAll(desiredState DesiredClusterState) error {
 	for index, action := range desiredState {
 		msg, err := action.Run(i)
 		if err != nil {
-			i.logger.Info(fmt.Sprintf("(%5d) %10s %s", index, "FAILED", msg))
+			log.Info(fmt.Sprintf("(%5d) %10s %s", index, "FAILED", msg))
 			return err
 		}
-		i.logger.Info(fmt.Sprintf("(%5d) %10s %s", index, "SUCCESS", msg))
+		log.Info(fmt.Sprintf("(%5d) %10s %s", index, "SUCCESS", msg))
 	}
 
 	return nil
