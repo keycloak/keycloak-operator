@@ -1,4 +1,4 @@
-package keycloak
+package model
 
 import (
 	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"

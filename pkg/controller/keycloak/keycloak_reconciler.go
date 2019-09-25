@@ -5,7 +5,7 @@ import (
 	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
-	"github.com/keycloak/keycloak-operator/pkg/model/keycloak"
+	"github.com/keycloak/keycloak-operator/pkg/model"
 )
 
 type Reconciler interface {
@@ -21,31 +21,71 @@ func NewKeycloakReconciler() *KeycloakReconciler {
 
 func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc.Keycloak) (common.DesiredClusterState, error) {
 	desired := common.DesiredClusterState{}
-	desired = desired.AddAction(i.getKeycloakServiceDesiredState(clusterState, cr))
-	desired = desired.AddAction(i.GetKeycloakServiceMonitorDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakPrometheusRuleDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.GetKeycloakServiceMonitorDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakGrafanaDashboardDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.getPostgresqlPersistentVolumeClaimDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.getPostgresqlDeploymentDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.getKeycloakServiceDesiredState(clusterState, cr))
 
 	return desired, nil
 }
 
+func (i *KeycloakReconciler) getPostgresqlPersistentVolumeClaimDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	postgresqlPersistentVolume := model.PostgresqlPersistentVolumeClaim(cr)
+	if clusterState.PostgresqlPersistentVolumeClaim == nil {
+		return common.GenericCreateAction{
+			Ref: postgresqlPersistentVolume,
+			Msg: "Create Postgresql PersistentVolumeClaim",
+		}
+	}
+	return common.GenericUpdateAction{
+		Ref: model.PostgresqlPersistentVolumeClaimReconciled(cr, clusterState.PostgresqlPersistentVolumeClaim),
+		Msg: "Update Postgresql PersistentVolumeClaim",
+	}
+}
+
+func (i *KeycloakReconciler) getPostgresqlServiceDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	postgresqlService := model.PostgresqlService(cr)
+	if clusterState.PostgresqlService == nil {
+		return common.GenericCreateAction{
+			Ref: postgresqlService,
+			Msg: "Create Postgresql KeycloakService",
+		}
+	}
+	return common.GenericUpdateAction{
+		Ref: model.PostgresqlServiceReconciled(cr, clusterState.PostgresqlService),
+		Msg: "Update Postgresql KeycloakService",
+	}
+}
+
+func (i *KeycloakReconciler) getPostgresqlDeploymentDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	postgresqlDeployment := model.PostgresqlDeployment(cr)
+	if clusterState.PostgresqlDeployment == nil {
+		return common.GenericCreateAction{
+			Ref: postgresqlDeployment,
+			Msg: "Create Postgresql Deployment",
+		}
+	}
+	return common.GenericUpdateAction{
+		Ref: model.PostgresqlDeploymentReconciled(cr, clusterState.PostgresqlDeployment),
+		Msg: "Update Postgresql Deployment",
+	}
+}
+
 func (i *KeycloakReconciler) getKeycloakServiceDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
-	service := keycloak.Service(cr)
+	keycloakService := model.KeycloakService(cr)
 
 	if clusterState.KeycloakService == nil {
 		return common.GenericCreateAction{
-			Ref: service,
-			Msg: "create keycloak service",
+			Ref: keycloakService,
+			Msg: "Create Keycloak Service",
 		}
 	}
-
-	// This part may change in the future once we have more resources to reconcile.
-	// Perhaps there should be another method, like `keycloak.Service(cr, clusterState)`?
-	service.Spec.ClusterIP = clusterState.KeycloakService.Spec.ClusterIP
-	service.ResourceVersion = clusterState.KeycloakService.ResourceVersion
 	return common.GenericUpdateAction{
-		Ref: service,
-		Msg: "update keycloak service",
+		Ref: model.KeycloakServiceReconciled(cr, clusterState.KeycloakService),
+		Msg: "Update keycloak Service",
 	}
 }
 
@@ -57,7 +97,7 @@ func (i *KeycloakReconciler) GetKeycloakPrometheusRuleDesiredState(clusterState 
 		return nil
 	}
 
-	prometheusrule := keycloak.PrometheusRule(cr)
+	prometheusrule := model.PrometheusRule(cr)
 
 	if clusterState.KeycloakPrometheusRule == nil {
 		return common.GenericCreateAction{
@@ -81,7 +121,7 @@ func (i *KeycloakReconciler) GetKeycloakServiceMonitorDesiredState(clusterState 
 		return nil
 	}
 
-	servicemonitor := keycloak.ServiceMonitor(cr)
+	servicemonitor := model.ServiceMonitor(cr)
 
 	if clusterState.KeycloakServiceMonitor == nil {
 		return common.GenericCreateAction{
@@ -105,7 +145,7 @@ func (i *KeycloakReconciler) GetKeycloakGrafanaDashboardDesiredState(clusterStat
 		return nil
 	}
 
-	grafanadashboard := keycloak.GrafanaDashboard(cr)
+	grafanadashboard := model.GrafanaDashboard(cr)
 
 	if clusterState.KeycloakGrafanaDashboard == nil {
 		return common.GenericCreateAction{

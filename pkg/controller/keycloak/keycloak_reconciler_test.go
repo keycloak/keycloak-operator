@@ -1,13 +1,14 @@
 package keycloak
 
 import (
+	"reflect"
 	"testing"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
-	"github.com/keycloak/keycloak-operator/pkg/model/keycloak"
+	"github.com/keycloak/keycloak-operator/pkg/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,29 +29,41 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 
 	// then
 	// Expectation:
-	//    1) Keycloak Service
-	//    2) Service Monitor
-	//    3) Prometheus Rule
-	//    4) Grafana Dashboard
+	//    0) Prometheus Rule
+	//    1) Service Monitor
+	//    2) Grafana Dashboard
+	//    3) Postgresql Persistent Volume Claim
+	//    4) Postgresql Deployment
+	//    5) Postgresql Service
+	//    6) Keycloak Service
 	assert.Nil(t, error)
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[0])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[1])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[3])
-	assert.IsType(t, keycloak.Service(cr), desiredState[0].(common.GenericCreateAction).Ref)
-	assert.IsType(t, keycloak.ServiceMonitor(cr), desiredState[1].(common.GenericCreateAction).Ref)
-	assert.IsType(t, keycloak.PrometheusRule(cr), desiredState[2].(common.GenericCreateAction).Ref)
-	assert.IsType(t, keycloak.GrafanaDashboard(cr), desiredState[3].(common.GenericCreateAction).Ref)
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[4])
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[5])
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[6])
+	assert.IsType(t, model.PrometheusRule(cr), desiredState[0].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.ServiceMonitor(cr), desiredState[1].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.GrafanaDashboard(cr), desiredState[2].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.PostgresqlPersistentVolumeClaim(cr), desiredState[3].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.PostgresqlDeployment(cr), desiredState[4].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.PostgresqlService(cr), desiredState[5].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakService(cr), desiredState[6].(common.GenericCreateAction).Ref)
 }
 
 func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	// given
 	cr := &v1alpha1.Keycloak{}
 	currentState := &common.ClusterState{
-		KeycloakService:          keycloak.Service(cr),
-		KeycloakServiceMonitor:   keycloak.ServiceMonitor(cr),
-		KeycloakPrometheusRule:   keycloak.PrometheusRule(cr),
-		KeycloakGrafanaDashboard: keycloak.GrafanaDashboard(cr),
+		KeycloakService:                 model.KeycloakService(cr),
+		KeycloakServiceMonitor:          model.ServiceMonitor(cr),
+		KeycloakPrometheusRule:          model.PrometheusRule(cr),
+		KeycloakGrafanaDashboard:        model.GrafanaDashboard(cr),
+		PostgresqlPersistentVolumeClaim: model.PostgresqlPersistentVolumeClaim(cr),
+		PostgresqlService:               model.KeycloakService(cr),
+		PostgresqlDeployment:            model.PostgresqlDeployment(cr),
 	}
 
 	//Set monitoring resources exist to true
@@ -65,19 +78,28 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 
 	// then
 	// Expectation:
-	//    1) Keycloak Service
-	//    2) Service Monitor
-	//    3) Prometheus Rule
-	//    4) Grafana Dashboard
+	//    0) Prometheus Rule
+	//    1) Service Monitor
+	//    2) Grafana Dashboard
+	//    3) Postgresql Persistent Volume Claim
+	//    4) Postgresql Deployment
+	//    5) Postgresql Service
+	//    6) Keycloak Service
 	assert.Nil(t, error)
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[0])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[1])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[2])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[3])
-	assert.IsType(t, keycloak.Service(cr), desiredState[0].(common.GenericUpdateAction).Ref)
-	assert.IsType(t, keycloak.ServiceMonitor(cr), desiredState[1].(common.GenericUpdateAction).Ref)
-	assert.IsType(t, keycloak.PrometheusRule(cr), desiredState[2].(common.GenericUpdateAction).Ref)
-	assert.IsType(t, keycloak.GrafanaDashboard(cr), desiredState[3].(common.GenericUpdateAction).Ref)
+	assert.IsType(t, common.GenericUpdateAction{}, desiredState[4])
+	assert.IsType(t, common.GenericUpdateAction{}, desiredState[5])
+	assert.IsType(t, common.GenericUpdateAction{}, desiredState[6])
+	assert.IsType(t, model.PrometheusRule(cr), desiredState[0].(common.GenericUpdateAction).Ref)
+	assert.IsType(t, model.ServiceMonitor(cr), desiredState[1].(common.GenericUpdateAction).Ref)
+	assert.IsType(t, model.GrafanaDashboard(cr), desiredState[2].(common.GenericUpdateAction).Ref)
+	assert.IsType(t, model.PostgresqlPersistentVolumeClaim(cr), desiredState[3].(common.GenericUpdateAction).Ref)
+	assert.IsType(t, model.PostgresqlDeployment(cr), desiredState[4].(common.GenericUpdateAction).Ref)
+	assert.IsType(t, model.PostgresqlService(cr), desiredState[5].(common.GenericUpdateAction).Ref)
+	assert.IsType(t, model.KeycloakService(cr), desiredState[6].(common.GenericUpdateAction).Ref)
 }
 
 func TestKeycloakReconciler_Test_No_Action_When_Monitoring_Resources_Dont_Exist(t *testing.T) {
@@ -93,14 +115,14 @@ func TestKeycloakReconciler_Test_No_Action_When_Monitoring_Resources_Dont_Exist(
 
 	// when
 	reconciler := NewKeycloakReconciler()
-	prometheusRuleAction := reconciler.GetKeycloakPrometheusRuleDesiredState(currentState, cr)
-	serviceMonitorAction := reconciler.GetKeycloakServiceMonitorDesiredState(currentState, cr)
-	grafanaDashboardAction := reconciler.GetKeycloakGrafanaDashboardDesiredState(currentState, cr)
+	desiredState, error := reconciler.Reconcile(currentState, cr)
 
 	// then
-	// Expectation:
-	//    nil returned from all functions
-	assert.Nil(t, prometheusRuleAction)
-	assert.Nil(t, serviceMonitorAction)
-	assert.Nil(t, grafanaDashboardAction)
+	assert.Nil(t, error)
+	for _, element := range desiredState {
+		assert.IsType(t, common.GenericCreateAction{}, element)
+		assert.NotEqual(t, reflect.TypeOf(model.PrometheusRule(cr)), reflect.TypeOf(element.(common.GenericCreateAction).Ref))
+		assert.NotEqual(t, reflect.TypeOf(model.GrafanaDashboard(cr)), reflect.TypeOf(element.(common.GenericCreateAction).Ref))
+		assert.NotEqual(t, reflect.TypeOf(model.ServiceMonitor(cr)), reflect.TypeOf(element.(common.GenericCreateAction).Ref))
+	}
 }

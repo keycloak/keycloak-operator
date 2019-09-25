@@ -1,4 +1,4 @@
-package keycloak
+package model
 
 import (
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -8,7 +8,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func Service(cr *v1alpha1.Keycloak) *v1.Service {
+func KeycloakService(cr *v1alpha1.Keycloak) *v1.Service {
 	return &v1.Service{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      ApplicationName,
@@ -21,16 +21,27 @@ func Service(cr *v1alpha1.Keycloak) *v1.Service {
 			Ports: []v1.ServicePort{
 				{
 					Port:       8443,
-					TargetPort: intstr.Parse("8443"),
+					TargetPort: intstr.FromInt(8443),
 				},
 			},
 		},
 	}
 }
 
-func ServiceSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
+func KeycloakServiceSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 	return client.ObjectKey{
 		Name:      ApplicationName,
 		Namespace: cr.Namespace,
 	}
+}
+
+func KeycloakServiceReconciled(cr *v1alpha1.Keycloak, currentState *v1.Service) *v1.Service {
+	reconciled := currentState.DeepCopy()
+	reconciled.Spec.Ports = []v1.ServicePort{
+		{
+			Port:       8443,
+			TargetPort: intstr.FromInt(8443),
+		},
+	}
+	return reconciled
 }

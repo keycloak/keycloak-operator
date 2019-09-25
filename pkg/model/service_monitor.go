@@ -1,4 +1,4 @@
-package keycloak
+package model
 
 import (
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
