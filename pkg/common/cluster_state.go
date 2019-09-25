@@ -6,7 +6,8 @@ import (
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
-	"github.com/keycloak/keycloak-operator/pkg/model/keycloak"
+	"github.com/keycloak/keycloak-operator/pkg/model"
+	v12 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -25,10 +26,13 @@ func (d DesiredClusterState) AddAction(action ClusterAction) DesiredClusterState
 }
 
 type ClusterState struct {
-	KeycloakService          *v1.Service
-	KeycloakServiceMonitor   *monitoringv1.ServiceMonitor
-	KeycloakPrometheusRule   *monitoringv1.PrometheusRule
-	KeycloakGrafanaDashboard *integreatlyv1alpha1.GrafanaDashboard
+	KeycloakService                 *v1.Service
+	KeycloakServiceMonitor          *monitoringv1.ServiceMonitor
+	KeycloakPrometheusRule          *monitoringv1.PrometheusRule
+	KeycloakGrafanaDashboard        *integreatlyv1alpha1.GrafanaDashboard
+	PostgresqlPersistentVolumeClaim *v1.PersistentVolumeClaim
+	PostgresqlService               *v1.Service
+	PostgresqlDeployment            *v12.Deployment
 }
 
 func NewClusterState() *ClusterState {
@@ -36,12 +40,7 @@ func NewClusterState() *ClusterState {
 }
 
 func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
-	err := i.readKeycloakServiceCurrentState(context, cr, controllerClient)
-	if err != nil {
-		return err
-	}
-
-	err = i.readKeycloakServiceMonitorCurrentState(context, cr, controllerClient)
+	err := i.readKeycloakServiceMonitorCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
 	}
@@ -56,23 +55,82 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 		return err
 	}
 
+	err = i.readPostgresqlPersistentVolumeClaimCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readPostgresqlDeploymentCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readPostgresqlServiceCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readKeycloakServiceCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	// Read other things
 	return nil
 }
 
-// Keycloak service
-func (i *ClusterState) readKeycloakServiceCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
-	keycloakService := keycloak.Service(cr)
+func (i *ClusterState) readPostgresqlPersistentVolumeClaimCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	postgresqlPersistentVolumeClaim := model.PostgresqlPersistentVolumeClaim(cr)
+	postgresqlPersistentVolumeClaimSelector := model.PostgresqlPersistentVolumeClaimSelector(cr)
 
-	selector := client.ObjectKey{
-		Name:      keycloakService.Name,
-		Namespace: keycloakService.Namespace,
-	}
-	err := controllerClient.Get(context, selector, keycloakService)
-
+	err := controllerClient.Get(context, postgresqlPersistentVolumeClaimSelector, postgresqlPersistentVolumeClaim)
 	if err != nil {
-		if errors.IsNotFound(err) {
-			i.KeycloakService = nil
-		} else {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.PostgresqlPersistentVolumeClaim = postgresqlPersistentVolumeClaim.DeepCopy()
+	}
+	return nil
+}
+
+func (i *ClusterState) readPostgresqlServiceCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	postgresqlService := model.PostgresqlService(cr)
+	postgresqlServiceSelector := model.PostgresqlServiceSelector(cr)
+
+	err := controllerClient.Get(context, postgresqlServiceSelector, postgresqlService)
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.PostgresqlService = postgresqlService.DeepCopy()
+	}
+	return nil
+}
+
+func (i *ClusterState) readPostgresqlDeploymentCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	postgresqlDeployment := model.PostgresqlDeployment(cr)
+	postgresqlDeploymentSelector := model.PostgresqlDeploymentSelector(cr)
+
+	err := controllerClient.Get(context, postgresqlDeploymentSelector, postgresqlDeployment)
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.PostgresqlDeployment = postgresqlDeployment.DeepCopy()
+	}
+	return nil
+}
+
+func (i *ClusterState) readKeycloakServiceCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	keycloakService := model.KeycloakService(cr)
+	keycloakServiceSelector := model.KeycloakServiceSelector(cr)
+
+	err := controllerClient.Get(context, keycloakServiceSelector, keycloakService)
+	if err != nil {
+		if !errors.IsNotFound(err) {
 			return err
 		}
 	} else {
@@ -89,8 +147,8 @@ func (i *ClusterState) readKeycloakServiceCurrentState(context context.Context, 
 
 // Keycloak Service Monitor. Resource type provided by Prometheus operator
 func (i *ClusterState) readKeycloakServiceMonitorCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
-	keycloakServiceMonitor := keycloak.ServiceMonitor(cr)
-	keycloakServiceMonitorSelector := keycloak.ServiceMonitorSelector(cr)
+	keycloakServiceMonitor := model.ServiceMonitor(cr)
+	keycloakServiceMonitorSelector := model.ServiceMonitorSelector(cr)
 
 	err := controllerClient.Get(context, keycloakServiceMonitorSelector, keycloakServiceMonitor)
 
@@ -109,8 +167,8 @@ func (i *ClusterState) readKeycloakServiceMonitorCurrentState(context context.Co
 
 // Keycloak Prometheus Rule. Resource type provided by Prometheus operator
 func (i *ClusterState) readKeycloakPrometheusRuleCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
-	keycloakPrometheusRule := keycloak.PrometheusRule(cr)
-	keycloakPrometheusRuleSelector := keycloak.PrometheusRuleSelector(cr)
+	keycloakPrometheusRule := model.PrometheusRule(cr)
+	keycloakPrometheusRuleSelector := model.PrometheusRuleSelector(cr)
 
 	err := controllerClient.Get(context, keycloakPrometheusRuleSelector, keycloakPrometheusRule)
 
@@ -129,8 +187,8 @@ func (i *ClusterState) readKeycloakPrometheusRuleCurrentState(context context.Co
 
 // Keycloak Grafana Dashboard. Resource type provided by Grafana operator
 func (i *ClusterState) readKeycloakGrafanaDashboardCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
-	keycloakGrafanaDashboard := keycloak.GrafanaDashboard(cr)
-	keycloakGrafanaDashboardSelector := keycloak.GrafanaDashboardSelector(cr)
+	keycloakGrafanaDashboard := model.GrafanaDashboard(cr)
+	keycloakGrafanaDashboardSelector := model.GrafanaDashboardSelector(cr)
 
 	err := controllerClient.Get(context, keycloakGrafanaDashboardSelector, keycloakGrafanaDashboard)
 

@@ -10,6 +10,9 @@ linters-settings:
     min-len: 2
     # report from how many occurrence
     min-occurrences: 2
+  funlen:
+    # We have very long type definitions for K8s resources
+    lines: 120
 
 linters:
   enable-all: true
