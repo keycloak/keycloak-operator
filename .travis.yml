@@ -5,4 +5,4 @@ matrix:
     env: GO111MODULE=on
 script:
 - make test/unit
-- make code/goveralls
+- make test/goveralls
