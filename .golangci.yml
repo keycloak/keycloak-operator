@@ -22,5 +22,4 @@ linters:
     - gochecknoglobals
 
 service:
-  prepare:
-    - GO111MODULE=on go mod vendor
+  golangci-lint-version: 1.17.x
