@@ -17,6 +17,13 @@ import (
 // get from the current state to the desired state
 type DesiredClusterState []ClusterAction
 
+func (d DesiredClusterState) AddAction(action ClusterAction) DesiredClusterState {
+	if action != nil {
+		d = append(d, action)
+	}
+	return d
+}
+
 type ClusterState struct {
 	KeycloakService          *v1.Service
 	KeycloakServiceMonitor   *monitoringv1.ServiceMonitor
@@ -25,12 +32,7 @@ type ClusterState struct {
 }
 
 func NewClusterState() *ClusterState {
-	return &ClusterState{
-		KeycloakService:          nil,
-		KeycloakServiceMonitor:   nil,
-		KeycloakPrometheusRule:   nil,
-		KeycloakGrafanaDashboard: nil,
-	}
+	return &ClusterState{}
 }
 
 func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
@@ -88,12 +90,9 @@ func (i *ClusterState) readKeycloakServiceCurrentState(context context.Context, 
 // Keycloak Service Monitor. Resource type provided by Prometheus operator
 func (i *ClusterState) readKeycloakServiceMonitorCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
 	keycloakServiceMonitor := keycloak.ServiceMonitor(cr)
+	keycloakServiceMonitorSelector := keycloak.ServiceMonitorSelector(cr)
 
-	selector := client.ObjectKey{
-		Name:      keycloakServiceMonitor.Name,
-		Namespace: keycloakServiceMonitor.Namespace,
-	}
-	err := controllerClient.Get(context, selector, keycloakServiceMonitor)
+	err := controllerClient.Get(context, keycloakServiceMonitorSelector, keycloakServiceMonitor)
 
 	if err != nil {
 		// If the resource type doesn't exist on the cluster or does exist but is not found
@@ -111,12 +110,9 @@ func (i *ClusterState) readKeycloakServiceMonitorCurrentState(context context.Co
 // Keycloak Prometheus Rule. Resource type provided by Prometheus operator
 func (i *ClusterState) readKeycloakPrometheusRuleCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
 	keycloakPrometheusRule := keycloak.PrometheusRule(cr)
+	keycloakPrometheusRuleSelector := keycloak.PrometheusRuleSelector(cr)
 
-	selector := client.ObjectKey{
-		Name:      keycloakPrometheusRule.Name,
-		Namespace: keycloakPrometheusRule.Namespace,
-	}
-	err := controllerClient.Get(context, selector, keycloakPrometheusRule)
+	err := controllerClient.Get(context, keycloakPrometheusRuleSelector, keycloakPrometheusRule)
 
 	if err != nil {
 		// If the resource type doesn't exist on the cluster or does exist but is not found
@@ -134,12 +130,9 @@ func (i *ClusterState) readKeycloakPrometheusRuleCurrentState(context context.Co
 // Keycloak Grafana Dashboard. Resource type provided by Grafana operator
 func (i *ClusterState) readKeycloakGrafanaDashboardCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
 	keycloakGrafanaDashboard := keycloak.GrafanaDashboard(cr)
+	keycloakGrafanaDashboardSelector := keycloak.GrafanaDashboardSelector(cr)
 
-	selector := client.ObjectKey{
-		Name:      keycloakGrafanaDashboard.Name,
-		Namespace: keycloakGrafanaDashboard.Namespace,
-	}
-	err := controllerClient.Get(context, selector, keycloakGrafanaDashboard)
+	err := controllerClient.Get(context, keycloakGrafanaDashboardSelector, keycloakGrafanaDashboard)
 
 	if err != nil {
 		// If the resource type doesn't exist on the cluster or does exist but is not found

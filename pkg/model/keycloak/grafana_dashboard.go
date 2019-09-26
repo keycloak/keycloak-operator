@@ -4,15 +4,16 @@ import (
 	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func GrafanaDashboard(cr *v1alpha1.Keycloak) *integreatlyv1alpha1.GrafanaDashboard {
 	return &integreatlyv1alpha1.GrafanaDashboard{
 		ObjectMeta: v12.ObjectMeta{
-			Name:      "keycloak",
+			Name:      ApplicationName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
-				"monitoring-key": "middleware",
+				"monitoring-key": MonitoringKey,
 			},
 		},
 		Spec: integreatlyv1alpha1.GrafanaDashboardSpec{
@@ -736,5 +737,12 @@ func GrafanaDashboard(cr *v1alpha1.Keycloak) *integreatlyv1alpha1.GrafanaDashboa
 			}`,
 			Name: "keycloak.json",
 		},
+	}
+}
+
+func GrafanaDashboardSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
+	return client.ObjectKey{
+		Name:      ApplicationName,
+		Namespace: cr.Namespace,
 	}
 }

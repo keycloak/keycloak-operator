@@ -5,15 +5,16 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 	return &monitoringv1.PrometheusRule{
 		ObjectMeta: v12.ObjectMeta{
-			Name:      "application-monitoring",
+			Name:      ApplicationName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
-				"monitoring-key": "middleware",
+				"monitoring-key": MonitoringKey,
 				"prometheus":     "application-monitoring",
 				"role":           "alert-rules",
 			},
@@ -124,5 +125,12 @@ func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 				}},
 			}},
 		},
+	}
+}
+
+func PrometheusRuleSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
+	return client.ObjectKey{
+		Name:      ApplicationName,
+		Namespace: cr.Namespace,
 	}
 }

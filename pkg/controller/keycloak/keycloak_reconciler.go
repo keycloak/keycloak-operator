@@ -6,7 +6,6 @@ import (
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"github.com/keycloak/keycloak-operator/pkg/model/keycloak"
-	"github.com/spf13/viper"
 )
 
 type Reconciler interface {
@@ -22,23 +21,22 @@ func NewKeycloakReconciler() *KeycloakReconciler {
 
 func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc.Keycloak) (common.DesiredClusterState, error) {
 	desired := common.DesiredClusterState{}
-	desired = append(desired, i.getKeycloakServiceDesiredState(clusterState, cr))
-
-	// Only add or update the monitoring resources if the resource type exists on the cluster. These booleans are set in the common/autodetect logic
-	if viper.GetBool(monitoringv1.ServiceMonitorsKind) {
-		desired = append(desired, i.getKeycloakServiceMonitorDesiredState(clusterState, cr))
-	}
-	if viper.GetBool(monitoringv1.PrometheusRuleKind) {
-		desired = append(desired, i.getKeycloakPrometheusRuleDesiredState(clusterState, cr))
-	}
-	if viper.GetBool(integreatlyv1alpha1.GrafanaDashboardKind) {
-		desired = append(desired, i.getKeycloakGrafanaDashboardDesiredState(clusterState, cr))
-	}
+	desired = desired.AddAction(i.getKeycloakServiceDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.getKeycloakServiceMonitorDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.getKeycloakPrometheusRuleDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.getKeycloakGrafanaDashboardDesiredState(clusterState, cr))
 
 	return desired, nil
 }
 
 func (i *KeycloakReconciler) getKeycloakServiceDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	stateManager := common.GetStateManager()
+	resourceExists, keyExists := stateManager.GetState(monitoringv1.ServiceMonitorsKind).(bool)
+	// Only add or update the monitoring resources if the resource type exists on the cluster. These booleans are set in the common/autodetect logic
+	if !keyExists || !resourceExists {
+		return nil
+	}
+
 	service := keycloak.Service(cr)
 
 	if clusterState.KeycloakService == nil {
@@ -59,6 +57,13 @@ func (i *KeycloakReconciler) getKeycloakServiceDesiredState(clusterState *common
 }
 
 func (i *KeycloakReconciler) getKeycloakPrometheusRuleDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	stateManager := common.GetStateManager()
+	resourceExists, keyExists := stateManager.GetState(monitoringv1.PrometheusRuleKind).(bool)
+	// Only add or update the monitoring resources if the resource type exists on the cluster. These booleans are set in the common/autodetect logic
+	if !keyExists || !resourceExists {
+		return nil
+	}
+
 	prometheusrule := keycloak.PrometheusRule(cr)
 
 	if clusterState.KeycloakPrometheusRule == nil {
@@ -76,6 +81,13 @@ func (i *KeycloakReconciler) getKeycloakPrometheusRuleDesiredState(clusterState 
 }
 
 func (i *KeycloakReconciler) getKeycloakServiceMonitorDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	stateManager := common.GetStateManager()
+	resourceExists, keyExists := stateManager.GetState(integreatlyv1alpha1.GrafanaDashboardKind).(bool)
+	// Only add or update the monitoring resources if the resource type exists on the cluster. These booleans are set in the common/autodetect logic
+	if !keyExists || !resourceExists {
+		return nil
+	}
+
 	servicemonitor := keycloak.ServiceMonitor(cr)
 
 	if clusterState.KeycloakServiceMonitor == nil {
