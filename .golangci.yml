@@ -20,3 +20,7 @@ linters:
     - lll
     - gochecknoinits
     - gochecknoglobals
+
+service:
+  prepare:
+    - GO111MODULE=on go mod vendor
