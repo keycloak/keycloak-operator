@@ -7,7 +7,6 @@ import (
 	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
 	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
-	"github.com/spf13/viper"
 	"k8s.io/client-go/discovery"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -70,38 +69,48 @@ func (b *Background) autoDetectCapabilities() {
 }
 
 func (b *Background) detectMonitoringResources() {
+	stateManager := GetStateManager()
 	// detect the PrometheusRule resource type exist on the cluster
-	exists, _ := k8sutil.ResourceExists(b.dc, monitoringv1.SchemeGroupVersion.String(), monitoringv1.PrometheusRuleKind)
-	if exists && !viper.GetBool(monitoringv1.PrometheusRuleKind) {
-		viper.Set(monitoringv1.PrometheusRuleKind, true)
+	resourceExists, _ := k8sutil.ResourceExists(b.dc, monitoringv1.SchemeGroupVersion.String(), monitoringv1.PrometheusRuleKind)
+	prometheusRuleExistsState, keyExists := stateManager.GetState(monitoringv1.PrometheusRuleKind).(bool)
+
+	// If the resource exists and we have not set the flag. We do not want to set up the watch a second time
+	if resourceExists && (!keyExists || (keyExists && !prometheusRuleExistsState)) {
+		stateManager.SetState(monitoringv1.PrometheusRuleKind, true)
 
 		err := watchPrometheusRule(b.controller)
 		if err != nil {
-			viper.Set(monitoringv1.PrometheusRuleKind, false)
+			stateManager.SetState(monitoringv1.PrometheusRuleKind, false)
 		}
 		logAuto.Info("PrometheusRule resource type found on cluster. Secondary watch setup")
 	}
 
 	// detect the ServiceMonitor resource type exist on the cluster
-	exists, _ = k8sutil.ResourceExists(b.dc, monitoringv1.SchemeGroupVersion.String(), monitoringv1.ServiceMonitorsKind)
-	if exists && !viper.GetBool(monitoringv1.ServiceMonitorsKind) {
-		viper.Set(monitoringv1.ServiceMonitorsKind, true)
+	resourceExists, _ = k8sutil.ResourceExists(b.dc, monitoringv1.SchemeGroupVersion.String(), monitoringv1.ServiceMonitorsKind)
+	serviceMonitorExistsState, keyExists := stateManager.GetState(monitoringv1.ServiceMonitorsKind).(bool)
+
+	// If the resource exists and we have not set the flag
+	if resourceExists && (!keyExists || (keyExists && !serviceMonitorExistsState)) {
+		stateManager.SetState(monitoringv1.ServiceMonitorsKind, true)
 
 		err := watchServiceMonitor(b.controller)
 		if err != nil {
-			viper.Set(monitoringv1.ServiceMonitorsKind, false)
+			stateManager.SetState(monitoringv1.ServiceMonitorsKind, false)
 		}
 		logAuto.Info("ServiceMonitor resource type found on cluster. Secondary watch setup")
 	}
 
-	// detect the GrafanaDashboard resource type exists on the cluster
-	exists, _ = k8sutil.ResourceExists(b.dc, integreatlyv1alpha1.SchemeGroupVersion.String(), integreatlyv1alpha1.GrafanaDashboardKind)
-	if exists && !viper.GetBool(integreatlyv1alpha1.GrafanaDashboardKind) {
-		viper.Set(integreatlyv1alpha1.GrafanaDashboardKind, true)
+	// detect the GrafanaDashboard resource type resourceExists on the cluster
+	resourceExists, _ = k8sutil.ResourceExists(b.dc, integreatlyv1alpha1.SchemeGroupVersion.String(), integreatlyv1alpha1.GrafanaDashboardKind)
+	GrafanaDashboardExistsState, keyExists := stateManager.GetState(integreatlyv1alpha1.GrafanaDashboardKind).(bool)
+
+	// If the resource exists and we have not set the flag
+	if resourceExists && (!keyExists || (keyExists && !GrafanaDashboardExistsState)) {
+		stateManager.SetState(integreatlyv1alpha1.GrafanaDashboardKind, true)
 
 		err := watchGrafanaDashboard(b.controller)
 		if err != nil {
-			viper.Set(integreatlyv1alpha1.GrafanaDashboardKind, false)
+			stateManager.SetState(integreatlyv1alpha1.GrafanaDashboardKind, false)
 		}
 		logAuto.Info("GrafanaDashboard resource type found on cluster. Secondary watch setup")
 	}
