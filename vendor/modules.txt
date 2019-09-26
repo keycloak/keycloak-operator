@@ -178,7 +178,7 @@ github.com/sirupsen/logrus
 # github.com/spf13/afero v1.2.2
 github.com/spf13/afero
 github.com/spf13/afero/mem
-# github.com/spf13/cobra v0.0.3
+# github.com/spf13/cobra v0.0.5
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
@@ -214,9 +214,9 @@ go.uber.org/zap/buffer
 go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
-# golang.org/x/crypto v0.0.0-20190923035154-9ee001bba392
+# golang.org/x/crypto v0.0.0-20190926114937-fa1a29108794
 golang.org/x/crypto/ssh/terminal
-# golang.org/x/net v0.0.0-20190923162816-aa69164e4478
+# golang.org/x/net v0.0.0-20190926025831-c00fd9afed17
 golang.org/x/net/http2
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2/hpack
@@ -244,7 +244,7 @@ golang.org/x/text/unicode/bidi
 golang.org/x/text/width
 # golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0
 golang.org/x/time/rate
-# golang.org/x/tools v0.0.0-20190925020647-22afafe3322a
+# golang.org/x/tools v0.0.0-20190925230517-ea99b82c7b93
 golang.org/x/tools/imports
 golang.org/x/tools/internal/imports
 golang.org/x/tools/go/ast/astutil
@@ -269,11 +269,11 @@ google.golang.org/appengine/internal/base
 google.golang.org/appengine/internal/datastore
 google.golang.org/appengine/internal/log
 google.golang.org/appengine/internal/remote_api
-# google.golang.org/genproto v0.0.0-20190916214212-f660b8655731
+# google.golang.org/genproto v0.0.0-20190925194540-b8fbc687dcfb
 google.golang.org/genproto/googleapis/api/httpbody
 google.golang.org/genproto/protobuf/field_mask
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.23.1
+# google.golang.org/grpc v1.24.0
 google.golang.org/grpc
 google.golang.org/grpc/credentials
 google.golang.org/grpc/metadata
