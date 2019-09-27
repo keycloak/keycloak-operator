@@ -11,6 +11,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.11.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/integr8ly/grafana-operator v1.4.0
+	github.com/mattn/goveralls v0.0.3 // indirect
 	github.com/onsi/ginkgo v1.10.1 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
 	github.com/operator-framework/operator-sdk v0.10.1-0.20190911145116-334c667503d0
@@ -63,7 +64,5 @@ replace (
 )
 
 replace github.com/operator-framework/operator-sdk => github.com/operator-framework/operator-sdk v0.10.0
-
-replace git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
 
 go 1.12

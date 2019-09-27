@@ -41,10 +41,14 @@ cluster/create/examples:
 .PHONY: test/unit
 test/unit:
 	@echo Running tests:
+	@go test -v -race -coverprofile cover.out -mod=vendor ./pkg/...
+
+.PHONY: test/coverage
+test/coverage: test/unit
+	@echo Running test coverage generation:
 	@which cover 2>/dev/null ; if [ $$? -eq 1 ]; then \
 		go get golang.org/x/tools/cmd/cover; \
 	fi
-	@go test -v -race -coverprofile cover.out -mod=vendor ./pkg/...
 	@go tool cover -html=cover.out -o cover.html
 
 ##############################
@@ -104,6 +108,6 @@ setup/travis:
 
 .PHONY: test/goveralls
 test/goveralls: test/unit
-	go get -u github.com/mattn/goveralls
+	go get github.com/mattn/goveralls
 	@echo "--> Running goveralls"
 	@goveralls -coverprofile=cover.out -service=travis-ci
