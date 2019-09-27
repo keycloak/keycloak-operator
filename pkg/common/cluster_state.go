@@ -36,6 +36,7 @@ type ClusterState struct {
 	KeycloakService                 *v1.Service
 	KeycloakDiscoveryService        *v1.Service
 	KeycloakDeployment              *v12.StatefulSet
+	KeycloakAdminSecret             *v1.Secret
 }
 
 func NewClusterState() *ClusterState {
@@ -43,7 +44,12 @@ func NewClusterState() *ClusterState {
 }
 
 func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
-	err := i.readKeycloakServiceMonitorCurrentState(context, cr, controllerClient)
+	err := i.readKeycloakAdminSecretCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readKeycloakServiceMonitorCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
 	}
@@ -94,6 +100,25 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 	}
 
 	// Read other things
+	return nil
+}
+
+func (i *ClusterState) readKeycloakAdminSecretCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	keycloakAdminSecret := model.KeycloakAdminSecret(cr)
+	keycloakAdminSecretSelector := model.KeycloakAdminSecretSelector(cr)
+
+	err := controllerClient.Get(context, keycloakAdminSecretSelector, keycloakAdminSecret)
+
+	if err != nil {
+		// If the resource type doesn't exist on the cluster or does exist but is not found
+		if meta.IsNoMatchError(err) || errors.IsNotFound(err) {
+			i.KeycloakAdminSecret = nil
+		} else {
+			return err
+		}
+	} else {
+		i.KeycloakAdminSecret = keycloakAdminSecret.DeepCopy()
+	}
 	return nil
 }
 
