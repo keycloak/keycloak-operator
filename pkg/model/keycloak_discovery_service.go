@@ -8,10 +8,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func PostgresqlService(cr *v1alpha1.Keycloak) *v1.Service {
+func KeycloakDiscoveryService(cr *v1alpha1.Keycloak) *v1.Service {
 	return &v1.Service{
 		ObjectMeta: v12.ObjectMeta{
-			Name:      PostgresqlServiceName,
+			Name:      KeycloakDiscoveryServiceName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
 				"application": ApplicationName,
@@ -20,31 +20,32 @@ func PostgresqlService(cr *v1alpha1.Keycloak) *v1.Service {
 		Spec: v1.ServiceSpec{
 			Selector: map[string]string{
 				"application": ApplicationName,
-				"component":   PostgresqlDeploymentComponent,
+				"component":   KeycloakDeploymentComponent,
 			},
 			Ports: []v1.ServicePort{
 				{
-					Port:       5432,
-					TargetPort: intstr.Parse("5432"),
+					Port:       8080,
+					TargetPort: intstr.FromInt(8080),
 				},
 			},
+			ClusterIP: "None",
 		},
 	}
 }
 
-func PostgresqlServiceSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
+func KeycloakDiscoveryServiceSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 	return client.ObjectKey{
-		Name:      PostgresqlServiceName,
+		Name:      KeycloakDiscoveryServiceName,
 		Namespace: cr.Namespace,
 	}
 }
 
-func PostgresqlServiceReconciled(cr *v1alpha1.Keycloak, currentState *v1.Service) *v1.Service {
+func KeycloakDiscoveryServiceReconciled(cr *v1alpha1.Keycloak, currentState *v1.Service) *v1.Service {
 	reconciled := currentState.DeepCopy()
 	reconciled.Spec.Ports = []v1.ServicePort{
 		{
-			Port:       5432,
-			TargetPort: intstr.Parse("5432"),
+			Port:       8080,
+			TargetPort: intstr.FromInt(8080),
 		},
 	}
 	return reconciled
