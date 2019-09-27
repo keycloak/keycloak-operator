@@ -18,6 +18,10 @@ func KeycloakService(cr *v1alpha1.Keycloak) *v1.Service {
 			},
 		},
 		Spec: v1.ServiceSpec{
+			Selector: map[string]string{
+				"application": ApplicationName,
+				"component":   KeycloakDeploymentComponent,
+			},
 			Ports: []v1.ServicePort{
 				{
 					Port:       8443,

@@ -29,7 +29,8 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 	desired = desired.AddAction(i.getPostgresqlDeploymentDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakServiceDesiredState(clusterState, cr))
-
+	desired = desired.AddAction(i.getKeycloakDiscoveryServiceDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.getKeycloakDeploymentDesiredState(clusterState, cr))
 	return desired, nil
 }
 
@@ -87,6 +88,21 @@ func (i *KeycloakReconciler) getKeycloakServiceDesiredState(clusterState *common
 	return common.GenericUpdateAction{
 		Ref: model.KeycloakServiceReconciled(cr, clusterState.KeycloakService),
 		Msg: "Update keycloak Service",
+	}
+}
+
+func (i *KeycloakReconciler) getKeycloakDiscoveryServiceDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	keycloakDiscoveryService := model.KeycloakDiscoveryService(cr)
+
+	if clusterState.KeycloakService == nil {
+		return common.GenericCreateAction{
+			Ref: keycloakDiscoveryService,
+			Msg: "Create Keycloak Discovery Service",
+		}
+	}
+	return common.GenericUpdateAction{
+		Ref: model.KeycloakDiscoveryServiceReconciled(cr, clusterState.KeycloakService),
+		Msg: "Update keycloak Discovery Service",
 	}
 }
 
@@ -173,5 +189,21 @@ func (i *KeycloakReconciler) getDatabaseSecretDesiredState(clusterState *common.
 	return common.GenericUpdateAction{
 		Ref: model.DatabaseSecretReconciled(cr, clusterState.DatabaseSecret),
 		Msg: "Update Database Secret",
+	}
+}
+
+func (i *KeycloakReconciler) getKeycloakDeploymentDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	keycloakDeployment := model.KeycloakDeployment(cr)
+	if clusterState.KeycloakDeployment == nil {
+		return common.GenericCreateAction{
+			Ref: keycloakDeployment,
+			Msg: "Create Keycloak Deployment (StatefulSet)",
+		}
+	}
+	// TODO(slaskawi): This deserves a bit of experimentation...
+	// StatefulSets are immutable by definition. Perhaps we should delete it at this point?
+	return common.GenericUpdateAction{
+		Ref: model.KeycloakDeploymentReconciled(cr, clusterState.KeycloakDeployment),
+		Msg: "Update Keycloak Deployment (StatefulSet)",
 	}
 }

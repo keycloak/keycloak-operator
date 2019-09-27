@@ -12,7 +12,7 @@ linters-settings:
     min-occurrences: 2
   funlen:
     # We have very long type definitions for K8s resources
-    lines: 120
+    lines: 200
 
 run:
   modules-download-mode: vendor

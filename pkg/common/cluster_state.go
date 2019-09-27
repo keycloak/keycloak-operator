@@ -26,7 +26,6 @@ func (d DesiredClusterState) AddAction(action ClusterAction) DesiredClusterState
 }
 
 type ClusterState struct {
-	KeycloakService                 *v1.Service
 	KeycloakServiceMonitor          *monitoringv1.ServiceMonitor
 	KeycloakPrometheusRule          *monitoringv1.PrometheusRule
 	KeycloakGrafanaDashboard        *integreatlyv1alpha1.GrafanaDashboard
@@ -34,6 +33,9 @@ type ClusterState struct {
 	PostgresqlPersistentVolumeClaim *v1.PersistentVolumeClaim
 	PostgresqlService               *v1.Service
 	PostgresqlDeployment            *v12.Deployment
+	KeycloakService                 *v1.Service
+	KeycloakDiscoveryService        *v1.Service
+	KeycloakDeployment              *v12.StatefulSet
 }
 
 func NewClusterState() *ClusterState {
@@ -77,6 +79,16 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 	}
 
 	err = i.readKeycloakServiceCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readKeycloakDiscoveryServiceCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readKeycloakDeploymentCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
 	}
@@ -226,6 +238,36 @@ func (i *ClusterState) readDatabaseSecretCurrentState(context context.Context, c
 		}
 	} else {
 		i.DatabaseSecret = databaseSecret.DeepCopy()
+	}
+	return nil
+}
+
+func (i *ClusterState) readKeycloakDeploymentCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	keycloakDeployment := model.KeycloakDeployment(cr)
+	keycloakDeploymentSelector := model.KeycloakDeploymentSelector(cr)
+
+	err := controllerClient.Get(context, keycloakDeploymentSelector, keycloakDeployment)
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.KeycloakDeployment = keycloakDeployment.DeepCopy()
+	}
+	return nil
+}
+
+func (i *ClusterState) readKeycloakDiscoveryServiceCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	keycloakDiscoveryService := model.KeycloakDiscoveryService(cr)
+	keycloakDiscoveryServiceSelector := model.KeycloakDiscoveryServiceSelector(cr)
+
+	err := controllerClient.Get(context, keycloakDiscoveryServiceSelector, keycloakDiscoveryService)
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.KeycloakDiscoveryService = keycloakDiscoveryService.DeepCopy()
 	}
 	return nil
 }
