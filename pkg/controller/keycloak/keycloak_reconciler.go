@@ -24,6 +24,7 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 	desired = desired.AddAction(i.GetKeycloakPrometheusRuleDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakServiceMonitorDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakGrafanaDashboardDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.getDatabaseSecretDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getPostgresqlPersistentVolumeClaimDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getPostgresqlDeploymentDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr))
@@ -158,5 +159,19 @@ func (i *KeycloakReconciler) GetKeycloakGrafanaDashboardDesiredState(clusterStat
 	return common.GenericUpdateAction{
 		Ref: grafanadashboard,
 		Msg: "update keycloak grafana dashboard",
+	}
+}
+
+func (i *KeycloakReconciler) getDatabaseSecretDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	databaseSecret := model.DatabaseSecret(cr)
+	if clusterState.DatabaseSecret == nil {
+		return common.GenericCreateAction{
+			Ref: databaseSecret,
+			Msg: "Create Database Secret",
+		}
+	}
+	return common.GenericUpdateAction{
+		Ref: model.DatabaseSecretReconciled(cr, clusterState.DatabaseSecret),
+		Msg: "Update Database Secret",
 	}
 }

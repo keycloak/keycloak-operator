@@ -4,6 +4,7 @@ package model
 const (
 	ApplicationName                = "keycloak"
 	MonitoringKey                  = "middleware"
+	DatabaseSecretName             = ApplicationName + "-db-secret"
 	PostgresqlPersistentVolumeName = ApplicationName + "-postgresql-claim"
 	PostgresqlDeploymentName       = ApplicationName + "-postgresql"
 	PostgresqlServiceName          = ApplicationName + "-postgresql"
@@ -14,4 +15,6 @@ const (
 	PostgresqlPassword                 = "admin"
 	PostgresqlDatabase                 = "root"
 	PostgresqlPersistentVolumeCapacity = "1Gi"
+	DatabaseSecretUsernameProperty     = "user"
+	DatabaseSecretPasswordProperty     = "password"
 )
