@@ -30,6 +30,7 @@ type ClusterState struct {
 	KeycloakServiceMonitor          *monitoringv1.ServiceMonitor
 	KeycloakPrometheusRule          *monitoringv1.PrometheusRule
 	KeycloakGrafanaDashboard        *integreatlyv1alpha1.GrafanaDashboard
+	DatabaseSecret                  *v1.Secret
 	PostgresqlPersistentVolumeClaim *v1.PersistentVolumeClaim
 	PostgresqlService               *v1.Service
 	PostgresqlDeployment            *v12.Deployment
@@ -51,6 +52,11 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 	}
 
 	err = i.readKeycloakGrafanaDashboardCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readDatabaseSecretCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
 	}
@@ -201,6 +207,25 @@ func (i *ClusterState) readKeycloakGrafanaDashboardCurrentState(context context.
 		}
 	} else {
 		i.KeycloakGrafanaDashboard = keycloakGrafanaDashboard.DeepCopy()
+	}
+	return nil
+}
+
+func (i *ClusterState) readDatabaseSecretCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	databaseSecret := model.DatabaseSecret(cr)
+	databaseSecretSelector := model.DatabaseSecretSelector(cr)
+
+	err := controllerClient.Get(context, databaseSecretSelector, databaseSecret)
+
+	if err != nil {
+		// If the resource type doesn't exist on the cluster or does exist but is not found
+		if meta.IsNoMatchError(err) || errors.IsNotFound(err) {
+			i.DatabaseSecret = nil
+		} else {
+			return err
+		}
+	} else {
+		i.DatabaseSecret = databaseSecret.DeepCopy()
 	}
 	return nil
 }

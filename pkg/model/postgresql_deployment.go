@@ -67,16 +67,37 @@ func PostgresqlDeployment(cr *v1alpha1.Keycloak) *v13.Deployment {
 							},
 							Env: []v1.EnvVar{
 								{
-									Name:  "POSTGRES_USER",
-									Value: PostgresqlUsername,
+									Name: "POSTGRES_USER",
+									ValueFrom: &v1.EnvVarSource{
+										SecretKeyRef: &v1.SecretKeySelector{
+											LocalObjectReference: v1.LocalObjectReference{
+												Name: DatabaseSecretName,
+											},
+											Key: DatabaseSecretUsernameProperty,
+										},
+									},
 								},
 								{
-									Name:  "PGUSER",
-									Value: PostgresqlUsername,
+									Name: "PGUSER",
+									ValueFrom: &v1.EnvVarSource{
+										SecretKeyRef: &v1.SecretKeySelector{
+											LocalObjectReference: v1.LocalObjectReference{
+												Name: DatabaseSecretName,
+											},
+											Key: DatabaseSecretUsernameProperty,
+										},
+									},
 								},
 								{
-									Name:  "POSTGRES_PASSWORD",
-									Value: PostgresqlPassword,
+									Name: "POSTGRES_PASSWORD",
+									ValueFrom: &v1.EnvVarSource{
+										SecretKeyRef: &v1.SecretKeySelector{
+											LocalObjectReference: v1.LocalObjectReference{
+												Name: DatabaseSecretName,
+											},
+											Key: DatabaseSecretPasswordProperty,
+										},
+									},
 								},
 								{
 									Name:  "POSTGRES_DB",
@@ -162,16 +183,37 @@ func PostgresqlDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Dep
 			},
 			Env: []v1.EnvVar{
 				{
-					Name:  "POSTGRES_USER",
-					Value: PostgresqlUsername,
+					Name: "POSTGRES_USER",
+					ValueFrom: &v1.EnvVarSource{
+						SecretKeyRef: &v1.SecretKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: DatabaseSecretName,
+							},
+							Key: DatabaseSecretUsernameProperty,
+						},
+					},
 				},
 				{
-					Name:  "PGUSER",
-					Value: PostgresqlUsername,
+					Name: "PGUSER",
+					ValueFrom: &v1.EnvVarSource{
+						SecretKeyRef: &v1.SecretKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: DatabaseSecretName,
+							},
+							Key: DatabaseSecretUsernameProperty,
+						},
+					},
 				},
 				{
-					Name:  "POSTGRES_PASSWORD",
-					Value: PostgresqlPassword,
+					Name: "POSTGRES_PASSWORD",
+					ValueFrom: &v1.EnvVarSource{
+						SecretKeyRef: &v1.SecretKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: DatabaseSecretName,
+							},
+							Key: DatabaseSecretPasswordProperty,
+						},
+					},
 				},
 				{
 					Name:  "POSTGRES_DB",
