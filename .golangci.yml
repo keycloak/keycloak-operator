@@ -14,6 +14,9 @@ linters-settings:
     # We have very long type definitions for K8s resources
     lines: 120
 
+run:
+  modules-download-mode: vendor
+
 linters:
   enable-all: true
   disable:
