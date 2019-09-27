@@ -21,6 +21,8 @@ func NewKeycloakReconciler() *KeycloakReconciler {
 
 func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc.Keycloak) (common.DesiredClusterState, error) {
 	desired := common.DesiredClusterState{}
+
+	desired = desired.AddAction(i.GetKeycloakAdminSecretDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakPrometheusRuleDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakServiceMonitorDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakGrafanaDashboardDesiredState(clusterState, cr))
@@ -32,6 +34,21 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 	desired = desired.AddAction(i.getKeycloakDiscoveryServiceDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDeploymentDesiredState(clusterState, cr))
 	return desired, nil
+}
+
+func (i *KeycloakReconciler) GetKeycloakAdminSecretDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	keycloakAdminSecret := model.KeycloakAdminSecret(cr)
+
+	if clusterState.PostgresqlPersistentVolumeClaim == nil {
+		return common.GenericCreateAction{
+			Ref: keycloakAdminSecret,
+			Msg: "Create Keycloak admin secret",
+		}
+	}
+	return common.GenericUpdateAction{
+		Ref: keycloakAdminSecret,
+		Msg: "Update Keycloak admin secret",
+	}
 }
 
 func (i *KeycloakReconciler) getPostgresqlPersistentVolumeClaimDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
