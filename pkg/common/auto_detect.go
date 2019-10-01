@@ -1,11 +1,14 @@
 package common
 
 import (
+	"fmt"
+	"k8s.io/apimachinery/pkg/runtime"
 	"time"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
-	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
-	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
+	i8ly "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
+	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
+	routev1 "github.com/openshift/api/route/v1"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"k8s.io/client-go/discovery"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -14,10 +17,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
-	_ "github.com/openshift/api/route/v1"
 )
 
-var logAuto = logf.Log.WithName("autodetect")
+var logger = logf.Log.WithName("autodetect")
+
+// Route kind is not provided by the openshift api
+const (
+	RouteKind = "Route"
+)
 
 // Background represents a procedure that runs in the background, periodically auto-detecting features
 type Background struct {
@@ -52,7 +59,7 @@ func (b *Background) Start() {
 		for {
 			select {
 			case <-done:
-				logAuto.Info("finished the first auto-detection")
+				logger.Info("finished the first auto-detection")
 			case <-b.ticker.C:
 				b.autoDetectCapabilities()
 			}
@@ -67,92 +74,54 @@ func (b *Background) Stop() {
 
 func (b *Background) autoDetectCapabilities() {
 	b.detectMonitoringResources()
+	b.detectRoute()
+}
+
+func (b *Background) detectRoute() {
+	resourceExists, _ := k8sutil.ResourceExists(b.dc, routev1.SchemeGroupVersion.String(), RouteKind)
+	b.tryWatch(resourceExists, RouteKind, &routev1.Route{})
 }
 
 func (b *Background) detectMonitoringResources() {
-	stateManager := GetStateManager()
 	// detect the PrometheusRule resource type exist on the cluster
 	resourceExists, _ := k8sutil.ResourceExists(b.dc, monitoringv1.SchemeGroupVersion.String(), monitoringv1.PrometheusRuleKind)
-	prometheusRuleExistsState, keyExists := stateManager.GetState(monitoringv1.PrometheusRuleKind).(bool)
-
-	// If the resource exists and we have not set the flag. We do not want to set up the watch a second time
-	if resourceExists && (!keyExists || (keyExists && !prometheusRuleExistsState)) {
-		stateManager.SetState(monitoringv1.PrometheusRuleKind, true)
-
-		err := watchPrometheusRule(b.controller)
-		if err != nil {
-			stateManager.SetState(monitoringv1.PrometheusRuleKind, false)
-		}
-		logAuto.Info("PrometheusRule resource type found on cluster. Secondary watch setup")
-	}
+	b.tryWatch(resourceExists, monitoringv1.PrometheusRuleKind, &monitoringv1.PrometheusRule{})
 
 	// detect the ServiceMonitor resource type exist on the cluster
 	resourceExists, _ = k8sutil.ResourceExists(b.dc, monitoringv1.SchemeGroupVersion.String(), monitoringv1.ServiceMonitorsKind)
-	serviceMonitorExistsState, keyExists := stateManager.GetState(monitoringv1.ServiceMonitorsKind).(bool)
-
-	// If the resource exists and we have not set the flag
-	if resourceExists && (!keyExists || (keyExists && !serviceMonitorExistsState)) {
-		stateManager.SetState(monitoringv1.ServiceMonitorsKind, true)
-
-		err := watchServiceMonitor(b.controller)
-		if err != nil {
-			stateManager.SetState(monitoringv1.ServiceMonitorsKind, false)
-		}
-		logAuto.Info("ServiceMonitor resource type found on cluster. Secondary watch setup")
-	}
+	b.tryWatch(resourceExists, monitoringv1.ServiceMonitorsKind, &monitoringv1.ServiceMonitor{})
 
 	// detect the GrafanaDashboard resource type resourceExists on the cluster
-	resourceExists, _ = k8sutil.ResourceExists(b.dc, integreatlyv1alpha1.SchemeGroupVersion.String(), integreatlyv1alpha1.GrafanaDashboardKind)
-	GrafanaDashboardExistsState, keyExists := stateManager.GetState(integreatlyv1alpha1.GrafanaDashboardKind).(bool)
+	resourceExists, _ = k8sutil.ResourceExists(b.dc, i8ly.SchemeGroupVersion.String(), i8ly.GrafanaDashboardKind)
+	b.tryWatch(resourceExists, i8ly.GrafanaDashboardKind, &i8ly.GrafanaDashboard{})
+}
 
-	// If the resource exists and we have not set the flag
-	if resourceExists && (!keyExists || (keyExists && !GrafanaDashboardExistsState)) {
-		stateManager.SetState(integreatlyv1alpha1.GrafanaDashboardKind, true)
+func (b *Background) tryWatch(resourceExists bool, kind string, o runtime.Object) error {
+	if !resourceExists {
+		return nil
+	}
 
-		err := watchGrafanaDashboard(b.controller)
+	stateManager := GetStateManager()
+	watchExists, keyExists := stateManager.GetState(kind).(bool)
+
+	// If no key esists yet, but the resource exists, set up a watch
+	// If not no key exists, but no watch exists yet, set up a watch
+	if keyExists == false || watchExists == false {
+		// Try to set up the actual watch
+		err := b.controller.Watch(&source.Kind{Type: o}, &handler.EnqueueRequestForOwner{
+			IsController: true,
+			OwnerType:    &kc.Keycloak{},
+		})
+
+		// Retry on error
 		if err != nil {
-			stateManager.SetState(integreatlyv1alpha1.GrafanaDashboardKind, false)
+			logger.Error(err, "error creating watch")
+			stateManager.SetState(kind, false)
+			return err
 		}
-		logAuto.Info("GrafanaDashboard resource type found on cluster. Secondary watch setup")
-	}
-}
 
-// Setup watch for prometheus rule resource if the resource type exists on the cluster
-func watchPrometheusRule(c controller.Controller) error {
-	// Watch for changes to secondary resource PrometheusRule and requeue the owner Keycloak
-	err := c.Watch(&source.Kind{Type: &monitoringv1.PrometheusRule{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &keycloakv1alpha1.Keycloak{},
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Setup watch for service monitor resource if the resource type exists on the cluster
-func watchServiceMonitor(c controller.Controller) error {
-	// Watch for changes to secondary resource ServiceMonitor and requeue the owner Keycloak
-	err := c.Watch(&source.Kind{Type: &monitoringv1.ServiceMonitor{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &keycloakv1alpha1.Keycloak{},
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Setup watch for grafana dashboard resource if the resource type exists on the cluster
-func watchGrafanaDashboard(c controller.Controller) error {
-	err := c.Watch(&source.Kind{Type: &integreatlyv1alpha1.GrafanaDashboard{}}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &keycloakv1alpha1.Keycloak{},
-	})
-	if err != nil {
-		return err
+		stateManager.SetState(kind, true)
+		logger.Info(fmt.Sprintf("'%s' type exists, watch created", kind))
 	}
 
 	return nil
