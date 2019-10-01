@@ -54,12 +54,20 @@ func (i *ClusterActionRunner) RunAll(desiredState DesiredClusterState) error {
 }
 
 func (i *ClusterActionRunner) Create(obj runtime.Object) error {
-	controllerutil.SetControllerReference(i.cr, obj.(v1.Object), i.scheme)
+	err := controllerutil.SetControllerReference(i.cr, obj.(v1.Object), i.scheme)
+	if err != nil {
+		return err
+	}
+
 	return i.client.Create(i.context, obj)
 }
 
 func (i *ClusterActionRunner) Update(obj runtime.Object) error {
-	controllerutil.SetControllerReference(i.cr, obj.(v1.Object), i.scheme)
+	err := controllerutil.SetControllerReference(i.cr, obj.(v1.Object), i.scheme)
+	if err != nil {
+		return err
+	}
+
 	return i.client.Update(i.context, obj)
 }
 

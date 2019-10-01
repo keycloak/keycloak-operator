@@ -25,7 +25,7 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 
 	// when
 	reconciler := NewKeycloakReconciler()
-	desiredState, error := reconciler.Reconcile(currentState, cr)
+	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
 	// Expectation:
@@ -39,7 +39,6 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	//    7) Keycloak Service
 	//    8) Keycloak Discovery Service
 	//    9) Keycloak StatefulSets
-	assert.Nil(t, error)
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[0])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[1])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
@@ -89,7 +88,7 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 
 	// when
 	reconciler := NewKeycloakReconciler()
-	desiredState, error := reconciler.Reconcile(currentState, cr)
+	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
 	// Expectation:
@@ -103,7 +102,6 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	//    7) Keycloak Service
 	//    8) Keycloak Discovery Service
 	//    9) Keycloak StatefulSets
-	assert.Nil(t, error)
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[0])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[1])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[2])
@@ -141,10 +139,9 @@ func TestKeycloakReconciler_Test_No_Action_When_Monitoring_Resources_Dont_Exist(
 
 	// when
 	reconciler := NewKeycloakReconciler()
-	desiredState, error := reconciler.Reconcile(currentState, cr)
+	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
-	assert.Nil(t, error)
 	for _, element := range desiredState {
 		assert.IsType(t, common.GenericCreateAction{}, element)
 		assert.NotEqual(t, reflect.TypeOf(model.PrometheusRule(cr)), reflect.TypeOf(element.(common.GenericCreateAction).Ref))

@@ -71,10 +71,16 @@ spec:
               type: array
               items:
                 type: string
+            externalAccess:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  description: 'If enabled the operator will create an Ingress (or a Route on OpenShift) for the Keycloak Service'
         status:
           type: object
   version: v1alpha1
   versions:
-  - name: v1alpha1
-    served: true
-    storage: true
+    - name: v1alpha1
+      served: true
+      storage: true

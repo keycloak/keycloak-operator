@@ -4,9 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	routev1 "github.com/openshift/api/route/v1"
 	"os"
 	"runtime"
+
+	routev1 "github.com/openshift/api/route/v1"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	_ "k8s.io/client-go/plugin/pkg/client/auth"

@@ -19,7 +19,7 @@ func NewKeycloakReconciler() *KeycloakReconciler {
 	return &KeycloakReconciler{}
 }
 
-func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc.Keycloak) (common.DesiredClusterState, error) {
+func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc.Keycloak) common.DesiredClusterState {
 	desired := common.DesiredClusterState{}
 
 	desired = desired.AddAction(i.GetKeycloakAdminSecretDesiredState(clusterState, cr))
@@ -33,7 +33,27 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 	desired = desired.AddAction(i.getKeycloakServiceDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDiscoveryServiceDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDeploymentDesiredState(clusterState, cr))
-	return desired, nil
+
+	i.reconcileExternalAccess(&desired, clusterState, cr)
+
+	return desired
+}
+
+func (i *KeycloakReconciler) reconcileExternalAccess(desired *common.DesiredClusterState, clusterState *common.ClusterState, cr *kc.Keycloak) {
+	if !cr.Spec.ExternalAccess.Enabled {
+		return
+	}
+
+	// Find out if we're on OpenShift or Kubernetes and create either a Route or
+	// an Ingress
+	stateManager := common.GetStateManager()
+	openshift, keyExists := stateManager.GetState(common.RouteKind).(bool)
+
+	if keyExists && openshift {
+		desired.AddAction(i.getKeycloakRouteDesiredState(clusterState, cr))
+	} else {
+		desired.AddAction(i.getKeycloakIngressDesiredState(clusterState, cr))
+	}
 }
 
 func (i *KeycloakReconciler) GetKeycloakAdminSecretDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
@@ -118,7 +138,7 @@ func (i *KeycloakReconciler) getKeycloakDiscoveryServiceDesiredState(clusterStat
 		}
 	}
 	return common.GenericUpdateAction{
-		Ref: model.KeycloakDiscoveryServiceReconciled(cr, clusterState.KeycloakService),
+		Ref: model.KeycloakDiscoveryServiceReconciled(cr, clusterState.KeycloakDiscoveryService),
 		Msg: "Update keycloak Discovery Service",
 	}
 }
@@ -222,5 +242,33 @@ func (i *KeycloakReconciler) getKeycloakDeploymentDesiredState(clusterState *com
 	return common.GenericUpdateAction{
 		Ref: model.KeycloakDeploymentReconciled(cr, clusterState.KeycloakDeployment),
 		Msg: "Update Keycloak Deployment (StatefulSet)",
+	}
+}
+
+func (i *KeycloakReconciler) getKeycloakRouteDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	if clusterState.KeycloakRoute == nil {
+		return common.GenericCreateAction{
+			Ref: model.KeycloakRoute(cr),
+			Msg: "Create Keycloak Route",
+		}
+	}
+
+	return common.GenericUpdateAction{
+		Ref: model.KeycloakRouteReconciled(cr, clusterState.KeycloakRoute),
+		Msg: "Update Keycloak Route",
+	}
+}
+
+func (i *KeycloakReconciler) getKeycloakIngressDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	if clusterState.KeycloakIngress == nil {
+		return common.GenericCreateAction{
+			Ref: model.KeycloakIngress(cr),
+			Msg: "Create Keycloak Ingress",
+		}
+	}
+
+	return common.GenericUpdateAction{
+		Ref: model.KeycloakIngressReconciled(cr, clusterState.KeycloakIngress),
+		Msg: "Update Keycloak Ingress",
 	}
 }

@@ -122,11 +122,9 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 
 	// Get Action to reconcile current state into desired state
 	reconciler := NewKeycloakReconciler()
-	desiredState, err := reconciler.Reconcile(currentState, instance)
-	if err != nil {
-		return reconcile.Result{}, err
-	}
+	desiredState := reconciler.Reconcile(currentState, instance)
 
+	// Run the actions to reach the desired state
 	actionRunner := common.NewClusterActionRunner(r.context, r.client, r.scheme, instance)
 	err = actionRunner.RunAll(desiredState)
 	if err != nil {

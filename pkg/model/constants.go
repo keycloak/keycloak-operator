@@ -18,4 +18,8 @@ const (
 	PostgresqlPersistentVolumeCapacity = "1Gi"
 	DatabaseSecretUsernameProperty     = "user"
 	DatabaseSecretPasswordProperty     = "password"
+	KeycloakServicePort                = 8443
+	AdminUsernameProperty              = "ADMIN_USERNAME"        // nolint
+	AdminPasswordProperty              = "ADMIN_PASSWORD"        // nolint
+	ServingCertSecretName              = "sso-x509-https-secret" // nolint
 )

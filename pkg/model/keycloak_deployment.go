@@ -42,7 +42,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 							Image: KeycloakImage,
 							Ports: []v1.ContainerPort{
 								{
-									ContainerPort: 8443,
+									ContainerPort: KeycloakServicePort,
 									Protocol:      "TCP",
 								},
 								{
@@ -142,6 +142,28 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 									Name:  "CACHE_OWNERS_AUTH_SESSIONS_COUNT",
 									Value: "2",
 								},
+								{
+									Name: "KEYCLOAK_USER",
+									ValueFrom: &v1.EnvVarSource{
+										SecretKeyRef: &v1.SecretKeySelector{
+											LocalObjectReference: v1.LocalObjectReference{
+												Name: "credential-" + cr.Name,
+											},
+											Key: AdminUsernameProperty,
+										},
+									},
+								},
+								{
+									Name: "KEYCLOAK_PASSWORD",
+									ValueFrom: &v1.EnvVarSource{
+										SecretKeyRef: &v1.SecretKeySelector{
+											LocalObjectReference: v1.LocalObjectReference{
+												Name: "credential-" + cr.Name,
+											},
+											Key: AdminPasswordProperty,
+										},
+									},
+								},
 							},
 						},
 					},
@@ -167,7 +189,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 			Image: KeycloakImage,
 			Ports: []v1.ContainerPort{
 				{
-					ContainerPort: 8443,
+					ContainerPort: KeycloakServicePort,
 					Protocol:      "TCP",
 				},
 				{
@@ -266,6 +288,28 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 				{
 					Name:  "CACHE_OWNERS_AUTH_SESSIONS_COUNT",
 					Value: "2",
+				},
+				{
+					Name: "KEYCLOAK_USER",
+					ValueFrom: &v1.EnvVarSource{
+						SecretKeyRef: &v1.SecretKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: "credential-" + cr.Name,
+							},
+							Key: AdminUsernameProperty,
+						},
+					},
+				},
+				{
+					Name: "KEYCLOAK_PASSWORD",
+					ValueFrom: &v1.EnvVarSource{
+						SecretKeyRef: &v1.SecretKeySelector{
+							LocalObjectReference: v1.LocalObjectReference{
+								Name: "credential-" + cr.Name,
+							},
+							Key: AdminPasswordProperty,
+						},
+					},
 				},
 			},
 		},

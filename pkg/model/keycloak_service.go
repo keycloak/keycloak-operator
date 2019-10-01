@@ -16,6 +16,10 @@ func KeycloakService(cr *v1alpha1.Keycloak) *v1.Service {
 			Labels: map[string]string{
 				"application": ApplicationName,
 			},
+			Annotations: map[string]string{
+				"description": "The web server's https port.",
+				"service.alpha.openshift.io/serving-cert-secret-name": ServingCertSecretName,
+			},
 		},
 		Spec: v1.ServiceSpec{
 			Selector: map[string]string{
@@ -24,8 +28,10 @@ func KeycloakService(cr *v1alpha1.Keycloak) *v1.Service {
 			},
 			Ports: []v1.ServicePort{
 				{
-					Port:       8443,
-					TargetPort: intstr.FromInt(8443),
+					Port:       KeycloakServicePort,
+					TargetPort: intstr.FromInt(KeycloakServicePort),
+					Name:       ApplicationName,
+					Protocol:   "TCP",
 				},
 			},
 		},
@@ -43,8 +49,10 @@ func KeycloakServiceReconciled(cr *v1alpha1.Keycloak, currentState *v1.Service) 
 	reconciled := currentState.DeepCopy()
 	reconciled.Spec.Ports = []v1.ServicePort{
 		{
-			Port:       8443,
-			TargetPort: intstr.FromInt(8443),
+			Port:       KeycloakServicePort,
+			TargetPort: intstr.FromInt(KeycloakServicePort),
+			Name:       ApplicationName,
+			Protocol:   "TCP",
 		},
 	}
 	return reconciled

@@ -18,8 +18,8 @@ func KeycloakAdminSecret(cr *v1alpha1.Keycloak) *v1.Secret {
 			},
 		},
 		Data: map[string][]byte{
-			"SSO_ADMIN_USERNAME": []byte("admin"),
-			"SSO_ADMIN_PASSWORD": []byte(randStringRunes(10)),
+			"ADMIN_USERNAME": []byte("admin"),
+			"ADMIN_PASSWORD": []byte(randStringRunes(10)),
 		},
 		Type: "Opaque",
 	}

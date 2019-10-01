@@ -30,7 +30,7 @@ require (
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	golang.org/x/sys v0.0.0-20190924154521-2837fb4f24fe // indirect
 	golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0 // indirect
-	golang.org/x/tools v0.0.0-20190927052746-69890759d905 // indirect
+	golang.org/x/tools v0.0.0-20191001123449-8b695b21ef34 // indirect
 	google.golang.org/api v0.10.0 // indirect
 	google.golang.org/appengine v1.6.3 // indirect
 	google.golang.org/genproto v0.0.0-20190925194540-b8fbc687dcfb // indirect
