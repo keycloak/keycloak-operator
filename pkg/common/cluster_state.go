@@ -2,6 +2,8 @@ package common
 
 import (
 	"context"
+	v13 "github.com/openshift/api/route/v1"
+	"k8s.io/api/extensions/v1beta1"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
@@ -18,11 +20,11 @@ import (
 // get from the current state to the desired state
 type DesiredClusterState []ClusterAction
 
-func (d DesiredClusterState) AddAction(action ClusterAction) DesiredClusterState {
+func (d *DesiredClusterState) AddAction(action ClusterAction) DesiredClusterState {
 	if action != nil {
-		d = append(d, action)
+		*d = append(*d, action)
 	}
-	return d
+	return *d
 }
 
 type ClusterState struct {
@@ -37,6 +39,8 @@ type ClusterState struct {
 	KeycloakDiscoveryService        *v1.Service
 	KeycloakDeployment              *v12.StatefulSet
 	KeycloakAdminSecret             *v1.Secret
+	KeycloakIngress                 *v1beta1.Ingress
+	KeycloakRoute                   *v13.Route
 }
 
 func NewClusterState() *ClusterState {
@@ -44,6 +48,9 @@ func NewClusterState() *ClusterState {
 }
 
 func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	stateManager := GetStateManager()
+	routeKindExists, keyExists := stateManager.GetState(RouteKind).(bool)
+
 	err := i.readKeycloakAdminSecretCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
@@ -97,6 +104,18 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 	err = i.readKeycloakDeploymentCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
+	}
+
+	if keyExists && routeKindExists {
+		err = i.readKeycloakRouteCurrentState(context, cr, controllerClient)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = i.readKeycloakIngressCurrentState(context, cr, controllerClient)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Read other things
@@ -293,6 +312,36 @@ func (i *ClusterState) readKeycloakDiscoveryServiceCurrentState(context context.
 		}
 	} else {
 		i.KeycloakDiscoveryService = keycloakDiscoveryService.DeepCopy()
+	}
+	return nil
+}
+
+func (i *ClusterState) readKeycloakRouteCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	keycloakRoute := model.KeycloakRoute(cr)
+	keycloakRouteSelector := model.KeycloakRouteSelector(cr)
+
+	err := controllerClient.Get(context, keycloakRouteSelector, keycloakRoute)
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.KeycloakRoute = keycloakRoute.DeepCopy()
+	}
+	return nil
+}
+
+func (i *ClusterState) readKeycloakIngressCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	keycloakIngress := model.KeycloakIngress(cr)
+	keycloakIngressSelector := model.KeycloakIngressSelector(cr)
+
+	err := controllerClient.Get(context, keycloakIngressSelector, keycloakIngress)
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.KeycloakIngress = keycloakIngress.DeepCopy()
 	}
 	return nil
 }

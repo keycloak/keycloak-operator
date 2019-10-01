@@ -2,8 +2,9 @@ package common
 
 import (
 	"fmt"
-	"k8s.io/apimachinery/pkg/runtime"
 	"time"
+
+	"k8s.io/apimachinery/pkg/runtime"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	i8ly "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
@@ -96,9 +97,9 @@ func (b *Background) detectMonitoringResources() {
 	b.tryWatch(resourceExists, i8ly.GrafanaDashboardKind, &i8ly.GrafanaDashboard{})
 }
 
-func (b *Background) tryWatch(resourceExists bool, kind string, o runtime.Object) error {
+func (b *Background) tryWatch(resourceExists bool, kind string, o runtime.Object) {
 	if !resourceExists {
-		return nil
+		return
 	}
 
 	stateManager := GetStateManager()
@@ -106,7 +107,7 @@ func (b *Background) tryWatch(resourceExists bool, kind string, o runtime.Object
 
 	// If no key esists yet, but the resource exists, set up a watch
 	// If not no key exists, but no watch exists yet, set up a watch
-	if keyExists == false || watchExists == false {
+	if !keyExists || !watchExists {
 		// Try to set up the actual watch
 		err := b.controller.Watch(&source.Kind{Type: o}, &handler.EnqueueRequestForOwner{
 			IsController: true,
@@ -117,12 +118,10 @@ func (b *Background) tryWatch(resourceExists bool, kind string, o runtime.Object
 		if err != nil {
 			logger.Error(err, "error creating watch")
 			stateManager.SetState(kind, false)
-			return err
+			return
 		}
 
 		stateManager.SetState(kind, true)
 		logger.Info(fmt.Sprintf("'%s' type exists, watch created", kind))
 	}
-
-	return nil
 }

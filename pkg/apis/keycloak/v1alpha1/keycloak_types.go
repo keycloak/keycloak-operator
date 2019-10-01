@@ -10,10 +10,15 @@ import (
 // KeycloakSpec defines the desired state of Keycloak
 // +k8s:openapi-gen=true
 type KeycloakSpec struct {
-	ExternalDatabaseSecret string   `json:"externalDatabaseSecret,omitempty"`
-	AdminCredentialSecret  string   `json:"adminCredentialSecret,omitempty"`
-	Extensions             []string `json:"extensions,omitempty"`
-	Instances              int      `json:"instances,omitempty"`
+	ExternalDatabaseSecret string                 `json:"externalDatabaseSecret,omitempty"`
+	AdminCredentialSecret  string                 `json:"adminCredentialSecret,omitempty"`
+	Extensions             []string               `json:"extensions,omitempty"`
+	Instances              int                    `json:"instances,omitempty"`
+	ExternalAccess         KeycloakExternalAccess `json:"externalAccess,omitempty"`
+}
+
+type KeycloakExternalAccess struct {
+	Enabled bool `json:"enabled,omitempty"`
 }
 
 // KeycloakStatus defines the observed state of Keycloak

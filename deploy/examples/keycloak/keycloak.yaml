@@ -3,5 +3,6 @@ kind: Keycloak
 metadata:
   name: example-keycloak
 spec:
-  # Add fields here
-  instances: 3
+  instances: 1
+  externalAccess:
+    enabled: True
