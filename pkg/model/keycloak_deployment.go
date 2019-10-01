@@ -120,6 +120,29 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 									Name:  "DB_DATABASE",
 									Value: PostgresqlDatabase,
 								},
+								// Admin user settings
+								{
+									Name: "KEYCLOAK_USER",
+									ValueFrom: &v1.EnvVarSource{
+										SecretKeyRef: &v1.SecretKeySelector{
+											LocalObjectReference: v1.LocalObjectReference{
+												Name: KeycloakSecretName,
+											},
+											Key: KeycloakSecretAdminUsernameProperty,
+										},
+									},
+								},
+								{
+									Name: "KEYCLOAK_PASSWORD",
+									ValueFrom: &v1.EnvVarSource{
+										SecretKeyRef: &v1.SecretKeySelector{
+											LocalObjectReference: v1.LocalObjectReference{
+												Name: KeycloakSecretName,
+											},
+											Key: KeycloakSecretAdminPasswordProperty,
+										},
+									},
+								},
 								// Discovery settings
 								{
 									Name:  "NAMESPACE",

@@ -10,7 +10,7 @@ import (
 func KeycloakAdminSecret(cr *v1alpha1.Keycloak) *v1.Secret {
 	return &v1.Secret{
 		ObjectMeta: v12.ObjectMeta{
-			Name:      "credential-" + cr.Name,
+			Name:      KeycloakSecretName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
 				"application":   ApplicationName,
@@ -18,8 +18,8 @@ func KeycloakAdminSecret(cr *v1alpha1.Keycloak) *v1.Secret {
 			},
 		},
 		Data: map[string][]byte{
-			"SSO_ADMIN_USERNAME": []byte("admin"),
-			"SSO_ADMIN_PASSWORD": []byte(randStringRunes(10)),
+			KeycloakSecretAdminUsernameProperty: []byte("admin"),
+			KeycloakSecretAdminPasswordProperty: []byte(randStringRunes(10)),
 		},
 		Type: "Opaque",
 	}
@@ -27,7 +27,7 @@ func KeycloakAdminSecret(cr *v1alpha1.Keycloak) *v1.Secret {
 
 func KeycloakAdminSecretSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 	return client.ObjectKey{
-		Name:      "credential-" + cr.Name,
+		Name:      KeycloakSecretName,
 		Namespace: cr.Namespace,
 	}
 }
