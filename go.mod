@@ -2,7 +2,6 @@ module github.com/keycloak/keycloak-operator
 
 require (
 	cloud.google.com/go v0.46.3 // indirect
-	github.com/NYTimes/gziphandler v1.0.1 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/coreos/prometheus-operator v0.29.0
 	github.com/go-openapi/spec v0.19.0
@@ -64,6 +63,4 @@ replace (
 
 replace github.com/operator-framework/operator-sdk => github.com/operator-framework/operator-sdk v0.10.0
 
-replace git.apache.org/thrift.git => github.com/apache/thrift v0.12.0
-
-go 1.12
+go 1.13
