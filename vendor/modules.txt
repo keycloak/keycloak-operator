@@ -130,6 +130,8 @@ github.com/mitchellh/go-homedir
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
 github.com/modern-go/reflect2
+# github.com/openshift/api v3.9.0+incompatible
+github.com/openshift/api/route/v1
 # github.com/operator-framework/operator-sdk v0.10.1-0.20190911145116-334c667503d0 => github.com/operator-framework/operator-sdk v0.10.0
 github.com/operator-framework/operator-sdk/internal/pkg/scaffold
 github.com/operator-framework/operator-sdk/internal/pkg/scaffold/input
