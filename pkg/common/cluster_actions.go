@@ -3,6 +3,9 @@ package common
 import (
 	"context"
 	"fmt"
+	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -24,12 +27,16 @@ type ClusterAction interface {
 type ClusterActionRunner struct {
 	client  client.Client
 	context context.Context
+	scheme  *runtime.Scheme
+	cr      *v1alpha1.Keycloak
 }
 
-func NewClusterActionRunner(context context.Context, client client.Client) ActionRunner {
+func NewClusterActionRunner(context context.Context, client client.Client, scheme *runtime.Scheme, cr *v1alpha1.Keycloak) ActionRunner {
 	return &ClusterActionRunner{
 		client:  client,
 		context: context,
+		scheme:  scheme,
+		cr:      cr,
 	}
 }
 
@@ -47,10 +54,12 @@ func (i *ClusterActionRunner) RunAll(desiredState DesiredClusterState) error {
 }
 
 func (i *ClusterActionRunner) Create(obj runtime.Object) error {
+	controllerutil.SetControllerReference(i.cr, obj.(v1.Object), i.scheme)
 	return i.client.Create(i.context, obj)
 }
 
 func (i *ClusterActionRunner) Update(obj runtime.Object) error {
+	controllerutil.SetControllerReference(i.cr, obj.(v1.Object), i.scheme)
 	return i.client.Update(i.context, obj)
 }
 
