@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	routev1 "github.com/openshift/api/route/v1"
 	"os"
 	"runtime"
 
@@ -118,6 +119,12 @@ func main() {
 
 	// Setup Scheme for all grafana resources
 	if err := integreatlyv1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
+		log.Error(err, "")
+		os.Exit(1)
+	}
+
+	// Setup Scheme for OpenShift routes
+	if err := routev1.AddToScheme(mgr.GetScheme()); err != nil {
 		log.Error(err, "")
 		os.Exit(1)
 	}
