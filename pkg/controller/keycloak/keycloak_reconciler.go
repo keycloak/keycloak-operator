@@ -59,7 +59,7 @@ func (i *KeycloakReconciler) reconcileExternalAccess(desired *common.DesiredClus
 func (i *KeycloakReconciler) GetKeycloakAdminSecretDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
 	keycloakAdminSecret := model.KeycloakAdminSecret(cr)
 
-	if clusterState.PostgresqlPersistentVolumeClaim == nil {
+	if clusterState.KeycloakAdminSecret == nil {
 		return common.GenericCreateAction{
 			Ref: keycloakAdminSecret,
 			Msg: "Create Keycloak admin secret",
@@ -131,7 +131,7 @@ func (i *KeycloakReconciler) getKeycloakServiceDesiredState(clusterState *common
 func (i *KeycloakReconciler) getKeycloakDiscoveryServiceDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
 	keycloakDiscoveryService := model.KeycloakDiscoveryService(cr)
 
-	if clusterState.KeycloakService == nil {
+	if clusterState.KeycloakDiscoveryService == nil {
 		return common.GenericCreateAction{
 			Ref: keycloakDiscoveryService,
 			Msg: "Create Keycloak Discovery Service",
