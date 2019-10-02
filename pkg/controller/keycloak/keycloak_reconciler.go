@@ -66,7 +66,7 @@ func (i *KeycloakReconciler) GetKeycloakAdminSecretDesiredState(clusterState *co
 		}
 	}
 	return common.GenericUpdateAction{
-		Ref: keycloakAdminSecret,
+		Ref: model.KeycloakAdminSecretReconciled(cr, clusterState.KeycloakAdminSecret),
 		Msg: "Update Keycloak admin secret",
 	}
 }
