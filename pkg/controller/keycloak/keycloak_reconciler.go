@@ -145,9 +145,9 @@ func (i *KeycloakReconciler) getKeycloakDiscoveryServiceDesiredState(clusterStat
 
 func (i *KeycloakReconciler) GetKeycloakPrometheusRuleDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
 	stateManager := common.GetStateManager()
-	resourceExists, keyExists := stateManager.GetState(monitoringv1.PrometheusRuleKind).(bool)
+	resourceWatchExists, keyExists := stateManager.GetState(getStateFieldName(monitoringv1.PrometheusRuleKind)).(bool)
 	// Only add or update the monitoring resources if the resource type exists on the cluster. These booleans are set in the common/autodetect logic
-	if !keyExists || !resourceExists {
+	if !keyExists || !resourceWatchExists {
 		return nil
 	}
 
@@ -169,7 +169,7 @@ func (i *KeycloakReconciler) GetKeycloakPrometheusRuleDesiredState(clusterState 
 
 func (i *KeycloakReconciler) GetKeycloakServiceMonitorDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
 	stateManager := common.GetStateManager()
-	resourceExists, keyExists := stateManager.GetState(monitoringv1.ServiceMonitorsKind).(bool)
+	resourceExists, keyExists := stateManager.GetState(getStateFieldName(monitoringv1.ServiceMonitorsKind)).(bool)
 	// Only add or update the monitoring resources if the resource type exists on the cluster. These booleans are set in the common/autodetect logic
 	if !keyExists || !resourceExists {
 		return nil
@@ -193,7 +193,7 @@ func (i *KeycloakReconciler) GetKeycloakServiceMonitorDesiredState(clusterState 
 
 func (i *KeycloakReconciler) GetKeycloakGrafanaDashboardDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
 	stateManager := common.GetStateManager()
-	resourceExists, keyExists := stateManager.GetState(integreatlyv1alpha1.GrafanaDashboardKind).(bool)
+	resourceExists, keyExists := stateManager.GetState(getStateFieldName(integreatlyv1alpha1.GrafanaDashboardKind)).(bool)
 	// Only add or update the monitoring resources if the resource type exists on the cluster. These booleans are set in the common/autodetect logic
 	if !keyExists || !resourceExists {
 		return nil
