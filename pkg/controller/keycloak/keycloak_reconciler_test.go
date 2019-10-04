@@ -19,9 +19,9 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 
 	//Set monitoring resources exist to true
 	stateManager := common.GetStateManager()
-	stateManager.SetState(monitoringv1.PrometheusRuleKind, true)
-	stateManager.SetState(monitoringv1.ServiceMonitorsKind, true)
-	stateManager.SetState(integreatlyv1alpha1.GrafanaDashboardKind, true)
+	stateManager.SetState(getStateFieldName(monitoringv1.PrometheusRuleKind), true)
+	stateManager.SetState(getStateFieldName(monitoringv1.ServiceMonitorsKind), true)
+	stateManager.SetState(getStateFieldName(integreatlyv1alpha1.GrafanaDashboardKind), true)
 
 	// when
 	reconciler := NewKeycloakReconciler()
@@ -82,9 +82,9 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 
 	//Set monitoring resources exist to true
 	stateManager := common.GetStateManager()
-	stateManager.SetState(monitoringv1.PrometheusRuleKind, true)
-	stateManager.SetState(monitoringv1.ServiceMonitorsKind, true)
-	stateManager.SetState(integreatlyv1alpha1.GrafanaDashboardKind, true)
+	stateManager.SetState(getStateFieldName(monitoringv1.PrometheusRuleKind), true)
+	stateManager.SetState(getStateFieldName(monitoringv1.ServiceMonitorsKind), true)
+	stateManager.SetState(getStateFieldName(integreatlyv1alpha1.GrafanaDashboardKind), true)
 
 	// when
 	reconciler := NewKeycloakReconciler()
@@ -133,9 +133,9 @@ func TestKeycloakReconciler_Test_No_Action_When_Monitoring_Resources_Dont_Exist(
 
 	//Set monitoring resources exist to true
 	stateManager := common.GetStateManager()
-	stateManager.SetState(monitoringv1.PrometheusRuleKind, false)
-	stateManager.SetState(monitoringv1.ServiceMonitorsKind, false)
-	stateManager.SetState(integreatlyv1alpha1.GrafanaDashboardKind, false)
+	stateManager.SetState(getStateFieldName(monitoringv1.PrometheusRuleKind), false)
+	stateManager.SetState(getStateFieldName(monitoringv1.ServiceMonitorsKind), false)
+	stateManager.SetState(getStateFieldName(integreatlyv1alpha1.GrafanaDashboardKind), false)
 
 	// when
 	reconciler := NewKeycloakReconciler()
