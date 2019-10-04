@@ -14,11 +14,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
-// Route kind is not provided by the openshift api
-const (
-	RouteKind = "Route"
-)
-
 // Background represents a procedure that runs in the background, periodically auto-detecting features
 type Background struct {
 	client              client.Client

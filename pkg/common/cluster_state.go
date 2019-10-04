@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+
 	v13 "github.com/openshift/api/route/v1"
 	"k8s.io/api/extensions/v1beta1"
 
@@ -14,6 +15,17 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+// These kinds are not provided by the openshift api
+const (
+	RouteKind                 = "Route"
+	SecretKind                = "Secret"
+	StatefulSetKind           = "StatefulSet"
+	ServiceKind               = "Service"
+	IngressKind               = "Ingress"
+	DeploymentKind            = "Deployment"
+	PersistentVolumeClaimKind = "PersistentVolumeClaim"
 )
 
 // The desired cluster state is defined by a list of actions that have to be run to
