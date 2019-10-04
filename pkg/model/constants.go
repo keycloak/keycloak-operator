@@ -22,4 +22,5 @@ const (
 	AdminUsernameProperty              = "ADMIN_USERNAME"        // nolint
 	AdminPasswordProperty              = "ADMIN_PASSWORD"        // nolint
 	ServingCertSecretName              = "sso-x509-https-secret" // nolint
+	RouteLoadBalancingStrategy         = "source"
 )

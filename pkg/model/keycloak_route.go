@@ -16,6 +16,9 @@ func KeycloakRoute(cr *kc.Keycloak) *v1.Route {
 			Labels: map[string]string{
 				"application": ApplicationName,
 			},
+			Annotations: map[string]string{
+				"haproxy.router.openshift.io/balance": RouteLoadBalancingStrategy,
+			},
 		},
 		Spec: v1.RouteSpec{
 			Port: &v1.RoutePort{
