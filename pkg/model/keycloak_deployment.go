@@ -36,6 +36,17 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 					},
 				},
 				Spec: v1.PodSpec{
+					Volumes: []v1.Volume{
+						{
+							Name: ServingCertSecretName,
+							VolumeSource: v1.VolumeSource{
+								Secret: &v1.SecretVolumeSource{
+									SecretName: ServingCertSecretName,
+									Optional:   &[]bool{true}[0],
+								},
+							},
+						},
+					},
 					Containers: []v1.Container{
 						{
 							Name:  KeycloakDeploymentName,
@@ -56,28 +67,6 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 								{
 									ContainerPort: 8778,
 									Protocol:      "TCP",
-								},
-							},
-							ReadinessProbe: &v1.Probe{
-								TimeoutSeconds:      1,
-								InitialDelaySeconds: 10,
-								Handler: v1.Handler{
-									HTTPGet: &v1.HTTPGetAction{
-										Path:   "/auth/realms/master",
-										Port:   intstr.FromInt(8080),
-										Scheme: "HTTP",
-									},
-								},
-							},
-							LivenessProbe: &v1.Probe{
-								InitialDelaySeconds: 60,
-								TimeoutSeconds:      1,
-								Handler: v1.Handler{
-									HTTPGet: &v1.HTTPGetAction{
-										Path:   "/auth/realms/master",
-										Port:   intstr.FromInt(8080),
-										Scheme: "HTTP",
-									},
 								},
 							},
 							Env: []v1.EnvVar{
@@ -165,6 +154,34 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 									},
 								},
 							},
+							VolumeMounts: []v1.VolumeMount{
+								{
+									Name:      ServingCertSecretName,
+									MountPath: "/etc/x509/https",
+								},
+							},
+							LivenessProbe: &v1.Probe{
+								InitialDelaySeconds: 60,
+								TimeoutSeconds:      1,
+								Handler: v1.Handler{
+									HTTPGet: &v1.HTTPGetAction{
+										Path:   "/auth/realms/master",
+										Port:   intstr.FromInt(8080),
+										Scheme: "HTTP",
+									},
+								},
+							},
+							ReadinessProbe: &v1.Probe{
+								TimeoutSeconds:      1,
+								InitialDelaySeconds: 10,
+								Handler: v1.Handler{
+									HTTPGet: &v1.HTTPGetAction{
+										Path:   "/auth/realms/master",
+										Port:   intstr.FromInt(8080),
+										Scheme: "HTTP",
+									},
+								},
+							},
 						},
 					},
 				},
@@ -183,6 +200,17 @@ func KeycloakDeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet) *v13.StatefulSet {
 	reconciled := currentState.DeepCopy()
 	reconciled.ResourceVersion = currentState.ResourceVersion
+	reconciled.Spec.Template.Spec.Volumes = []v1.Volume{
+		{
+			Name: ServingCertSecretName,
+			VolumeSource: v1.VolumeSource{
+				Secret: &v1.SecretVolumeSource{
+					SecretName: ServingCertSecretName,
+					Optional:   &[]bool{true}[0],
+				},
+			},
+		},
+	}
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:  KeycloakDeploymentName,
@@ -205,9 +233,15 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 					Protocol:      "TCP",
 				},
 			},
-			ReadinessProbe: &v1.Probe{
+			VolumeMounts: []v1.VolumeMount{
+				{
+					Name:      ServingCertSecretName,
+					MountPath: "/etc/x509/https",
+				},
+			},
+			LivenessProbe: &v1.Probe{
+				InitialDelaySeconds: 60,
 				TimeoutSeconds:      1,
-				InitialDelaySeconds: 10,
 				Handler: v1.Handler{
 					HTTPGet: &v1.HTTPGetAction{
 						Path:   "/auth/realms/master",
@@ -216,9 +250,9 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 					},
 				},
 			},
-			LivenessProbe: &v1.Probe{
-				InitialDelaySeconds: 60,
+			ReadinessProbe: &v1.Probe{
 				TimeoutSeconds:      1,
+				InitialDelaySeconds: 10,
 				Handler: v1.Handler{
 					HTTPGet: &v1.HTTPGetAction{
 						Path:   "/auth/realms/master",
