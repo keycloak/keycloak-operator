@@ -184,5 +184,5 @@ func watchSecondaryResource(c controller.Controller, gvk schema.GroupVersionKind
 }
 
 func getStateFieldName(kind string) string {
-	return ControllerName + "-" + kind
+	return ControllerName + "-watch-" + kind
 }
