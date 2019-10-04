@@ -11,11 +11,14 @@ import (
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
 	routev1 "github.com/openshift/api/route/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
 
+	"k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -67,27 +70,51 @@ func add(mgr manager.Manager, r reconcile.Reconciler, autodetectChannel chan sch
 		return err
 	}
 
+	if err := watchSecondaryResource(c, common.SecretKind, &corev1.Secret{}); err != nil {
+		return err
+	}
+
+	if err := watchSecondaryResource(c, common.StatefulSetKind, &appsv1.StatefulSet{}); err != nil {
+		return err
+	}
+
+	if err := watchSecondaryResource(c, common.ServiceKind, &corev1.Service{}); err != nil {
+		return err
+	}
+
+	if err := watchSecondaryResource(c, common.IngressKind, &v1beta1.Ingress{}); err != nil {
+		return err
+	}
+
+	if err := watchSecondaryResource(c, common.DeploymentKind, &appsv1.Deployment{}); err != nil {
+		return err
+	}
+
+	if err := watchSecondaryResource(c, common.PersistentVolumeClaimKind, &corev1.PersistentVolumeClaim{}); err != nil {
+		return err
+	}
+
 	// Setting up a listener for events on the channel from autodetect
 	go func() {
 		for gvk := range autodetectChannel {
 			// Check if this channel event was for the PrometheusRule resource type
 			if gvk.String() == monitoringv1.SchemeGroupVersion.WithKind(monitoringv1.PrometheusRuleKind).String() {
-				watchSecondaryResource(c, gvk, &monitoringv1.PrometheusRule{}) // nolint
+				watchSecondaryResource(c, gvk.Kind, &monitoringv1.PrometheusRule{}) // nolint
 			}
 
 			// Check if this channel event was for the ServiceMonitor resource type
 			if gvk.String() == monitoringv1.SchemeGroupVersion.WithKind(monitoringv1.ServiceMonitorsKind).String() {
-				watchSecondaryResource(c, gvk, &monitoringv1.ServiceMonitor{}) // nolint
+				watchSecondaryResource(c, gvk.Kind, &monitoringv1.ServiceMonitor{}) // nolint
 			}
 
 			// Check if this channel event was for the GrafanaDashboard resource type
 			if gvk.String() == integreatlyv1alpha1.SchemeGroupVersion.WithKind(integreatlyv1alpha1.GrafanaDashboardKind).String() {
-				watchSecondaryResource(c, gvk, &integreatlyv1alpha1.GrafanaDashboard{}) // nolint
+				watchSecondaryResource(c, gvk.Kind, &integreatlyv1alpha1.GrafanaDashboard{}) // nolint
 			}
 
 			// Check if this channel event was for the Route resource type
 			if gvk.String() == routev1.SchemeGroupVersion.WithKind(common.RouteKind).String() {
-				_ = watchSecondaryResource(c, gvk, &routev1.Route{})
+				_ = watchSecondaryResource(c, gvk.Kind, &routev1.Route{})
 			}
 		}
 	}()
@@ -155,9 +182,9 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 	return reconcile.Result{RequeueAfter: RequeueDelaySeconds * time.Second}, nil
 }
 
-func watchSecondaryResource(c controller.Controller, gvk schema.GroupVersionKind, o runtime.Object) error {
+func watchSecondaryResource(c controller.Controller, resourceKind string, o runtime.Object) error {
 	stateManager := common.GetStateManager()
-	stateFieldName := getStateFieldName(gvk.Kind)
+	stateFieldName := getStateFieldName(resourceKind)
 
 	// Check to see if the watch exists for this resource type already for this controller, if it does, we return so we don't set up another watch
 	watchExists, keyExists := stateManager.GetState(stateFieldName).(bool)
@@ -179,7 +206,7 @@ func watchSecondaryResource(c controller.Controller, gvk schema.GroupVersionKind
 	}
 
 	stateManager.SetState(stateFieldName, true)
-	log.Info(fmt.Sprintf("Watch created for '%s' resource in '%s'", gvk.Kind, ControllerName))
+	log.Info(fmt.Sprintf("Watch created for '%s' resource in '%s'", resourceKind, ControllerName))
 	return nil
 }
 
