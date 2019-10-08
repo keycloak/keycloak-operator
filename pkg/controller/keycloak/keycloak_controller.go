@@ -3,6 +3,7 @@ package keycloak
 import (
 	"context"
 	"fmt"
+	"github.com/keycloak/keycloak-operator/pkg/model"
 	"time"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -244,6 +245,20 @@ func (r *ReconcileKeycloak) ManageSuccess(instance *v1alpha1.Keycloak, currentSt
 		instance.Status.Phase = v1alpha1.PhaseReconciling
 	} else {
 		instance.Status.Phase = v1alpha1.PhaseInitialising
+	}
+
+	// Make this keycloaks url public to allow access via the client
+	if currentState.KeycloakRoute != nil && currentState.KeycloakRoute.Spec.Host != "" {
+		instance.Status.InternalUrl = fmt.Sprintf("https://%v", currentState.KeycloakRoute.Spec.Host)
+	} else if currentState.KeycloakService != nil && currentState.KeycloakService.Spec.ClusterIP != "" {
+		instance.Status.InternalUrl = fmt.Sprintf("http://%v:%v",
+			currentState.KeycloakService.Spec.ClusterIP,
+			model.KeycloakServicePort)
+	}
+
+	// Let the clients know where the admin credentials are stored
+	if currentState.KeycloakAdminSecret != nil {
+		instance.Status.CredentialSecret = currentState.KeycloakAdminSecret.Name
 	}
 
 	err = r.client.Status().Update(r.context, instance)

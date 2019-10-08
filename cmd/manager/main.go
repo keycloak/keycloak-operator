@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/keycloak/keycloak-operator/version"
 	"os"
 	"runtime"
 
@@ -48,6 +49,7 @@ func printVersion() {
 	log.Info(fmt.Sprintf("Go Version: %s", runtime.Version()))
 	log.Info(fmt.Sprintf("Go OS/Arch: %s/%s", runtime.GOOS, runtime.GOARCH))
 	log.Info(fmt.Sprintf("Version of operator-sdk: %v", sdkVersion.Version))
+	log.Info(fmt.Sprintf("Operator version: %v", version.Version))
 }
 
 func main() {
@@ -58,7 +60,6 @@ func main() {
 	// Add flags registered by imported packages (e.g. glog and
 	// controller-runtime)
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
-
 	pflag.Parse()
 
 	// Use a zap logr.Logger implementation. If none of the zap
@@ -78,6 +79,8 @@ func main() {
 		log.Error(err, "Failed to get watch namespace")
 		os.Exit(1)
 	}
+
+	log.Info(fmt.Sprintf("Setting watch namespace to '%v'", namespace))
 
 	// Get a config to talk to the apiserver
 	cfg, err := config.GetConfig()

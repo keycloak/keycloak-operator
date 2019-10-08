@@ -151,6 +151,7 @@ func (i *ClusterState) readKeycloakAdminSecretCurrentState(context context.Conte
 		}
 	} else {
 		i.KeycloakAdminSecret = keycloakAdminSecret.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakAdminSecret.Kind, i.KeycloakAdminSecret.Name)
 	}
 	return nil
 }
@@ -166,6 +167,7 @@ func (i *ClusterState) readPostgresqlPersistentVolumeClaimCurrentState(context c
 		}
 	} else {
 		i.PostgresqlPersistentVolumeClaim = postgresqlPersistentVolumeClaim.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.PostgresqlPersistentVolumeClaim.Kind, i.PostgresqlPersistentVolumeClaim.Name)
 	}
 	return nil
 }
@@ -181,6 +183,7 @@ func (i *ClusterState) readPostgresqlServiceCurrentState(context context.Context
 		}
 	} else {
 		i.PostgresqlService = postgresqlService.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.PostgresqlService.Kind, i.PostgresqlService.Name)
 	}
 	return nil
 }
@@ -196,6 +199,7 @@ func (i *ClusterState) readPostgresqlDeploymentCurrentState(context context.Cont
 		}
 	} else {
 		i.PostgresqlDeployment = postgresqlDeployment.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.PostgresqlDeployment.Kind, i.PostgresqlDeployment.Name)
 	}
 	return nil
 }
@@ -211,6 +215,7 @@ func (i *ClusterState) readKeycloakServiceCurrentState(context context.Context, 
 		}
 	} else {
 		i.KeycloakService = keycloakService.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakService.Kind, i.KeycloakService.Name)
 	}
 	return nil
 }
@@ -237,6 +242,7 @@ func (i *ClusterState) readKeycloakServiceMonitorCurrentState(context context.Co
 		}
 	} else {
 		i.KeycloakServiceMonitor = keycloakServiceMonitor.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakServiceMonitor.Kind, i.KeycloakServiceMonitor.Name)
 	}
 	return nil
 }
@@ -257,6 +263,7 @@ func (i *ClusterState) readKeycloakPrometheusRuleCurrentState(context context.Co
 		}
 	} else {
 		i.KeycloakPrometheusRule = keycloakPrometheusRule.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakPrometheusRule.Kind, i.KeycloakPrometheusRule.Name)
 	}
 	return nil
 }
@@ -277,6 +284,7 @@ func (i *ClusterState) readKeycloakGrafanaDashboardCurrentState(context context.
 		}
 	} else {
 		i.KeycloakGrafanaDashboard = keycloakGrafanaDashboard.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakGrafanaDashboard.Kind, i.KeycloakGrafanaDashboard.Name)
 	}
 	return nil
 }
@@ -296,6 +304,7 @@ func (i *ClusterState) readDatabaseSecretCurrentState(context context.Context, c
 		}
 	} else {
 		i.DatabaseSecret = databaseSecret.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.DatabaseSecret.Kind, i.DatabaseSecret.Name)
 	}
 	return nil
 }
@@ -317,6 +326,7 @@ func (i *ClusterState) readKeycloakOrRHSSODeploymentCurrentState(context context
 		}
 	} else {
 		i.KeycloakDeployment = deployment.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakDeployment.Kind, i.KeycloakDeployment.Name)
 	}
 	return nil
 }
@@ -332,6 +342,7 @@ func (i *ClusterState) readKeycloakDiscoveryServiceCurrentState(context context.
 		}
 	} else {
 		i.KeycloakDiscoveryService = keycloakDiscoveryService.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakDiscoveryService.Kind, i.KeycloakDiscoveryService.Name)
 	}
 	return nil
 }
@@ -347,6 +358,7 @@ func (i *ClusterState) readKeycloakRouteCurrentState(context context.Context, cr
 		}
 	} else {
 		i.KeycloakRoute = keycloakRoute.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakRoute.Kind, i.KeycloakRoute.Name)
 	}
 	return nil
 }
@@ -362,6 +374,7 @@ func (i *ClusterState) readKeycloakIngressCurrentState(context context.Context, 
 		}
 	} else {
 		i.KeycloakIngress = keycloakIngress.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakIngress.Kind, i.KeycloakIngress.Name)
 	}
 	return nil
 }

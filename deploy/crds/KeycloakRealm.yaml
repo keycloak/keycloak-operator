@@ -29,10 +29,94 @@ spec:
           type: object
         spec:
           type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            displayName:
+              type: string
+            enabled:
+              type: boolean
+            identityProviders:
+              type: array
+              items:
+                type: object
+                properties:
+                  alias:
+                    type: string
+                  displayName:
+                    type: string
+                  internalId:
+                    type: string
+                  providerId:
+                    type: string
+                  enabled:
+                    type: boolean
+                  trustEmail:
+                    type: boolean
+                  storeToken:
+                    type: boolean
+                  addReadTokenRoleOnCreate:
+                    type: boolean
+                  firstBrokerLoginFlowAlias:
+                    type: string
+                  postBrokerLoginFlowAlias:
+                    type: string
+                  linkOnly:
+                    type: boolean
+                  config:
+                    type: object
+            users:
+              type: array
+              items:
+                type: object
+                properties:
+                  username:
+                    type: string
+                    firstName:
+                      type: string
+                    lastName:
+                      type: string
+                    email:
+                      type: string
+                    emailVerified:
+                      type: boolean
+                    enabled:
+                      type: boolean
+                    realmRoles:
+                      type: array
+                      items:
+                        type: string
+                    clientRoles:
+                      type: object
+                    requiredActions:
+                      type: array
+                      items:
+                        type: string
+                    groups:
+                      type: array
+                      items:
+                        type: string
+                    federatedIdentities:
+                      type: array
+                      items:
+                        type: object
+                    credentials:
+                      type: array
+                      items:
+                        type: object
+            clients:
+              type: array
+              items:
+                type: object
+            instanceSelector:
+              type: object
+              description: 'A label selector to determine the Keycloak instance to create the Realm in'
         status:
           type: object
   version: v1alpha1
   versions:
-  - name: v1alpha1
-    served: true
-    storage: true
+    - name: v1alpha1
+      served: true
+      storage: true
