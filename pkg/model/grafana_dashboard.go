@@ -614,7 +614,7 @@ func GrafanaDashboard(cr *v1alpha1.Keycloak) *integreatlyv1alpha1.GrafanaDashboa
 						"expr": "sum(jvm_memory_bytes_committed{namespace=\"$namespace\",service=\"sso\"})",
 						"format": "time_series",
 						"intervalFactor": 1,
-						"legendFormat": "Comitted",
+						"legendFormat": "Committed",
 						"refId": "C"
 					},
 					{

@@ -8,6 +8,10 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/model"
 )
 
+const (
+	RHSSOProfile = "RHSSO"
+)
+
 type Reconciler interface {
 	Reconcile(clusterState *common.ClusterState, cr *kc.Keycloak) (common.DesiredClusterState, error)
 }
@@ -32,7 +36,7 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 	desired = desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakServiceDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDiscoveryServiceDesiredState(clusterState, cr))
-	desired = desired.AddAction(i.getKeycloakDeploymentDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.getKeycloakDeploymentOrRHSSODesiredState(clusterState, cr))
 
 	i.reconcileExternalAccess(&desired, clusterState, cr)
 
@@ -229,19 +233,32 @@ func (i *KeycloakReconciler) getDatabaseSecretDesiredState(clusterState *common.
 	}
 }
 
-func (i *KeycloakReconciler) getKeycloakDeploymentDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
-	keycloakDeployment := model.KeycloakDeployment(cr)
+func (i *KeycloakReconciler) getKeycloakDeploymentOrRHSSODesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	isRHSSO := cr.Spec.Profile == RHSSOProfile
+
+	deployment := model.KeycloakDeployment(cr)
+	deploymentName := "Keycloak"
+
+	if isRHSSO {
+		deployment = model.RHSSODeployment(cr)
+		deploymentName = RHSSOProfile
+	}
+
 	if clusterState.KeycloakDeployment == nil {
 		return common.GenericCreateAction{
-			Ref: keycloakDeployment,
-			Msg: "Create Keycloak Deployment (StatefulSet)",
+			Ref: deployment,
+			Msg: "Create " + deploymentName + " Deployment (StatefulSet)",
 		}
 	}
-	// TODO(slaskawi): This deserves a bit of experimentation...
-	// StatefulSets are immutable by definition. Perhaps we should delete it at this point?
+
+	deploymentReconciled := model.KeycloakDeploymentReconciled(cr, clusterState.KeycloakDeployment)
+	if isRHSSO {
+		deploymentReconciled = model.RHSSODeploymentReconciled(cr, clusterState.KeycloakDeployment)
+	}
+
 	return common.GenericUpdateAction{
-		Ref: model.KeycloakDeploymentReconciled(cr, clusterState.KeycloakDeployment),
-		Msg: "Update Keycloak Deployment (StatefulSet)",
+		Ref: deploymentReconciled,
+		Msg: "Update " + deploymentName + " Deployment (StatefulSet)",
 	}
 }
 

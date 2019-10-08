@@ -10,6 +10,7 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"github.com/keycloak/keycloak-operator/pkg/model"
 	"github.com/stretchr/testify/assert"
+	v13 "k8s.io/api/apps/v1"
 )
 
 func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
@@ -19,6 +20,7 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 
 	//Set monitoring resources exist to true
 	stateManager := common.GetStateManager()
+	defer stateManager.Clear()
 	stateManager.SetState(getStateFieldName(monitoringv1.PrometheusRuleKind), true)
 	stateManager.SetState(getStateFieldName(monitoringv1.ServiceMonitorsKind), true)
 	stateManager.SetState(getStateFieldName(integreatlyv1alpha1.GrafanaDashboardKind), true)
@@ -63,6 +65,76 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	assert.IsType(t, model.KeycloakDeployment(cr), desiredState[10].(common.GenericCreateAction).Ref)
 }
 
+func TestKeycloakReconciler_Test_Creating_RHSSO(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			Profile: RHSSOProfile,
+		},
+	}
+	currentState := common.NewClusterState()
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	var allCreateActions = true
+	var deployment *v13.StatefulSet
+	for _, v := range desiredState {
+		if reflect.TypeOf(v) != reflect.TypeOf(common.GenericCreateAction{}) {
+			allCreateActions = false
+		}
+		if reflect.TypeOf(v.(common.GenericCreateAction).Ref) == reflect.TypeOf(model.RHSSODeployment(cr)) {
+			deployment = v.(common.GenericCreateAction).Ref.(*v13.StatefulSet)
+		}
+	}
+	assert.True(t, allCreateActions)
+	assert.NotNil(t, deployment)
+	assert.Equal(t, model.RHSSODeployment(cr), deployment)
+}
+
+func TestKeycloakReconciler_Test_Updating_RHSSO(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			Profile: RHSSOProfile,
+		},
+	}
+	currentState := &common.ClusterState{
+		KeycloakServiceMonitor:          model.ServiceMonitor(cr),
+		KeycloakPrometheusRule:          model.PrometheusRule(cr),
+		KeycloakGrafanaDashboard:        model.GrafanaDashboard(cr),
+		DatabaseSecret:                  model.DatabaseSecret(cr),
+		PostgresqlPersistentVolumeClaim: model.PostgresqlPersistentVolumeClaim(cr),
+		PostgresqlService:               model.PostgresqlService(cr),
+		PostgresqlDeployment:            model.PostgresqlDeployment(cr),
+		KeycloakService:                 model.KeycloakService(cr),
+		KeycloakDiscoveryService:        model.KeycloakDiscoveryService(cr),
+		KeycloakDeployment:              model.RHSSODeployment(cr),
+		KeycloakAdminSecret:             model.KeycloakAdminSecret(cr),
+	}
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	var allUpdateActions = true
+	var deployment *v13.StatefulSet
+	for _, v := range desiredState {
+		if reflect.TypeOf(v) != reflect.TypeOf(common.GenericUpdateAction{}) {
+			allUpdateActions = false
+		}
+		if reflect.TypeOf(v.(common.GenericUpdateAction).Ref) == reflect.TypeOf(model.RHSSODeployment(cr)) {
+			deployment = v.(common.GenericUpdateAction).Ref.(*v13.StatefulSet)
+		}
+	}
+	assert.True(t, allUpdateActions)
+	assert.NotNil(t, deployment)
+	assert.Equal(t, model.RHSSODeployment(cr), deployment)
+}
+
 func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	// given
 	cr := &v1alpha1.Keycloak{}
@@ -85,6 +157,7 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	stateManager.SetState(getStateFieldName(monitoringv1.PrometheusRuleKind), true)
 	stateManager.SetState(getStateFieldName(monitoringv1.ServiceMonitorsKind), true)
 	stateManager.SetState(getStateFieldName(integreatlyv1alpha1.GrafanaDashboardKind), true)
+	defer stateManager.Clear()
 
 	// when
 	reconciler := NewKeycloakReconciler()
@@ -136,6 +209,7 @@ func TestKeycloakReconciler_Test_No_Action_When_Monitoring_Resources_Dont_Exist(
 	stateManager.SetState(getStateFieldName(monitoringv1.PrometheusRuleKind), false)
 	stateManager.SetState(getStateFieldName(monitoringv1.ServiceMonitorsKind), false)
 	stateManager.SetState(getStateFieldName(integreatlyv1alpha1.GrafanaDashboardKind), false)
+	defer stateManager.Clear()
 
 	// when
 	reconciler := NewKeycloakReconciler()

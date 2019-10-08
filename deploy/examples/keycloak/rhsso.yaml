@@ -1,0 +1,9 @@
+apiVersion: keycloak.org/v1alpha1
+kind: Keycloak
+metadata:
+  name: example-keycloak
+spec:
+  instances: 1
+  externalAccess:
+    enabled: True
+  profile: RHSSO
