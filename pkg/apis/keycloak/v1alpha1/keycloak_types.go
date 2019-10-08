@@ -43,10 +43,10 @@ type KeycloakStatus struct {
 type StatusPhase string
 
 var (
-	NoPhase          StatusPhase
-	PhaseReconciling StatusPhase = "reconciling"
-	PhaseFailing     StatusPhase = "failing"
-	PhaseInProgress  StatusPhase = "inprogress"
+	NoPhase           StatusPhase
+	PhaseReconciling  StatusPhase = "reconciling"
+	PhaseFailing      StatusPhase = "failing"
+	PhaseInitialising StatusPhase = "initialising"
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -73,4 +73,20 @@ type KeycloakList struct {
 
 func init() {
 	SchemeBuilder.Register(&Keycloak{}, &KeycloakList{})
+}
+
+func (k *Keycloak) UpdateStatusSecondaryResources(instance *Keycloak, kind string, resourceName string) {
+	// If the map is nil, instansiate it
+	if instance.Status.SecondaryResources == nil {
+		instance.Status.SecondaryResources = make(map[string][]string)
+	}
+
+	// return if the resource name already exists in the slice
+	for _, ele := range instance.Status.SecondaryResources[kind] {
+		if ele == resourceName {
+			return
+		}
+	}
+	// add the resource name to the list of secondary resources in the status
+	instance.Status.SecondaryResources[kind] = append(instance.Status.SecondaryResources[kind], resourceName)
 }

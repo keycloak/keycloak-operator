@@ -10,13 +10,11 @@ import (
 	routev1 "github.com/openshift/api/route/v1"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"k8s.io/client-go/discovery"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
 
 // Background represents a procedure that runs in the background, periodically auto-detecting features
 type Background struct {
-	client              client.Client
 	dc                  discovery.DiscoveryInterface
 	ticker              *time.Ticker
 	SubscriptionChannel chan schema.GroupVersionKind
@@ -32,7 +30,7 @@ func NewAutoDetect(mgr manager.Manager) (*Background, error) {
 	// Create a new channel that GVK type will be sent down
 	subChan := make(chan schema.GroupVersionKind, 1)
 
-	return &Background{dc: dc, client: mgr.GetClient(), SubscriptionChannel: subChan}, nil
+	return &Background{dc: dc, SubscriptionChannel: subChan}, nil
 }
 
 // Start initializes the auto-detection process that runs in the background
