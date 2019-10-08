@@ -25,9 +25,6 @@ type KeycloakExternalAccess struct {
 // KeycloakStatus defines the observed state of Keycloak
 // +k8s:openapi-gen=true
 type KeycloakStatus struct {
-	// Important: Run "operator-sdk generate k8s" to regenerate code after modifying this file
-	// Add custom validation using kubebuilder tags: https://book-v1.book.kubebuilder.io/beyond_basics/generating_crd.html
-
 	// Current phase of the operator.
 	Phase StatusPhase `json:"phase"`
 	// Human-readable message indicating details about current operator phase or error.
@@ -38,6 +35,10 @@ type KeycloakStatus struct {
 	SecondaryResources map[string][]string `json:"secondaryResources,omitempty"`
 	// Version of Keycloak or RHSSO running on the cluster
 	Version string `json:"version"`
+	// Service IP and Port for in-cluster access to the keycloak instance
+	InternalUrl string `json:"url"`
+	// The secret where the admin credentials are to be found
+	CredentialSecret string `json:"credentialSecret"`
 }
 
 type StatusPhase string
@@ -75,18 +76,18 @@ func init() {
 	SchemeBuilder.Register(&Keycloak{}, &KeycloakList{})
 }
 
-func (k *Keycloak) UpdateStatusSecondaryResources(instance *Keycloak, kind string, resourceName string) {
+func (i *Keycloak) UpdateStatusSecondaryResources(kind string, resourceName string) {
 	// If the map is nil, instansiate it
-	if instance.Status.SecondaryResources == nil {
-		instance.Status.SecondaryResources = make(map[string][]string)
+	if i.Status.SecondaryResources == nil {
+		i.Status.SecondaryResources = make(map[string][]string)
 	}
 
 	// return if the resource name already exists in the slice
-	for _, ele := range instance.Status.SecondaryResources[kind] {
+	for _, ele := range i.Status.SecondaryResources[kind] {
 		if ele == resourceName {
 			return
 		}
 	}
 	// add the resource name to the list of secondary resources in the status
-	instance.Status.SecondaryResources[kind] = append(instance.Status.SecondaryResources[kind], resourceName)
+	i.Status.SecondaryResources[kind] = append(i.Status.SecondaryResources[kind], resourceName)
 }

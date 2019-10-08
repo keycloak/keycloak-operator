@@ -41,7 +41,7 @@ cluster/create/examples:
 .PHONY: test/unit
 test/unit:
 	@echo Running tests:
-	@go test -v -race -coverprofile cover.out -mod=vendor ./pkg/...
+	@go test -v -race -coverprofile cover.out ./pkg/...
 
 .PHONY: test/coverage
 test/coverage: test/unit

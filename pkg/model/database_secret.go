@@ -17,8 +17,8 @@ func DatabaseSecret(cr *v1alpha1.Keycloak) *v1.Secret {
 			},
 		},
 		StringData: map[string]string{
-			DatabaseSecretUsernameProperty: cr.ObjectMeta.Name + "-" + randStringRunes(4),
-			DatabaseSecretPasswordProperty: cr.ObjectMeta.Name + "-" + randStringRunes(4),
+			DatabaseSecretUsernameProperty: cr.ObjectMeta.Name + "-" + RandStringRunes(4),
+			DatabaseSecretPasswordProperty: cr.ObjectMeta.Name + "-" + RandStringRunes(4),
 		},
 	}
 }
@@ -34,10 +34,10 @@ func DatabaseSecretReconciled(cr *v1alpha1.Keycloak, currentState *v1.Secret) *v
 	reconciled := currentState.DeepCopy()
 	// K8s automatically converts StringData to Data when getting the resource
 	if _, ok := reconciled.Data[DatabaseSecretUsernameProperty]; !ok {
-		reconciled.StringData[DatabaseSecretUsernameProperty] = cr.ObjectMeta.Name + "-" + randStringRunes(4)
+		reconciled.StringData[DatabaseSecretUsernameProperty] = cr.ObjectMeta.Name + "-" + RandStringRunes(4)
 	}
 	if _, ok := reconciled.Data[DatabaseSecretPasswordProperty]; !ok {
-		reconciled.StringData[DatabaseSecretPasswordProperty] = cr.ObjectMeta.Name + "-" + randStringRunes(4)
+		reconciled.StringData[DatabaseSecretPasswordProperty] = cr.ObjectMeta.Name + "-" + RandStringRunes(4)
 	}
 	return reconciled
 }
