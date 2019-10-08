@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"errors"
 
 	v13 "github.com/openshift/api/route/v1"
 	"k8s.io/api/extensions/v1beta1"
@@ -12,7 +13,7 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/model"
 	v12 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -26,6 +27,7 @@ const (
 	IngressKind               = "Ingress"
 	DeploymentKind            = "Deployment"
 	PersistentVolumeClaimKind = "PersistentVolumeClaim"
+	ConditionStatusSuccess    = "True"
 )
 
 // The desired cluster state is defined by a list of actions that have to be run to
@@ -142,7 +144,7 @@ func (i *ClusterState) readKeycloakAdminSecretCurrentState(context context.Conte
 
 	if err != nil {
 		// If the resource type doesn't exist on the cluster or does exist but is not found
-		if meta.IsNoMatchError(err) || errors.IsNotFound(err) {
+		if meta.IsNoMatchError(err) || apiErrors.IsNotFound(err) {
 			i.KeycloakAdminSecret = nil
 		} else {
 			return err
@@ -159,7 +161,7 @@ func (i *ClusterState) readPostgresqlPersistentVolumeClaimCurrentState(context c
 
 	err := controllerClient.Get(context, postgresqlPersistentVolumeClaimSelector, postgresqlPersistentVolumeClaim)
 	if err != nil {
-		if !errors.IsNotFound(err) {
+		if !apiErrors.IsNotFound(err) {
 			return err
 		}
 	} else {
@@ -174,7 +176,7 @@ func (i *ClusterState) readPostgresqlServiceCurrentState(context context.Context
 
 	err := controllerClient.Get(context, postgresqlServiceSelector, postgresqlService)
 	if err != nil {
-		if !errors.IsNotFound(err) {
+		if !apiErrors.IsNotFound(err) {
 			return err
 		}
 	} else {
@@ -189,7 +191,7 @@ func (i *ClusterState) readPostgresqlDeploymentCurrentState(context context.Cont
 
 	err := controllerClient.Get(context, postgresqlDeploymentSelector, postgresqlDeployment)
 	if err != nil {
-		if !errors.IsNotFound(err) {
+		if !apiErrors.IsNotFound(err) {
 			return err
 		}
 	} else {
@@ -204,7 +206,7 @@ func (i *ClusterState) readKeycloakServiceCurrentState(context context.Context, 
 
 	err := controllerClient.Get(context, keycloakServiceSelector, keycloakService)
 	if err != nil {
-		if !errors.IsNotFound(err) {
+		if !apiErrors.IsNotFound(err) {
 			return err
 		}
 	} else {
@@ -228,7 +230,7 @@ func (i *ClusterState) readKeycloakServiceMonitorCurrentState(context context.Co
 
 	if err != nil {
 		// If the resource type doesn't exist on the cluster or does exist but is not found
-		if meta.IsNoMatchError(err) || errors.IsNotFound(err) {
+		if meta.IsNoMatchError(err) || apiErrors.IsNotFound(err) {
 			i.KeycloakServiceMonitor = nil
 		} else {
 			return err
@@ -248,7 +250,7 @@ func (i *ClusterState) readKeycloakPrometheusRuleCurrentState(context context.Co
 
 	if err != nil {
 		// If the resource type doesn't exist on the cluster or does exist but is not found
-		if meta.IsNoMatchError(err) || errors.IsNotFound(err) {
+		if meta.IsNoMatchError(err) || apiErrors.IsNotFound(err) {
 			i.KeycloakPrometheusRule = nil
 		} else {
 			return err
@@ -268,7 +270,7 @@ func (i *ClusterState) readKeycloakGrafanaDashboardCurrentState(context context.
 
 	if err != nil {
 		// If the resource type doesn't exist on the cluster or does exist but is not found
-		if meta.IsNoMatchError(err) || errors.IsNotFound(err) {
+		if meta.IsNoMatchError(err) || apiErrors.IsNotFound(err) {
 			i.KeycloakGrafanaDashboard = nil
 		} else {
 			return err
@@ -287,7 +289,7 @@ func (i *ClusterState) readDatabaseSecretCurrentState(context context.Context, c
 
 	if err != nil {
 		// If the resource type doesn't exist on the cluster or does exist but is not found
-		if meta.IsNoMatchError(err) || errors.IsNotFound(err) {
+		if meta.IsNoMatchError(err) || apiErrors.IsNotFound(err) {
 			i.DatabaseSecret = nil
 		} else {
 			return err
@@ -304,7 +306,7 @@ func (i *ClusterState) readKeycloakDeploymentCurrentState(context context.Contex
 
 	err := controllerClient.Get(context, keycloakDeploymentSelector, keycloakDeployment)
 	if err != nil {
-		if !errors.IsNotFound(err) {
+		if !apiErrors.IsNotFound(err) {
 			return err
 		}
 	} else {
@@ -319,7 +321,7 @@ func (i *ClusterState) readKeycloakDiscoveryServiceCurrentState(context context.
 
 	err := controllerClient.Get(context, keycloakDiscoveryServiceSelector, keycloakDiscoveryService)
 	if err != nil {
-		if !errors.IsNotFound(err) {
+		if !apiErrors.IsNotFound(err) {
 			return err
 		}
 	} else {
@@ -334,7 +336,7 @@ func (i *ClusterState) readKeycloakRouteCurrentState(context context.Context, cr
 
 	err := controllerClient.Get(context, keycloakRouteSelector, keycloakRoute)
 	if err != nil {
-		if !errors.IsNotFound(err) {
+		if !apiErrors.IsNotFound(err) {
 			return err
 		}
 	} else {
@@ -349,11 +351,77 @@ func (i *ClusterState) readKeycloakIngressCurrentState(context context.Context, 
 
 	err := controllerClient.Get(context, keycloakIngressSelector, keycloakIngress)
 	if err != nil {
-		if !errors.IsNotFound(err) {
+		if !apiErrors.IsNotFound(err) {
 			return err
 		}
 	} else {
 		i.KeycloakIngress = keycloakIngress.DeepCopy()
 	}
 	return nil
+}
+
+func (i *ClusterState) IsResourcesReady() (bool, error) {
+	// Check keycloak statefulset is ready
+	keycloakDeploymentReady := i.isStatefulSetReady(i.KeycloakDeployment)
+	// Default Route ready to true in case we are running on native Kubernetes
+	keycloakRouteReady := true
+	// Check keycloak postgres deployment is ready
+	postgresqlDeploymentReady, err := i.isDeploymentReady(i.PostgresqlDeployment)
+	if err != nil {
+		return false, err
+	}
+
+	// If running on OpenShift, check the Route is ready
+	stateManager := GetStateManager()
+	openshift, keyExists := stateManager.GetState(RouteKind).(bool)
+	if keyExists && openshift {
+		keycloakRouteReady = i.isRouteReady(i.KeycloakRoute)
+	}
+
+	return keycloakDeploymentReady && postgresqlDeploymentReady && keycloakRouteReady, nil
+}
+
+func (i *ClusterState) isDeploymentReady(deployment *v12.Deployment) (bool, error) {
+	if deployment == nil {
+		return false, nil
+	}
+	// A deployment has an array of conditions
+	for _, condition := range deployment.Status.Conditions {
+		// One failure condition exists, if this exists, return the Reason
+		if condition.Type == v12.DeploymentReplicaFailure {
+			return false, errors.New(condition.Reason)
+			// A successful deployment will have the progressing condition type as true
+		} else if condition.Type == v12.DeploymentProgressing && condition.Status != ConditionStatusSuccess {
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func (i *ClusterState) isStatefulSetReady(statefulSet *v12.StatefulSet) bool {
+	if statefulSet == nil {
+		return false
+	}
+	// Check the correct number of replicas match and are ready
+	numOfReplicasMatch := *statefulSet.Spec.Replicas == statefulSet.Status.Replicas
+	allReplicasReady := statefulSet.Status.Replicas == statefulSet.Status.ReadyReplicas
+	revisionsMatch := statefulSet.Status.CurrentRevision == statefulSet.Status.UpdateRevision
+
+	return numOfReplicasMatch && allReplicasReady && revisionsMatch
+}
+
+func (i *ClusterState) isRouteReady(route *v13.Route) bool {
+	if route == nil {
+		return false
+	}
+	// A route has a an array of Ingress where each have an array of conditions
+	for _, ingress := range route.Status.Ingress {
+		for _, condition := range ingress.Conditions {
+			// A successful route will have the admitted condition type as true
+			if condition.Type == v13.RouteAdmitted && condition.Status != ConditionStatusSuccess {
+				return false
+			}
+		}
+	}
+	return true
 }

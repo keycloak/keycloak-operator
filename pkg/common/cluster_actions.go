@@ -3,6 +3,8 @@ package common
 import (
 	"context"
 	"fmt"
+	"reflect"
+
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -59,7 +61,14 @@ func (i *ClusterActionRunner) Create(obj runtime.Object) error {
 		return err
 	}
 
-	return i.client.Create(i.context, obj)
+	err = i.client.Create(i.context, obj)
+	if err != nil {
+		return err
+	}
+
+	i.cr.UpdateStatusSecondaryResources(i.cr, reflect.TypeOf(obj).String()[1:], obj.(v1.Object).GetName())
+
+	return nil
 }
 
 func (i *ClusterActionRunner) Update(obj runtime.Object) error {

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
@@ -14,6 +15,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 
+	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
@@ -32,8 +34,9 @@ import (
 var log = logf.Log.WithName("controller_keycloak")
 
 const (
-	RequeueDelaySeconds = 30
-	ControllerName      = "keycloak-controller"
+	RequeueDelaySeconds      = 30
+	RequeueDelayErrorSeconds = 5
+	ControllerName           = "keycloak-controller"
 )
 
 // Add creates a new Keycloak Controller and adds it to the Manager. The Manager will set fields on the Controller
@@ -49,10 +52,11 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	client := mgr.GetClient()
 
 	return &ReconcileKeycloak{
-		client:  client,
-		scheme:  mgr.GetScheme(),
-		context: ctx,
-		cancel:  cancel,
+		client:   client,
+		scheme:   mgr.GetScheme(),
+		context:  ctx,
+		cancel:   cancel,
+		recorder: mgr.GetRecorder(ControllerName),
 	}
 }
 
@@ -129,10 +133,11 @@ var _ reconcile.Reconciler = &ReconcileKeycloak{}
 type ReconcileKeycloak struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client  client.Client
-	scheme  *runtime.Scheme
-	context context.Context
-	cancel  context.CancelFunc
+	client   client.Client
+	scheme   *runtime.Scheme
+	context  context.Context
+	cancel   context.CancelFunc
+	recorder record.EventRecorder
 }
 
 // Reconcile reads that state of the cluster for a Keycloak object and makes changes based on the state read
@@ -164,7 +169,7 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 	currentState := common.NewClusterState()
 	err = currentState.Read(r.context, instance, r.client)
 	if err != nil {
-		return reconcile.Result{}, err
+		return r.ManageError(instance, err)
 	}
 
 	// Get Action to reconcile current state into desired state
@@ -175,11 +180,10 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 	actionRunner := common.NewClusterActionRunner(r.context, r.client, r.scheme, instance)
 	err = actionRunner.RunAll(desiredState)
 	if err != nil {
-		return reconcile.Result{}, err
+		return r.ManageError(instance, err)
 	}
 
-	log.Info("desired cluster state met")
-	return reconcile.Result{RequeueAfter: RequeueDelaySeconds * time.Second}, nil
+	return r.ManageSuccess(instance, currentState)
 }
 
 func watchSecondaryResource(c controller.Controller, resourceKind string, o runtime.Object) error {
@@ -212,4 +216,52 @@ func watchSecondaryResource(c controller.Controller, resourceKind string, o runt
 
 func getStateFieldName(kind string) string {
 	return ControllerName + "-watch-" + kind
+}
+
+func (r *ReconcileKeycloak) ManageError(instance *v1alpha1.Keycloak, issue error) (reconcile.Result, error) {
+	r.recorder.Event(instance, "Warning", "ProcessingError", issue.Error())
+
+	instance.Status.Message = issue.Error()
+	instance.Status.Ready = false
+	instance.Status.Phase = v1alpha1.PhaseFailing
+
+	err := r.client.Status().Update(r.context, instance)
+	if err != nil {
+		log.Error(err, "unable to update status")
+	}
+
+	return reconcile.Result{
+		RequeueAfter: RequeueDelayErrorSeconds,
+		Requeue:      true,
+	}, nil
+}
+
+func (r *ReconcileKeycloak) ManageSuccess(instance *v1alpha1.Keycloak, currentState *common.ClusterState) (reconcile.Result, error) {
+	// Check if the resources are ready
+	resourcesReady, err := currentState.IsResourcesReady()
+	if err != nil {
+		return r.ManageError(instance, err)
+	}
+
+	instance.Status.Ready = resourcesReady
+	instance.Status.Message = ""
+
+	// If resources are ready and we have not errored before now, we are in a reconciling phase
+	if resourcesReady {
+		instance.Status.Phase = v1alpha1.PhaseReconciling
+	} else {
+		instance.Status.Phase = v1alpha1.PhaseInitialising
+	}
+
+	err = r.client.Status().Update(r.context, instance)
+	if err != nil {
+		log.Error(err, "unable to update status")
+		return reconcile.Result{
+			RequeueAfter: RequeueDelayErrorSeconds,
+			Requeue:      true,
+		}, nil
+	}
+
+	log.Info("desired cluster state met")
+	return reconcile.Result{RequeueAfter: RequeueDelaySeconds * time.Second}, nil
 }
