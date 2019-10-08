@@ -15,6 +15,7 @@ type KeycloakSpec struct {
 	Extensions             []string               `json:"extensions,omitempty"`
 	Instances              int                    `json:"instances,omitempty"`
 	ExternalAccess         KeycloakExternalAccess `json:"externalAccess,omitempty"`
+	Profile                string                 `json:"profile,omitempty"`
 }
 
 type KeycloakExternalAccess struct {

@@ -9,8 +9,9 @@ const (
 	PostgresqlDeploymentName           = ApplicationName + "-postgresql"
 	PostgresqlDeploymentComponent      = "database"
 	PostgresqlServiceName              = ApplicationName + "-postgresql"
-	PostgresqlImage                    = "postgres:12"
-	KeycloakImage                      = "jboss/keycloak"
+	PostgresqlImage                    = "postgres:9.5"
+	KeycloakImage                      = "jboss/keycloak:7.0.0"
+	RHSSOImage                         = "registry.redhat.io/redhat-sso-7-tech-preview/sso-cd-openshift:6"
 	KeycloakDiscoveryServiceName       = ApplicationName + "-discovery"
 	KeycloakDeploymentName             = ApplicationName
 	KeycloakDeploymentComponent        = "keycloak"

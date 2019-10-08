@@ -77,6 +77,9 @@ spec:
                 enabled:
                   type: boolean
                   description: 'If enabled the operator will create an Ingress (or a Route on OpenShift) for the Keycloak Service'
+            Profile:
+              description: 'A profile for running the deployment. Default is empty. Use RHSSO to run the product image instead of Keycloak.'
+              type: string
         status:
           type: object
   version: v1alpha1

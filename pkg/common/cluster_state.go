@@ -113,7 +113,7 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 		return err
 	}
 
-	err = i.readKeycloakDeploymentCurrentState(context, cr, controllerClient)
+	err = i.readKeycloakOrRHSSODeploymentCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
 	}
@@ -298,17 +298,23 @@ func (i *ClusterState) readDatabaseSecretCurrentState(context context.Context, c
 	return nil
 }
 
-func (i *ClusterState) readKeycloakDeploymentCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
-	keycloakDeployment := model.KeycloakDeployment(cr)
-	keycloakDeploymentSelector := model.KeycloakDeploymentSelector(cr)
+func (i *ClusterState) readKeycloakOrRHSSODeploymentCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	isRHSSO := cr.Spec.Profile == "RHSSO"
 
-	err := controllerClient.Get(context, keycloakDeploymentSelector, keycloakDeployment)
+	deployment := model.KeycloakDeployment(cr)
+	selector := model.KeycloakDeploymentSelector(cr)
+	if isRHSSO {
+		deployment = model.RHSSODeployment(cr)
+		selector = model.RHSSODeploymentSelector(cr)
+	}
+
+	err := controllerClient.Get(context, selector, deployment)
 	if err != nil {
 		if !errors.IsNotFound(err) {
 			return err
 		}
 	} else {
-		i.KeycloakDeployment = keycloakDeployment.DeepCopy()
+		i.KeycloakDeployment = deployment.DeepCopy()
 	}
 	return nil
 }

@@ -99,3 +99,20 @@ Deploy the operator into the running cluster
 | *Command*           | *Description*                                                              |
 | ------------------- | -------------------------------------------------------------------------- |
 | `make setup/travis` | Downloads operator-sdk, makes it executable and copys to `/usr/local/bin/` |
+
+## Components versions
+
+Keycloak Operator supports the following version of key components:
+
+ | *Component*              | *Version/Tag*                                                          |
+ | ------------------------ | ---------------------------------------------------------------------- |
+ | `Keycloak`               | `jboss/keycloak:7.0.0`                                                 |
+ | `Red Hat Single-Sign-On` | `registry.redhat.io/redhat-sso-7-tech-preview/sso-cd-openshift:6`      |
+ | `Postgresql`             | `9.5`                                                                  |
+
+## Activating Red Hat Single-Sign-On
+
+It is possible to use Red Hat Single-Sign-On instead of Keycloak deployment. Pulling images
+from Red Hat Container Registry requires additional configuration steps
+(see [the manual](https://access.redhat.com/containers/?tab=images#/registry.access.redhat.com/redhat-sso-7-tech-preview/sso-cd-openshift)).
+In order to activate Red Hat Single-Sign-on, set the profile in the Keycloak CR Spec to "RHSSO".
