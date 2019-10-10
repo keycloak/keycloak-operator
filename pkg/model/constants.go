@@ -11,7 +11,7 @@ const (
 	PostgresqlServiceName              = ApplicationName + "-postgresql"
 	PostgresqlImage                    = "postgres:9.5"
 	KeycloakImage                      = "jboss/keycloak:7.0.0"
-	RHSSOImage                         = "registry.redhat.io/redhat-sso-7-tech-preview/sso-cd-openshift:6"
+	RHSSOImage                         = "registry.access.redhat.com/redhat-sso-7/sso73-openshift:1.0"
 	KeycloakDiscoveryServiceName       = ApplicationName + "-discovery"
 	KeycloakDeploymentName             = ApplicationName
 	KeycloakDeploymentComponent        = "keycloak"
