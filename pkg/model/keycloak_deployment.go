@@ -15,15 +15,15 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 			Name:      KeycloakDeploymentName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
-				"application": ApplicationName,
-				"component":   KeycloakDeploymentComponent,
+				"app":       ApplicationName,
+				"component": KeycloakDeploymentComponent,
 			},
 		},
 		Spec: v13.StatefulSetSpec{
 			Selector: &v12.LabelSelector{
 				MatchLabels: map[string]string{
-					"application": ApplicationName,
-					"component":   KeycloakDeploymentComponent,
+					"app":       ApplicationName,
+					"component": KeycloakDeploymentComponent,
 				},
 			},
 			Template: v1.PodTemplateSpec{
@@ -31,8 +31,8 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 					Name:      KeycloakDeploymentName,
 					Namespace: cr.Namespace,
 					Labels: map[string]string{
-						"application": ApplicationName,
-						"component":   KeycloakDeploymentComponent,
+						"app":       ApplicationName,
+						"component": KeycloakDeploymentComponent,
 					},
 				},
 				Spec: v1.PodSpec{

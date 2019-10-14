@@ -14,7 +14,7 @@ func KeycloakService(cr *v1alpha1.Keycloak) *v1.Service {
 			Name:      ApplicationName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
-				"application": ApplicationName,
+				"app": ApplicationName,
 			},
 			Annotations: map[string]string{
 				"description": "The web server's https port.",
@@ -23,8 +23,8 @@ func KeycloakService(cr *v1alpha1.Keycloak) *v1.Service {
 		},
 		Spec: v1.ServiceSpec{
 			Selector: map[string]string{
-				"application": ApplicationName,
-				"component":   KeycloakDeploymentComponent,
+				"app":       ApplicationName,
+				"component": KeycloakDeploymentComponent,
 			},
 			Ports: []v1.ServicePort{
 				{

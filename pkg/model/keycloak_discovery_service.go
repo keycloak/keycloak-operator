@@ -14,13 +14,13 @@ func KeycloakDiscoveryService(cr *v1alpha1.Keycloak) *v1.Service {
 			Name:      KeycloakDiscoveryServiceName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
-				"application": ApplicationName,
+				"app": ApplicationName,
 			},
 		},
 		Spec: v1.ServiceSpec{
 			Selector: map[string]string{
-				"application": ApplicationName,
-				"component":   KeycloakDeploymentComponent,
+				"app":       ApplicationName,
+				"component": KeycloakDeploymentComponent,
 			},
 			Ports: []v1.ServicePort{
 				{

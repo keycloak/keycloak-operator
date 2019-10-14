@@ -14,7 +14,7 @@ func KeycloakIngress(cr *kc.Keycloak) *v1beta1.Ingress {
 			Name:      ApplicationName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
-				"application": ApplicationName,
+				"app": ApplicationName,
 			},
 		},
 		Spec: v1beta1.IngressSpec{

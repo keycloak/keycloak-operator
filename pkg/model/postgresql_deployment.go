@@ -15,15 +15,15 @@ func PostgresqlDeployment(cr *v1alpha1.Keycloak) *v13.Deployment {
 			Name:      PostgresqlDeploymentName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
-				"application": ApplicationName,
-				"component":   PostgresqlDeploymentComponent,
+				"app":       ApplicationName,
+				"component": PostgresqlDeploymentComponent,
 			},
 		},
 		Spec: v13.DeploymentSpec{
 			Selector: &v12.LabelSelector{
 				MatchLabels: map[string]string{
-					"application": ApplicationName,
-					"component":   PostgresqlDeploymentComponent,
+					"app":       ApplicationName,
+					"component": PostgresqlDeploymentComponent,
 				},
 			},
 			Template: v1.PodTemplateSpec{
@@ -31,8 +31,8 @@ func PostgresqlDeployment(cr *v1alpha1.Keycloak) *v13.Deployment {
 					Name:      PostgresqlDeploymentName,
 					Namespace: cr.Namespace,
 					Labels: map[string]string{
-						"application": ApplicationName,
-						"component":   PostgresqlDeploymentComponent,
+						"app":       ApplicationName,
+						"component": PostgresqlDeploymentComponent,
 					},
 				},
 				Spec: v1.PodSpec{

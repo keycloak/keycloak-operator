@@ -14,13 +14,13 @@ func PostgresqlService(cr *v1alpha1.Keycloak) *v1.Service {
 			Name:      PostgresqlServiceName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
-				"application": ApplicationName,
+				"app": ApplicationName,
 			},
 		},
 		Spec: v1.ServiceSpec{
 			Selector: map[string]string{
-				"application": ApplicationName,
-				"component":   PostgresqlDeploymentComponent,
+				"app":       ApplicationName,
+				"component": PostgresqlDeploymentComponent,
 			},
 			Ports: []v1.ServicePort{
 				{

@@ -14,7 +14,7 @@ func PostgresqlPersistentVolumeClaim(cr *v1alpha1.Keycloak) *v1.PersistentVolume
 			Name:      PostgresqlPersistentVolumeName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
-				"application": ApplicationName,
+				"app": ApplicationName,
 			},
 		},
 		Spec: v1.PersistentVolumeClaimSpec{
