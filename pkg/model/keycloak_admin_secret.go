@@ -13,7 +13,7 @@ func KeycloakAdminSecret(cr *v1alpha1.Keycloak) *v1.Secret {
 			Name:      "credential-" + cr.Name,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
-				"application":   ApplicationName,
+				"app":           ApplicationName,
 				ApplicationName: cr.Name,
 			},
 		},

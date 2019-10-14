@@ -28,7 +28,7 @@ func ServiceMonitor(cr *v1alpha1.Keycloak) *monitoringv1.ServiceMonitor {
 			}},
 			Selector: metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"application": ApplicationName,
+					"app": ApplicationName,
 				},
 			},
 		},

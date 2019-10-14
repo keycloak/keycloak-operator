@@ -13,7 +13,7 @@ func DatabaseSecret(cr *v1alpha1.Keycloak) *v1.Secret {
 			Name:      DatabaseSecretName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
-				"application": ApplicationName,
+				"app": ApplicationName,
 			},
 		},
 		StringData: map[string]string{
