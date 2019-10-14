@@ -21,6 +21,12 @@ tmp
 build/_output
 build/_test
 
+# Temporary e2e Test Files
+deploy/empty-init.yaml
+
+# Test coverage
+*.coverprofile
+
 # IDE files
 .idea
 .vscode
