@@ -8,18 +8,19 @@ import (
 
 	apis "github.com/keycloak/keycloak-operator/pkg/apis"
 	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
-
+	"github.com/keycloak/keycloak-operator/pkg/model"
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
 	"github.com/operator-framework/operator-sdk/pkg/test/e2eutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
-const testKeycloakCRDName = "keycloak-test"
-const retryInterval = time.Second * 5
-const timeout = time.Second * 60
-const cleanupRetryInterval = time.Second * 1
-const cleanupTimeout = time.Second * 5
+const (
+	testKeycloakCRDName  = "keycloak-test"
+	retryInterval        = time.Second * 5
+	timeout              = time.Second * 60
+	cleanupRetryInterval = time.Second * 1
+	cleanupTimeout       = time.Second * 5
+)
 
 type testWithDeployedOperator func(*testing.T, *framework.Framework, *framework.TestCtx) error
 
@@ -47,25 +48,23 @@ func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework
 			Namespace: namespace,
 		},
 		Spec: keycloakv1alpha1.KeycloakSpec{
-			// FIXME: More code after the initial implementation
+			Instances: 1,
 		},
 	}
-	// use TestCtx's create helper to create the object and add a cleanup function for the new object
+
 	err = f.Client.Create(goctx.TODO(), keycloakCRD, &framework.CleanupOptions{TestContext: ctx, Timeout: cleanupTimeout, RetryInterval: cleanupRetryInterval})
 	if err != nil {
 		return err
 	}
-	// FIXME: More code after the initial implementation
-	//err = e2eutil.WaitForDeployment(t, f.KubeClient, namespace, testKeycloakCRDName, 1, retryInterval, timeout)
-	//if err != nil {
-	//	return err
-	//}
 
-	err = f.Client.Get(goctx.TODO(), types.NamespacedName{Name: testKeycloakCRDName, Namespace: namespace}, keycloakCRD)
+	t.Logf("waiting until StatefulSet %v becomes ready", model.ApplicationName)
+	err = WaitForStatefulSetReplicasReady(t, f.KubeClient, model.ApplicationName, namespace)
 	if err != nil {
 		return err
 	}
-	// FIXME: More code after the initial implementation
+
+	//TODO: OpenShift platform may additionally test the route.
+
 	return err
 }
 
@@ -77,7 +76,7 @@ func runTest(t *testing.T, testCase testWithDeployedOperator) {
 	if err != nil {
 		t.Fatalf("failed to initialize cluster resources: %v", err)
 	}
-	t.Log("Initialized cluster resources")
+	t.Log("initialized cluster resources")
 	namespace, err := ctx.GetNamespace()
 	if err != nil {
 		t.Fatal(err)

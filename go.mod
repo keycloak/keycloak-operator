@@ -10,6 +10,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.11.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/integr8ly/grafana-operator v1.4.0
+	github.com/mattn/goveralls v0.0.3 // indirect
 	github.com/onsi/ginkgo v1.10.1 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
 	github.com/openshift/api v3.9.0+incompatible
@@ -32,7 +33,7 @@ require (
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	golang.org/x/sys v0.0.0-20190924154521-2837fb4f24fe // indirect
 	golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0 // indirect
-	golang.org/x/tools v0.0.0-20191001123449-8b695b21ef34 // indirect
+	golang.org/x/tools v0.0.0-20191012152004-8de300cfc20a // indirect
 	google.golang.org/api v0.10.0 // indirect
 	google.golang.org/appengine v1.6.3 // indirect
 	google.golang.org/genproto v0.0.0-20190925194540-b8fbc687dcfb // indirect

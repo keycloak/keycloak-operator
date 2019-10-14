@@ -1,11 +1,21 @@
-language: go
+sudo: required
 
-matrix:
-  include:
-    - go: 1.13.x
+language: go
+go: 1.13.x
+
+env:
+  global:
+  - CHANGE_MINIKUBE_NONE_USER=true
+  - MINIKUBE_WANTUPDATENOTIFICATION=false
+  - MINIKUBE_WANTREPORTERRORPROMPT=false
+  - MINIKUBE_HOME=$HOME
+  - CHANGE_MINIKUBE_NONE_USER=true
+  - KUBECONFIG=$HOME/.kube/config
 
 before_install:
   - go get github.com/mattn/goveralls
+  - go get github.com/modocache/gover
+  - make setup/travis
 
-script:
-  - make test/goveralls
+# Since there's no persistence sharing, we need to run everything in a single stage
+install: make test/unit test/e2e test/goveralls NAMESPACE=default
