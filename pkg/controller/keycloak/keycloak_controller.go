@@ -3,8 +3,9 @@ package keycloak
 import (
 	"context"
 	"fmt"
-	"github.com/keycloak/keycloak-operator/pkg/model"
 	"time"
+
+	"github.com/keycloak/keycloak-operator/pkg/model"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/record"
