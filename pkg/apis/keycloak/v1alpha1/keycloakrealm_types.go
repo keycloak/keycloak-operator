@@ -8,15 +8,15 @@ import (
 // +k8s:openapi-gen=true
 type KeycloakRealmSpec struct {
 	InstanceSelector *metav1.LabelSelector `json:"instanceSelector,omitempty"`
-	*KeycloakApiRealm
+	Realm            *KeycloakAPIRealm     `json:"realm"`
 }
 
-type KeycloakApiRealm struct {
+type KeycloakAPIRealm struct {
 	ID                string                      `json:"id,omitempty"`
 	Realm             string                      `json:"realm,omitempty"`
 	Enabled           bool                        `json:"enabled"`
 	DisplayName       string                      `json:"displayName"`
-	Users             []*KeycloakApiUser          `json:"users,omitempty"`
+	Users             []*KeycloakAPIUser          `json:"users,omitempty"`
 	Clients           []*KeycloakAPIClient        `json:"clients,omitempty"`
 	IdentityProviders []*KeycloakIdentityProvider `json:"identityProviders,omitempty"`
 	EventsListeners   []string                    `json:"eventsListeners"`
@@ -37,7 +37,7 @@ type KeycloakIdentityProvider struct {
 	Config                    map[string]string `json:"config"`
 }
 
-type KeycloakApiUser struct {
+type KeycloakAPIUser struct {
 	ID                  string               `json:"id,omitempty"`
 	UserName            string               `json:"username,omitempty"`
 	FirstName           string               `json:"firstName"`

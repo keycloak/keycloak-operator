@@ -30,86 +30,89 @@ spec:
         spec:
           type: object
           properties:
-            id:
-              type: string
-            name:
-              type: string
-            displayName:
-              type: string
-            enabled:
-              type: boolean
-            identityProviders:
-              type: array
-              items:
-                type: object
-                properties:
-                  alias:
-                    type: string
-                  displayName:
-                    type: string
-                  internalId:
-                    type: string
-                  providerId:
-                    type: string
-                  enabled:
-                    type: boolean
-                  trustEmail:
-                    type: boolean
-                  storeToken:
-                    type: boolean
-                  addReadTokenRoleOnCreate:
-                    type: boolean
-                  firstBrokerLoginFlowAlias:
-                    type: string
-                  postBrokerLoginFlowAlias:
-                    type: string
-                  linkOnly:
-                    type: boolean
-                  config:
+            realm:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                displayName:
+                  type: string
+                enabled:
+                  type: boolean
+                identityProviders:
+                  type: array
+                  items:
                     type: object
-            users:
-              type: array
-              items:
-                type: object
-                properties:
-                  username:
-                    type: string
-                    firstName:
-                      type: string
-                    lastName:
-                      type: string
-                    email:
-                      type: string
-                    emailVerified:
-                      type: boolean
-                    enabled:
-                      type: boolean
-                    realmRoles:
-                      type: array
-                      items:
+                    properties:
+                      alias:
                         type: string
-                    clientRoles:
-                      type: object
-                    requiredActions:
-                      type: array
-                      items:
+                      displayName:
                         type: string
-                    groups:
-                      type: array
-                      items:
+                      internalId:
                         type: string
-                    federatedIdentities:
-                      type: array
-                      items:
+                      providerId:
+                        type: string
+                      enabled:
+                        type: boolean
+                      trustEmail:
+                        type: boolean
+                      storeToken:
+                        type: boolean
+                      addReadTokenRoleOnCreate:
+                        type: boolean
+                      firstBrokerLoginFlowAlias:
+                        type: string
+                      postBrokerLoginFlowAlias:
+                        type: string
+                      linkOnly:
+                        type: boolean
+                      config:
                         type: object
-                    credentials:
-                      type: array
-                      items:
-                        type: object
-            clients:
-              type: array
-              items:
-                type: object
+                users:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                        firstName:
+                          type: string
+                        lastName:
+                          type: string
+                        email:
+                          type: string
+                        emailVerified:
+                          type: boolean
+                        enabled:
+                          type: boolean
+                        realmRoles:
+                          type: array
+                          items:
+                            type: string
+                        clientRoles:
+                          type: object
+                        requiredActions:
+                          type: array
+                          items:
+                            type: string
+                        groups:
+                          type: array
+                          items:
+                            type: string
+                        federatedIdentities:
+                          type: array
+                          items:
+                            type: object
+                        credentials:
+                          type: array
+                          items:
+                            type: object
+                clients:
+                  type: array
+                  items:
+                    type: object
             instanceSelector:
               type: object
               description: 'A label selector to determine the Keycloak instance to create the Realm in'

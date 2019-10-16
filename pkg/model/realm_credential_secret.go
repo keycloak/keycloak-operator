@@ -7,8 +7,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func RealmCredentialSecret(cr *v1alpha1.KeycloakRealm, user *v1alpha1.KeycloakApiUser, keycloak *v1alpha1.Keycloak) *v1.Secret {
-	outputSecretName := GetRealmUserSecretName(keycloak.Namespace, cr.Spec.Realm, user.UserName)
+func RealmCredentialSecret(cr *v1alpha1.KeycloakRealm, user *v1alpha1.KeycloakAPIUser, keycloak *v1alpha1.Keycloak) *v1.Secret {
+	outputSecretName := GetRealmUserSecretName(keycloak.Namespace, cr.Spec.Realm.Realm, user.UserName)
 
 	outputSecret := &v1.Secret{}
 	outputSecret.ObjectMeta = v12.ObjectMeta{
@@ -26,8 +26,8 @@ func RealmCredentialSecret(cr *v1alpha1.KeycloakRealm, user *v1alpha1.KeycloakAp
 	return outputSecret
 }
 
-func RealmCredentialSecretSelector(cr *v1alpha1.KeycloakRealm, user *v1alpha1.KeycloakApiUser, keycloak *v1alpha1.Keycloak) client.ObjectKey {
-	outputSecretName := GetRealmUserSecretName(keycloak.Namespace, cr.Spec.Realm, user.UserName)
+func RealmCredentialSecretSelector(cr *v1alpha1.KeycloakRealm, user *v1alpha1.KeycloakAPIUser, keycloak *v1alpha1.Keycloak) client.ObjectKey {
+	outputSecretName := GetRealmUserSecretName(keycloak.Namespace, cr.Spec.Realm.Realm, user.UserName)
 
 	return client.ObjectKey{
 		Name:      outputSecretName,

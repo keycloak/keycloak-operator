@@ -107,7 +107,7 @@ func (i *ClusterActionRunner) DeleteRealm(obj *v1alpha1.KeycloakRealm) error {
 	if i.realmClient == nil {
 		return errors.New("cannot perform realm delete when client is nil")
 	}
-	return i.realmClient.DeleteRealm(obj.Spec.Realm)
+	return i.realmClient.DeleteRealm(obj.Spec.Realm.Realm)
 }
 
 // Delete a realm using the keycloak api

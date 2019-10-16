@@ -3,6 +3,8 @@ package keycloakrealm
 import (
 	"testing"
 
+	v12 "k8s.io/api/core/v1"
+
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"github.com/stretchr/testify/assert"
@@ -17,12 +19,12 @@ func getDummyRealm() *v1alpha1.KeycloakRealm {
 					"app": "keycloak",
 				},
 			},
-			KeycloakApiRealm: &v1alpha1.KeycloakApiRealm{
+			Realm: &v1alpha1.KeycloakAPIRealm{
 				ID:          "dummy",
 				Realm:       "dummy",
 				Enabled:     true,
 				DisplayName: "dummy",
-				Users: []*v1alpha1.KeycloakApiUser{
+				Users: []*v1alpha1.KeycloakAPIUser{
 					{
 						ID:        "dummy",
 						UserName:  "dummy",
@@ -110,7 +112,7 @@ func TestKeycloakRealmReconciler_ReconcileCredentials(t *testing.T) {
 	state := getDummyState()
 
 	// reset user credentials to force the operator to create a password
-	realm.Spec.Users[0].Credentials = []v1alpha1.KeycloakCredential{}
+	realm.Spec.Realm.Users[0].Credentials = []v1alpha1.KeycloakCredential{}
 
 	// when
 	desiredState := reconciler.Reconcile(state, realm)
@@ -123,5 +125,28 @@ func TestKeycloakRealmReconciler_ReconcileCredentials(t *testing.T) {
 	assert.IsType(t, &common.PingAction{}, desiredState[0])
 	assert.IsType(t, &common.CreateRealmAction{}, desiredState[1])
 	assert.IsType(t, &common.GenericCreateAction{}, desiredState[2])
-	assert.Len(t, realm.Spec.Users[0].Credentials, 1)
+	assert.Len(t, realm.Spec.Realm.Users[0].Credentials, 1)
+}
+
+func TestKeycloakRealmReconciler_Update(t *testing.T) {
+	// given
+	keycloak := v1alpha1.Keycloak{}
+	reconciler := NewKeycloakRealmReconciler(keycloak)
+
+	realm := getDummyRealm()
+	state := getDummyState()
+
+	// reset user credentials to force the operator to create a password
+	state.Realm = realm
+	state.RealmUserSecrets = make(map[string]*v12.Secret)
+	state.RealmUserSecrets[realm.Spec.Realm.Users[0].UserName] = &v12.Secret{}
+
+	// when
+	desiredState := reconciler.Reconcile(state, realm)
+
+	// then
+	// 0 - check keycloak available
+	// 1 - no other action added
+	assert.IsType(t, &common.PingAction{}, desiredState[0])
+	assert.Len(t, desiredState, 1)
 }
