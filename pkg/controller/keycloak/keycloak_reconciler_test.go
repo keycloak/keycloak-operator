@@ -4,6 +4,8 @@ import (
 	"reflect"
 	"testing"
 
+	"k8s.io/api/extensions/v1beta1"
+
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -16,6 +18,10 @@ import (
 func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	// given
 	cr := &v1alpha1.Keycloak{}
+	cr.Spec.ExternalAccess = v1alpha1.KeycloakExternalAccess{
+		Enabled: true,
+	}
+
 	currentState := common.NewClusterState()
 
 	//Set monitoring resources exist to true
@@ -24,6 +30,7 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	stateManager.SetState(getStateFieldName(monitoringv1.PrometheusRuleKind), true)
 	stateManager.SetState(getStateFieldName(monitoringv1.ServiceMonitorsKind), true)
 	stateManager.SetState(getStateFieldName(integreatlyv1alpha1.GrafanaDashboardKind), true)
+	stateManager.SetState(common.RouteKind, true)
 
 	// when
 	reconciler := NewKeycloakReconciler()
@@ -41,6 +48,7 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	//    7) Keycloak Service
 	//    8) Keycloak Discovery Service
 	//    9) Keycloak StatefulSets
+	//   10) Keycloak Route
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[0])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[1])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
@@ -52,6 +60,7 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[8])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[9])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[10])
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[11])
 	assert.IsType(t, model.KeycloakAdminSecret(cr), desiredState[0].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.PrometheusRule(cr), desiredState[1].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.ServiceMonitor(cr), desiredState[2].(common.GenericCreateAction).Ref)
@@ -63,12 +72,16 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	assert.IsType(t, model.KeycloakService(cr), desiredState[8].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakDiscoveryService(cr), desiredState[9].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakDeployment(cr), desiredState[10].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakRoute(cr), desiredState[11].(common.GenericCreateAction).Ref)
 }
 
 func TestKeycloakReconciler_Test_Creating_RHSSO(t *testing.T) {
 	// given
 	cr := &v1alpha1.Keycloak{
 		Spec: v1alpha1.KeycloakSpec{
+			ExternalAccess: v1alpha1.KeycloakExternalAccess{
+				Enabled: true,
+			},
 			Profile: RHSSOProfile,
 		},
 	}
@@ -81,6 +94,7 @@ func TestKeycloakReconciler_Test_Creating_RHSSO(t *testing.T) {
 	// then
 	var allCreateActions = true
 	var deployment *v13.StatefulSet
+	var ingress *v1beta1.Ingress
 	for _, v := range desiredState {
 		if reflect.TypeOf(v) != reflect.TypeOf(common.GenericCreateAction{}) {
 			allCreateActions = false
@@ -88,9 +102,13 @@ func TestKeycloakReconciler_Test_Creating_RHSSO(t *testing.T) {
 		if reflect.TypeOf(v.(common.GenericCreateAction).Ref) == reflect.TypeOf(model.RHSSODeployment(cr)) {
 			deployment = v.(common.GenericCreateAction).Ref.(*v13.StatefulSet)
 		}
+		if reflect.TypeOf(v.(common.GenericCreateAction).Ref) == reflect.TypeOf(model.KeycloakIngress(cr)) {
+			ingress = v.(common.GenericCreateAction).Ref.(*v1beta1.Ingress)
+		}
 	}
 	assert.True(t, allCreateActions)
 	assert.NotNil(t, deployment)
+	assert.NotNil(t, ingress)
 	assert.Equal(t, model.RHSSODeployment(cr), deployment)
 }
 
@@ -98,6 +116,9 @@ func TestKeycloakReconciler_Test_Updating_RHSSO(t *testing.T) {
 	// given
 	cr := &v1alpha1.Keycloak{
 		Spec: v1alpha1.KeycloakSpec{
+			ExternalAccess: v1alpha1.KeycloakExternalAccess{
+				Enabled: true,
+			},
 			Profile: RHSSOProfile,
 		},
 	}
@@ -113,6 +134,7 @@ func TestKeycloakReconciler_Test_Updating_RHSSO(t *testing.T) {
 		KeycloakDiscoveryService:        model.KeycloakDiscoveryService(cr),
 		KeycloakDeployment:              model.RHSSODeployment(cr),
 		KeycloakAdminSecret:             model.KeycloakAdminSecret(cr),
+		KeycloakIngress:                 model.KeycloakIngress(cr),
 	}
 
 	// when
@@ -138,6 +160,10 @@ func TestKeycloakReconciler_Test_Updating_RHSSO(t *testing.T) {
 func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	// given
 	cr := &v1alpha1.Keycloak{}
+	cr.Spec.ExternalAccess = v1alpha1.KeycloakExternalAccess{
+		Enabled: true,
+	}
+
 	currentState := &common.ClusterState{
 		KeycloakServiceMonitor:          model.ServiceMonitor(cr),
 		KeycloakPrometheusRule:          model.PrometheusRule(cr),
@@ -150,6 +176,7 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 		KeycloakDiscoveryService:        model.KeycloakDiscoveryService(cr),
 		KeycloakDeployment:              model.KeycloakDeployment(cr),
 		KeycloakAdminSecret:             model.KeycloakAdminSecret(cr),
+		KeycloakRoute:                   model.KeycloakRoute(cr),
 	}
 
 	//Set monitoring resources exist to true
@@ -157,6 +184,7 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	stateManager.SetState(getStateFieldName(monitoringv1.PrometheusRuleKind), true)
 	stateManager.SetState(getStateFieldName(monitoringv1.ServiceMonitorsKind), true)
 	stateManager.SetState(getStateFieldName(integreatlyv1alpha1.GrafanaDashboardKind), true)
+	stateManager.SetState(common.RouteKind, true)
 	defer stateManager.Clear()
 
 	// when
@@ -175,6 +203,7 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	//    7) Keycloak Service
 	//    8) Keycloak Discovery Service
 	//    9) Keycloak StatefulSets
+	//   10) Keycloak Route
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[0])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[1])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[2])
@@ -186,6 +215,7 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[8])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[9])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[10])
+	assert.IsType(t, common.GenericUpdateAction{}, desiredState[11])
 	assert.IsType(t, model.KeycloakAdminSecret(cr), desiredState[0].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.PrometheusRule(cr), desiredState[1].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.ServiceMonitor(cr), desiredState[2].(common.GenericUpdateAction).Ref)
@@ -197,6 +227,7 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	assert.IsType(t, model.KeycloakService(cr), desiredState[8].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.KeycloakDiscoveryService(cr), desiredState[9].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.KeycloakDeployment(cr), desiredState[10].(common.GenericUpdateAction).Ref)
+	assert.IsType(t, model.KeycloakRoute(cr), desiredState[11].(common.GenericUpdateAction).Ref)
 }
 
 func TestKeycloakReconciler_Test_No_Action_When_Monitoring_Resources_Dont_Exist(t *testing.T) {

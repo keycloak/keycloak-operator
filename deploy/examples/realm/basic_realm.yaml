@@ -3,10 +3,11 @@ kind: KeycloakRealm
 metadata:
   name: example-keycloakrealm
 spec:
-  id: "basic"
-  realm: "basic"
-  enabled: True
-  displayName: "Basic Realm"
+  realm:
+    id: "basic"
+    realm: "basic"
+    enabled: True
+    displayName: "Basic Realm"
   instanceSelector:
     matchLabels:
       app: sso

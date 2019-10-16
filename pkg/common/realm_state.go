@@ -25,20 +25,20 @@ func NewRealmState(context context.Context, keycloak kc.Keycloak) *RealmState {
 }
 
 func (i *RealmState) Read(cr *kc.KeycloakRealm, realmClient KeycloakInterface, controllerClient client.Client) error {
-	realm, err := realmClient.GetRealm(cr.Spec.Realm)
+	realm, err := realmClient.GetRealm(cr.Spec.Realm.Realm)
 	if err != nil {
 		i.Realm = nil
 		return err
 	}
 
 	i.Realm = realm
-	if realm == nil || len(cr.Spec.Users) == 0 {
+	if realm == nil || len(cr.Spec.Realm.Users) == 0 {
 		return nil
 	}
 
 	// Get the state of the realm users
 	i.RealmUserSecrets = make(map[string]*v1.Secret)
-	for _, user := range cr.Spec.Users {
+	for _, user := range cr.Spec.Realm.Users {
 		secret, err := i.readRealmUserSecret(cr, user, controllerClient)
 		if err != nil {
 			return err
@@ -48,7 +48,7 @@ func (i *RealmState) Read(cr *kc.KeycloakRealm, realmClient KeycloakInterface, c
 	return nil
 }
 
-func (i *RealmState) readRealmUserSecret(realm *kc.KeycloakRealm, user *kc.KeycloakApiUser, controllerClient client.Client) (*v1.Secret, error) {
+func (i *RealmState) readRealmUserSecret(realm *kc.KeycloakRealm, user *kc.KeycloakAPIUser, controllerClient client.Client) (*v1.Secret, error) {
 	key := model.RealmCredentialSecretSelector(realm, user, i.Keycloak)
 	secret := &v1.Secret{}
 

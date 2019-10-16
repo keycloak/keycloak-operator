@@ -3,23 +3,24 @@ kind: KeycloakRealm
 metadata:
   name: example-keycloakrealm
 spec:
-  id: "user_realm"
-  realm: "user_realm"
-  enabled: True
-  displayName: "Realm with users"
-  users:
-    - username: "realm_admin"
-      firstName: "John"
-      lastName: "Doe"
-      email: "jdoe@redhat.com"
-      enabled: True
-      emailVerified: False
-      realmRoles:
-        - "offline_access"
-      clientRoles:
-        account:
-          - "manage-account"
-        realm-management:
+  realm:
+    id: "user_realm"
+    realm: "user_realm"
+    enabled: True
+    displayName: "Realm with users"
+    users:
+      - username: "realm_admin"
+        firstName: "John"
+        lastName: "Doe"
+        email: "jdoe@redhat.com"
+        enabled: True
+        emailVerified: False
+        realmRoles:
+          - "offline_access"
+        clientRoles:
+          account:
+            - "manage-account"
+          realm-management:
           - "manage-users"
   instanceSelector:
     matchLabels:
