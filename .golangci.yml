@@ -27,3 +27,4 @@ linters:
     - gochecknoinits
     - gochecknoglobals
     - wsl
+    - godox
