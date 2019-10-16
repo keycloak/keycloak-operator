@@ -100,3 +100,28 @@ func TestKeycloakRealmReconciler_ReconcileRealmDelete(t *testing.T) {
 	assert.IsType(t, &common.PingAction{}, desiredState[0])
 	assert.IsType(t, &common.DeleteRealmAction{}, desiredState[1])
 }
+
+func TestKeycloakRealmReconciler_ReconcileCredentials(t *testing.T) {
+	// given
+	keycloak := v1alpha1.Keycloak{}
+	reconciler := NewKeycloakRealmReconciler(keycloak)
+
+	realm := getDummyRealm()
+	state := getDummyState()
+
+	// reset user credentials to force the operator to create a password
+	realm.Spec.Users[0].Credentials = []v1alpha1.KeycloakCredential{}
+
+	// when
+	desiredState := reconciler.Reconcile(state, realm)
+
+	// then
+	// 0 - check keycloak available
+	// 1 - create realm
+	// 2 - create user credential secret
+	// 3 - ensure a password is assigned automatically
+	assert.IsType(t, &common.PingAction{}, desiredState[0])
+	assert.IsType(t, &common.CreateRealmAction{}, desiredState[1])
+	assert.IsType(t, &common.GenericCreateAction{}, desiredState[2])
+	assert.Len(t, realm.Spec.Users[0].Credentials, 1)
+}

@@ -4,9 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/keycloak/keycloak-operator/version"
 	"os"
 	"runtime"
+
+	"github.com/keycloak/keycloak-operator/version"
 
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	routev1 "github.com/openshift/api/route/v1"
