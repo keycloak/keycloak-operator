@@ -26,3 +26,4 @@ linters:
     - lll
     - gochecknoinits
     - gochecknoglobals
+    - wsl
