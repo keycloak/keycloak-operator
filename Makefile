@@ -88,7 +88,11 @@ code/check:
 
 .PHONY: code/fix
 code/fix:
-	@gofmt -w `find . -type f -name '*.go' -not -path "./vendor/*"`
+	# goimport = gofmt + optimize imports
+	@which goimports 2>/dev/null ; if [ $$? -eq 1 ]; then \
+		go get golang.org/x/tools/cmd/goimports; \
+	fi
+	@goimports -w `find . -type f -name '*.go' -not -path "./vendor/*"`
 
 .PHONY: code/lint
 code/lint:
