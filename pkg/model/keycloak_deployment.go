@@ -20,6 +20,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 			},
 		},
 		Spec: v13.StatefulSetSpec{
+			Replicas: SanitizeNumberOfReplicas(cr.Spec.Instances, true),
 			Selector: &v12.LabelSelector{
 				MatchLabels: map[string]string{
 					"app":       ApplicationName,
@@ -196,6 +197,7 @@ func KeycloakDeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet) *v13.StatefulSet {
 	reconciled := currentState.DeepCopy()
 	reconciled.ResourceVersion = currentState.ResourceVersion
+	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
 	reconciled.Spec.Template.Spec.Volumes = []v1.Volume{
 		{
 			Name: ServingCertSecretName,

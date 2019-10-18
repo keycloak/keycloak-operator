@@ -310,7 +310,7 @@ func (i *ClusterState) readDatabaseSecretCurrentState(context context.Context, c
 }
 
 func (i *ClusterState) readKeycloakOrRHSSODeploymentCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
-	isRHSSO := cr.Spec.Profile == "RHSSO"
+	isRHSSO := cr.Spec.Profile == RHSSOProfile
 
 	deployment := model.KeycloakDeployment(cr)
 	selector := model.KeycloakDeploymentSelector(cr)
