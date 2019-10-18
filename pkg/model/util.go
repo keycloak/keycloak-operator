@@ -24,6 +24,14 @@ func GetRealmUserSecretName(keycloakNamespace, realmName, userName string) strin
 		keycloakNamespace))
 }
 
+func SanitizeNumberOfReplicas(numberOfReplicas int, isCreate bool) *int32 {
+	numberOfReplicasCasted := int32(numberOfReplicas)
+	if isCreate && numberOfReplicasCasted < 1 {
+		numberOfReplicasCasted = 1
+	}
+	return &[]int32{numberOfReplicasCasted}[0]
+}
+
 func SanitizeResourceName(name string) string {
 	sb := strings.Builder{}
 	for _, char := range name {

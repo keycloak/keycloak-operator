@@ -8,10 +8,6 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/model"
 )
 
-const (
-	RHSSOProfile = "RHSSO"
-)
-
 type Reconciler interface {
 	Reconcile(clusterState *common.ClusterState, cr *kc.Keycloak) (common.DesiredClusterState, error)
 }
@@ -233,14 +229,14 @@ func (i *KeycloakReconciler) getDatabaseSecretDesiredState(clusterState *common.
 }
 
 func (i *KeycloakReconciler) getKeycloakDeploymentOrRHSSODesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
-	isRHSSO := cr.Spec.Profile == RHSSOProfile
+	isRHSSO := cr.Spec.Profile == common.RHSSOProfile
 
 	deployment := model.KeycloakDeployment(cr)
 	deploymentName := "Keycloak"
 
 	if isRHSSO {
 		deployment = model.RHSSODeployment(cr)
-		deploymentName = RHSSOProfile
+		deploymentName = common.RHSSOProfile
 	}
 
 	if clusterState.KeycloakDeployment == nil {
