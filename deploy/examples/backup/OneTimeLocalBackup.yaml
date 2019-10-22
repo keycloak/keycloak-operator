@@ -1,0 +1,4 @@
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakBackup
+metadata:
+  name: example-keycloakbackup

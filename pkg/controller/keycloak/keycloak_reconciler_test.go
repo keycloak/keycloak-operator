@@ -27,9 +27,9 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	//Set monitoring resources exist to true
 	stateManager := common.GetStateManager()
 	defer stateManager.Clear()
-	stateManager.SetState(getStateFieldName(monitoringv1.PrometheusRuleKind), true)
-	stateManager.SetState(getStateFieldName(monitoringv1.ServiceMonitorsKind), true)
-	stateManager.SetState(getStateFieldName(integreatlyv1alpha1.GrafanaDashboardKind), true)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.PrometheusRuleKind), true)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.ServiceMonitorsKind), true)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, integreatlyv1alpha1.GrafanaDashboardKind), true)
 	stateManager.SetState(common.RouteKind, true)
 
 	// when
@@ -181,9 +181,9 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 
 	//Set monitoring resources exist to true
 	stateManager := common.GetStateManager()
-	stateManager.SetState(getStateFieldName(monitoringv1.PrometheusRuleKind), true)
-	stateManager.SetState(getStateFieldName(monitoringv1.ServiceMonitorsKind), true)
-	stateManager.SetState(getStateFieldName(integreatlyv1alpha1.GrafanaDashboardKind), true)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.PrometheusRuleKind), true)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.ServiceMonitorsKind), true)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, integreatlyv1alpha1.GrafanaDashboardKind), true)
 	stateManager.SetState(common.RouteKind, true)
 	defer stateManager.Clear()
 
@@ -237,9 +237,9 @@ func TestKeycloakReconciler_Test_No_Action_When_Monitoring_Resources_Dont_Exist(
 
 	//Set monitoring resources exist to true
 	stateManager := common.GetStateManager()
-	stateManager.SetState(getStateFieldName(monitoringv1.PrometheusRuleKind), false)
-	stateManager.SetState(getStateFieldName(monitoringv1.ServiceMonitorsKind), false)
-	stateManager.SetState(getStateFieldName(integreatlyv1alpha1.GrafanaDashboardKind), false)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.PrometheusRuleKind), false)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.ServiceMonitorsKind), false)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, integreatlyv1alpha1.GrafanaDashboardKind), false)
 	defer stateManager.Clear()
 
 	// when
