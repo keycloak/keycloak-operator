@@ -2,7 +2,6 @@ package common
 
 import (
 	"context"
-	"errors"
 
 	v13 "github.com/openshift/api/route/v1"
 	"k8s.io/api/extensions/v1beta1"
@@ -16,18 +15,6 @@ import (
 	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-)
-
-// These kinds are not provided by the openshift api
-const (
-	RouteKind                 = "Route"
-	SecretKind                = "Secret"
-	StatefulSetKind           = "StatefulSet"
-	ServiceKind               = "Service"
-	IngressKind               = "Ingress"
-	DeploymentKind            = "Deployment"
-	PersistentVolumeClaimKind = "PersistentVolumeClaim"
-	ConditionStatusSuccess    = "True"
 )
 
 // The desired cluster state is defined by a list of actions that have to be run to
@@ -55,10 +42,6 @@ type ClusterState struct {
 	KeycloakAdminSecret             *v1.Secret
 	KeycloakIngress                 *v1beta1.Ingress
 	KeycloakRoute                   *v13.Route
-}
-
-func NewClusterState() *ClusterState {
-	return &ClusterState{}
 }
 
 func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
@@ -381,11 +364,11 @@ func (i *ClusterState) readKeycloakIngressCurrentState(context context.Context, 
 
 func (i *ClusterState) IsResourcesReady() (bool, error) {
 	// Check keycloak statefulset is ready
-	keycloakDeploymentReady := i.isStatefulSetReady(i.KeycloakDeployment)
+	keycloakDeploymentReady, _ := IsStatefulSetReady(i.KeycloakDeployment)
 	// Default Route ready to true in case we are running on native Kubernetes
 	keycloakRouteReady := true
 	// Check keycloak postgres deployment is ready
-	postgresqlDeploymentReady, err := i.isDeploymentReady(i.PostgresqlDeployment)
+	postgresqlDeploymentReady, err := IsDeploymentReady(i.PostgresqlDeployment)
 	if err != nil {
 		return false, err
 	}
@@ -394,53 +377,8 @@ func (i *ClusterState) IsResourcesReady() (bool, error) {
 	stateManager := GetStateManager()
 	openshift, keyExists := stateManager.GetState(RouteKind).(bool)
 	if keyExists && openshift {
-		keycloakRouteReady = i.isRouteReady(i.KeycloakRoute)
+		keycloakRouteReady = IsRouteReady(i.KeycloakRoute)
 	}
 
 	return keycloakDeploymentReady && postgresqlDeploymentReady && keycloakRouteReady, nil
-}
-
-func (i *ClusterState) isDeploymentReady(deployment *v12.Deployment) (bool, error) {
-	if deployment == nil {
-		return false, nil
-	}
-	// A deployment has an array of conditions
-	for _, condition := range deployment.Status.Conditions {
-		// One failure condition exists, if this exists, return the Reason
-		if condition.Type == v12.DeploymentReplicaFailure {
-			return false, errors.New(condition.Reason)
-			// A successful deployment will have the progressing condition type as true
-		} else if condition.Type == v12.DeploymentProgressing && condition.Status != ConditionStatusSuccess {
-			return false, nil
-		}
-	}
-	return true, nil
-}
-
-func (i *ClusterState) isStatefulSetReady(statefulSet *v12.StatefulSet) bool {
-	if statefulSet == nil {
-		return false
-	}
-	// Check the correct number of replicas match and are ready
-	numOfReplicasMatch := *statefulSet.Spec.Replicas == statefulSet.Status.Replicas
-	allReplicasReady := statefulSet.Status.Replicas == statefulSet.Status.ReadyReplicas
-	revisionsMatch := statefulSet.Status.CurrentRevision == statefulSet.Status.UpdateRevision
-
-	return numOfReplicasMatch && allReplicasReady && revisionsMatch
-}
-
-func (i *ClusterState) isRouteReady(route *v13.Route) bool {
-	if route == nil {
-		return false
-	}
-	// A route has a an array of Ingress where each have an array of conditions
-	for _, ingress := range route.Status.Ingress {
-		for _, condition := range ingress.Conditions {
-			// A successful route will have the admitted condition type as true
-			if condition.Type == v13.RouteAdmitted && condition.Status != ConditionStatusSuccess {
-				return false
-			}
-		}
-	}
-	return true
 }

@@ -11,12 +11,15 @@ import (
 
 func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	return map[string]common.OpenAPIDefinition{
-		"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.Keycloak":            schema_pkg_apis_keycloak_v1alpha1_Keycloak(ref),
-		"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakRealm":       schema_pkg_apis_keycloak_v1alpha1_KeycloakRealm(ref),
-		"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakRealmSpec":   schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmSpec(ref),
-		"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakRealmStatus": schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmStatus(ref),
-		"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakSpec":        schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref),
-		"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakStatus":      schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref),
+		"./pkg/apis/keycloak/v1alpha1.Keycloak":             schema_pkg_apis_keycloak_v1alpha1_Keycloak(ref),
+		"./pkg/apis/keycloak/v1alpha1.KeycloakBackup":       schema_pkg_apis_keycloak_v1alpha1_KeycloakBackup(ref),
+		"./pkg/apis/keycloak/v1alpha1.KeycloakBackupSpec":   schema_pkg_apis_keycloak_v1alpha1_KeycloakBackupSpec(ref),
+		"./pkg/apis/keycloak/v1alpha1.KeycloakBackupStatus": schema_pkg_apis_keycloak_v1alpha1_KeycloakBackupStatus(ref),
+		"./pkg/apis/keycloak/v1alpha1.KeycloakRealm":        schema_pkg_apis_keycloak_v1alpha1_KeycloakRealm(ref),
+		"./pkg/apis/keycloak/v1alpha1.KeycloakRealmSpec":    schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmSpec(ref),
+		"./pkg/apis/keycloak/v1alpha1.KeycloakRealmStatus":  schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmStatus(ref),
+		"./pkg/apis/keycloak/v1alpha1.KeycloakSpec":         schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref),
+		"./pkg/apis/keycloak/v1alpha1.KeycloakStatus":       schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref),
 	}
 }
 
@@ -25,6 +28,7 @@ func schema_pkg_apis_keycloak_v1alpha1_Keycloak(ref common.ReferenceCallback) co
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "Keycloak is the Schema for the keycloaks API",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
 						SchemaProps: spec.SchemaProps{
@@ -47,19 +51,85 @@ func schema_pkg_apis_keycloak_v1alpha1_Keycloak(ref common.ReferenceCallback) co
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakSpec"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakStatus"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakSpec", "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"./pkg/apis/keycloak/v1alpha1.KeycloakSpec", "./pkg/apis/keycloak/v1alpha1.KeycloakStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_keycloak_v1alpha1_KeycloakBackup(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "KeycloakBackup is the Schema for the keycloakbackups API",
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"kind": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"apiVersion": {
+						SchemaProps: spec.SchemaProps{
+							Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"metadata": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+						},
+					},
+					"spec": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakBackupSpec"),
+						},
+					},
+					"status": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakBackupStatus"),
+						},
+					},
+				},
+			},
+		},
+		Dependencies: []string{
+			"./pkg/apis/keycloak/v1alpha1.KeycloakBackupSpec", "./pkg/apis/keycloak/v1alpha1.KeycloakBackupStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+	}
+}
+
+func schema_pkg_apis_keycloak_v1alpha1_KeycloakBackupSpec(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "KeycloakBackupSpec defines the desired state of KeycloakBackup",
+				Type:        []string{"object"},
+			},
+		},
+	}
+}
+
+func schema_pkg_apis_keycloak_v1alpha1_KeycloakBackupStatus(ref common.ReferenceCallback) common.OpenAPIDefinition {
+	return common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				Description: "KeycloakBackupStatus defines the observed state of KeycloakBackup",
+				Type:        []string{"object"},
+			},
+		},
 	}
 }
 
@@ -68,6 +138,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealm(ref common.ReferenceCallbac
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "KeycloakRealm is the Schema for the keycloakrealms API",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
 						SchemaProps: spec.SchemaProps{
@@ -90,19 +161,19 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealm(ref common.ReferenceCallbac
 					},
 					"spec": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakRealmSpec"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakRealmSpec"),
 						},
 					},
 					"status": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakRealmStatus"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakRealmStatus"),
 						},
 					},
 				},
 			},
 		},
 		Dependencies: []string{
-			"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakRealmSpec", "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakRealmStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
+			"./pkg/apis/keycloak/v1alpha1.KeycloakRealmSpec", "./pkg/apis/keycloak/v1alpha1.KeycloakRealmStatus", "k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"},
 	}
 }
 
@@ -111,6 +182,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmSpec(ref common.ReferenceCal
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "KeycloakRealmSpec defines the desired state of KeycloakRealm",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"instanceSelector": {
 						SchemaProps: spec.SchemaProps{
@@ -189,7 +261,6 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmStatus(ref common.ReferenceC
 				Required: []string{"phase", "message", "ready", "loginURL"},
 			},
 		},
-		Dependencies: []string{},
 	}
 }
 
@@ -198,6 +269,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "KeycloakSpec defines the desired state of Keycloak",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"externalDatabaseSecret": {
 						SchemaProps: spec.SchemaProps{
@@ -232,7 +304,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 					},
 					"externalAccess": {
 						SchemaProps: spec.SchemaProps{
-							Ref: ref("github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakExternalAccess"),
+							Ref: ref("./pkg/apis/keycloak/v1alpha1.KeycloakExternalAccess"),
 						},
 					},
 					"profile": {
@@ -245,7 +317,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 			},
 		},
 		Dependencies: []string{
-			"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakExternalAccess"},
+			"./pkg/apis/keycloak/v1alpha1.KeycloakExternalAccess"},
 	}
 }
 
@@ -254,6 +326,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "KeycloakStatus defines the observed state of Keycloak",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"phase": {
 						SchemaProps: spec.SchemaProps{
@@ -281,6 +354,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 							Description: "A map of all the secondary resources types and names created for this CR. e.g \"Deployment\": [ \"DeploymentName1\", \"DeploymentName2\" ]",
 							Type:        []string{"object"},
 							AdditionalProperties: &spec.SchemaOrBool{
+								Allows: true,
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Type: []string{"array"},
@@ -322,6 +396,5 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 				Required: []string{"phase", "message", "ready", "version", "internalURL", "credentialSecret"},
 			},
 		},
-		Dependencies: []string{},
 	}
 }

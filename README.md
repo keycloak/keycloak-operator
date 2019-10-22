@@ -7,7 +7,10 @@
 A Kubernetes Operator based on the Operator SDK for syncing resources in Keycloak.
 
 ## Current status
-Currently in development. Will eventually replace https://github.com/integr8ly/keycloak-operator 
+Currently in development. Will eventually replace https://github.com/integr8ly/keycloak-operator
+
+# Documentation
+The documentation might be found in the  [docs](./docs/README.asciidoc) directory.
 
 ## Supported Custom Resources
 | *CustomResourceDefinition*                        | *Description*                                            |

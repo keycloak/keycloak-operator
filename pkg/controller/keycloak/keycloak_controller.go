@@ -76,27 +76,27 @@ func add(mgr manager.Manager, r reconcile.Reconciler, autodetectChannel chan sch
 		return err
 	}
 
-	if err := watchSecondaryResource(c, common.SecretKind, &corev1.Secret{}); err != nil {
+	if err := common.WatchSecondaryResource(c, ControllerName, common.SecretKind, &corev1.Secret{}, &kc.Keycloak{}); err != nil {
 		return err
 	}
 
-	if err := watchSecondaryResource(c, common.StatefulSetKind, &appsv1.StatefulSet{}); err != nil {
+	if err := common.WatchSecondaryResource(c, ControllerName, common.StatefulSetKind, &appsv1.StatefulSet{}, &kc.Keycloak{}); err != nil {
 		return err
 	}
 
-	if err := watchSecondaryResource(c, common.ServiceKind, &corev1.Service{}); err != nil {
+	if err := common.WatchSecondaryResource(c, ControllerName, common.ServiceKind, &corev1.Service{}, &kc.Keycloak{}); err != nil {
 		return err
 	}
 
-	if err := watchSecondaryResource(c, common.IngressKind, &v1beta1.Ingress{}); err != nil {
+	if err := common.WatchSecondaryResource(c, ControllerName, common.IngressKind, &v1beta1.Ingress{}, &kc.Keycloak{}); err != nil {
 		return err
 	}
 
-	if err := watchSecondaryResource(c, common.DeploymentKind, &appsv1.Deployment{}); err != nil {
+	if err := common.WatchSecondaryResource(c, ControllerName, common.DeploymentKind, &appsv1.Deployment{}, &kc.Keycloak{}); err != nil {
 		return err
 	}
 
-	if err := watchSecondaryResource(c, common.PersistentVolumeClaimKind, &corev1.PersistentVolumeClaim{}); err != nil {
+	if err := common.WatchSecondaryResource(c, ControllerName, common.PersistentVolumeClaimKind, &corev1.PersistentVolumeClaim{}, &kc.Keycloak{}); err != nil {
 		return err
 	}
 
@@ -105,22 +105,22 @@ func add(mgr manager.Manager, r reconcile.Reconciler, autodetectChannel chan sch
 		for gvk := range autodetectChannel {
 			// Check if this channel event was for the PrometheusRule resource type
 			if gvk.String() == monitoringv1.SchemeGroupVersion.WithKind(monitoringv1.PrometheusRuleKind).String() {
-				watchSecondaryResource(c, gvk.Kind, &monitoringv1.PrometheusRule{}) // nolint
+				common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &monitoringv1.PrometheusRule{}, &kc.Keycloak{}) // nolint
 			}
 
 			// Check if this channel event was for the ServiceMonitor resource type
 			if gvk.String() == monitoringv1.SchemeGroupVersion.WithKind(monitoringv1.ServiceMonitorsKind).String() {
-				watchSecondaryResource(c, gvk.Kind, &monitoringv1.ServiceMonitor{}) // nolint
+				common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &monitoringv1.ServiceMonitor{}, &kc.Keycloak{}) // nolint
 			}
 
 			// Check if this channel event was for the GrafanaDashboard resource type
 			if gvk.String() == integreatlyv1alpha1.SchemeGroupVersion.WithKind(integreatlyv1alpha1.GrafanaDashboardKind).String() {
-				watchSecondaryResource(c, gvk.Kind, &integreatlyv1alpha1.GrafanaDashboard{}) // nolint
+				common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &integreatlyv1alpha1.GrafanaDashboard{}, &kc.Keycloak{}) // nolint
 			}
 
 			// Check if this channel event was for the Route resource type
 			if gvk.String() == routev1.SchemeGroupVersion.WithKind(common.RouteKind).String() {
-				_ = watchSecondaryResource(c, gvk.Kind, &routev1.Route{})
+				_ = common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &routev1.Route{}, &kc.Keycloak{})
 			}
 		}
 	}()
@@ -186,38 +186,6 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 	}
 
 	return r.ManageSuccess(instance, currentState)
-}
-
-func watchSecondaryResource(c controller.Controller, resourceKind string, o runtime.Object) error {
-	stateManager := common.GetStateManager()
-	stateFieldName := getStateFieldName(resourceKind)
-
-	// Check to see if the watch exists for this resource type already for this controller, if it does, we return so we don't set up another watch
-	watchExists, keyExists := stateManager.GetState(stateFieldName).(bool)
-	if keyExists || watchExists {
-		return nil
-	}
-
-	// Set up the actual watch
-	err := c.Watch(&source.Kind{Type: o}, &handler.EnqueueRequestForOwner{
-		IsController: true,
-		OwnerType:    &kc.Keycloak{},
-	})
-
-	// Retry on error
-	if err != nil {
-		log.Error(err, "error creating watch")
-		stateManager.SetState(stateFieldName, false)
-		return err
-	}
-
-	stateManager.SetState(stateFieldName, true)
-	log.Info(fmt.Sprintf("Watch created for '%s' resource in '%s'", resourceKind, ControllerName))
-	return nil
-}
-
-func getStateFieldName(kind string) string {
-	return ControllerName + "-watch-" + kind
 }
 
 func (r *ReconcileKeycloak) ManageError(instance *v1alpha1.Keycloak, issue error) (reconcile.Result, error) {

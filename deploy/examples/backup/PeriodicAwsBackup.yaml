@@ -1,0 +1,8 @@
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakBackup
+metadata:
+  name: example-keycloakbackup
+spec:
+  aws:
+    schedule: "*/2 * * * *"
+    credentialsSecretName: s3-backup
