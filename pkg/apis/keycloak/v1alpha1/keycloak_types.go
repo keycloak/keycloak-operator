@@ -55,6 +55,7 @@ var (
 // Keycloak is the Schema for the keycloaks API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:path=keycloaks,scope=Namespaced
 type Keycloak struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

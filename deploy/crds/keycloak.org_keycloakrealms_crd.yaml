@@ -1,0 +1,350 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: keycloakrealms.keycloak.org
+spec:
+  group: keycloak.org
+  names:
+    kind: KeycloakRealm
+    listKind: KeycloakRealmList
+    plural: keycloakrealms
+    singular: keycloakrealm
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: KeycloakRealm is the Schema for the keycloakrealms API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: KeycloakRealmSpec defines the desired state of KeycloakRealm
+          properties:
+            instanceSelector:
+              description: A label selector is a label query over a set of resources.
+                The result of matchLabels and matchExpressions are ANDed. An empty
+                label selector matches all objects. A null label selector matches
+                no objects.
+              properties:
+                matchExpressions:
+                  description: matchExpressions is a list of label selector requirements.
+                    The requirements are ANDed.
+                  items:
+                    description: A label selector requirement is a selector that contains
+                      values, a key, and an operator that relates the key and values.
+                    properties:
+                      key:
+                        description: key is the label key that the selector applies
+                          to.
+                        type: string
+                      operator:
+                        description: operator represents a key's relationship to a
+                          set of values. Valid operators are In, NotIn, Exists and
+                          DoesNotExist.
+                        type: string
+                      values:
+                        description: values is an array of string values. If the operator
+                          is In or NotIn, the values array must be non-empty. If the
+                          operator is Exists or DoesNotExist, the values array must
+                          be empty. This array is replaced during a strategic merge
+                          patch.
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - key
+                    - operator
+                    type: object
+                  type: array
+                matchLabels:
+                  additionalProperties:
+                    type: string
+                  description: matchLabels is a map of {key,value} pairs. A single
+                    {key,value} in the matchLabels map is equivalent to an element
+                    of matchExpressions, whose key field is "key", the operator is
+                    "In", and the values array contains only "value". The requirements
+                    are ANDed.
+                  type: object
+              type: object
+            realm:
+              properties:
+                clients:
+                  items:
+                    properties:
+                      access:
+                        additionalProperties:
+                          type: boolean
+                        type: object
+                      adminUrl:
+                        type: string
+                      attributes:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      baseUrl:
+                        type: string
+                      bearerOnly:
+                        type: boolean
+                      clientAuthenticatorType:
+                        type: string
+                      clientId:
+                        type: string
+                      consentRequired:
+                        type: boolean
+                      defaultRoles:
+                        items:
+                          type: string
+                        type: array
+                      description:
+                        type: string
+                      directAccessGrantsEnabled:
+                        type: boolean
+                      enabled:
+                        type: boolean
+                      frontchannelLogout:
+                        type: boolean
+                      fullScopeAllowed:
+                        type: boolean
+                      id:
+                        type: string
+                      implicitFlowEnabled:
+                        type: boolean
+                      name:
+                        type: string
+                      nodeReRegistrationTimeout:
+                        type: integer
+                      notBefore:
+                        type: integer
+                      protocol:
+                        type: string
+                      protocolMappers:
+                        items:
+                          properties:
+                            config:
+                              additionalProperties:
+                                type: string
+                              type: object
+                            consentRequired:
+                              type: boolean
+                            consentText:
+                              type: string
+                            id:
+                              type: string
+                            name:
+                              type: string
+                            protocol:
+                              type: string
+                            protocolMapper:
+                              type: string
+                          required:
+                          - config
+                          - consentText
+                          type: object
+                        type: array
+                      publicClient:
+                        type: boolean
+                      redirectUris:
+                        items:
+                          type: string
+                        type: array
+                      rootUrl:
+                        type: string
+                      secret:
+                        type: string
+                      serviceAccountsEnabled:
+                        type: boolean
+                      standardFlowEnabled:
+                        type: boolean
+                      surrogateAuthRequired:
+                        type: boolean
+                      useTemplateConfig:
+                        type: boolean
+                      useTemplateMappers:
+                        type: boolean
+                      useTemplateScope:
+                        type: boolean
+                      webOrigins:
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - access
+                    - adminUrl
+                    - baseUrl
+                    - bearerOnly
+                    - clientAuthenticatorType
+                    - consentRequired
+                    - description
+                    - directAccessGrantsEnabled
+                    - enabled
+                    - frontchannelLogout
+                    - fullScopeAllowed
+                    - implicitFlowEnabled
+                    - name
+                    - nodeReRegistrationTimeout
+                    - notBefore
+                    - publicClient
+                    - rootUrl
+                    - secret
+                    - serviceAccountsEnabled
+                    - standardFlowEnabled
+                    - surrogateAuthRequired
+                    - useTemplateConfig
+                    - useTemplateMappers
+                    - useTemplateScope
+                    type: object
+                  type: array
+                displayName:
+                  type: string
+                enabled:
+                  type: boolean
+                eventsListeners:
+                  items:
+                    type: string
+                  type: array
+                id:
+                  type: string
+                identityProviders:
+                  items:
+                    properties:
+                      addReadTokenRoleOnCreate:
+                        type: boolean
+                      alias:
+                        type: string
+                      config:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      displayName:
+                        type: string
+                      enabled:
+                        type: boolean
+                      firstBrokerLoginFlowAlias:
+                        type: string
+                      internalId:
+                        type: string
+                      linkOnly:
+                        type: boolean
+                      postBrokerLoginFlowAlias:
+                        type: string
+                      providerId:
+                        type: string
+                      storeToken:
+                        type: boolean
+                      trustEmail:
+                        type: boolean
+                    required:
+                    - addReadTokenRoleOnCreate
+                    - config
+                    - displayName
+                    - enabled
+                    - firstBrokerLoginFlowAlias
+                    - linkOnly
+                    - postBrokerLoginFlowAlias
+                    - storeToken
+                    - trustEmail
+                    type: object
+                  type: array
+                realm:
+                  type: string
+                users:
+                  items:
+                    properties:
+                      clientRoles:
+                        additionalProperties:
+                          items:
+                            type: string
+                          type: array
+                        type: object
+                      credentials:
+                        items:
+                          properties:
+                            temporary:
+                              type: boolean
+                            type:
+                              type: string
+                            value:
+                              type: string
+                          type: object
+                        type: array
+                      email:
+                        type: string
+                      emailVerified:
+                        type: boolean
+                      enabled:
+                        type: boolean
+                      federatedIdentities:
+                        items:
+                          properties:
+                            identityProvider:
+                              type: string
+                            userId:
+                              type: string
+                            userName:
+                              type: string
+                          type: object
+                        type: array
+                      firstName:
+                        type: string
+                      groups:
+                        items:
+                          type: string
+                        type: array
+                      id:
+                        type: string
+                      lastName:
+                        type: string
+                      realmRoles:
+                        items:
+                          type: string
+                        type: array
+                      requiredActions:
+                        items:
+                          type: string
+                        type: array
+                      username:
+                        type: string
+                    required:
+                    - clientRoles
+                    - emailVerified
+                    - enabled
+                    - firstName
+                    - lastName
+                    type: object
+                  type: array
+              required:
+              - displayName
+              - enabled
+              - eventsListeners
+              type: object
+          required:
+          - realm
+          type: object
+        status:
+          description: KeycloakRealmStatus defines the observed state of KeycloakRealm
+          properties:
+            loginUrl:
+              type: string
+            phase:
+              type: string
+          required:
+          - loginUrl
+          - phase
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true

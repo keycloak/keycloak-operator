@@ -25,6 +25,7 @@ func schema_pkg_apis_keycloak_v1alpha1_Keycloak(ref common.ReferenceCallback) co
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "Keycloak is the Schema for the keycloaks API",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
 						SchemaProps: spec.SchemaProps{
@@ -68,6 +69,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealm(ref common.ReferenceCallbac
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "KeycloakRealm is the Schema for the keycloakrealms API",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
 						SchemaProps: spec.SchemaProps{
@@ -111,10 +113,24 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmSpec(ref common.ReferenceCal
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "KeycloakRealmSpec defines the desired state of KeycloakRealm",
-				Properties:  map[string]spec.Schema{},
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"instanceSelector": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"),
+						},
+					},
+					"realm": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakAPIRealm"),
+						},
+					},
+				},
+				Required: []string{"realm"},
 			},
 		},
-		Dependencies: []string{},
+		Dependencies: []string{
+			"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakAPIRealm", "k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"},
 	}
 }
 
@@ -123,10 +139,24 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmStatus(ref common.ReferenceC
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "KeycloakRealmStatus defines the observed state of KeycloakRealm",
-				Properties:  map[string]spec.Schema{},
+				Type:        []string{"object"},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					"loginUrl": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"phase", "loginUrl"},
 			},
 		},
-		Dependencies: []string{},
 	}
 }
 
@@ -135,6 +165,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "KeycloakSpec defines the desired state of Keycloak",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"externalDatabaseSecret": {
 						SchemaProps: spec.SchemaProps{
@@ -191,6 +222,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "KeycloakStatus defines the observed state of Keycloak",
+				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"phase": {
 						SchemaProps: spec.SchemaProps{
@@ -218,6 +250,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 							Description: "A map of all the secondary resources types and names created for this CR. e.g \"Deployment\": [ \"DeploymentName1\", \"DeploymentName2\" ]",
 							Type:        []string{"object"},
 							AdditionalProperties: &spec.SchemaOrBool{
+								Allows: true,
 								Schema: &spec.Schema{
 									SchemaProps: spec.SchemaProps{
 										Type: []string{"array"},
@@ -241,10 +274,23 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 							Format:      "",
 						},
 					},
+					"url": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Service IP and Port for in-cluster access to the keycloak instance",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"credentialSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The secret where the admin credentials are to be found",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 				},
-				Required: []string{"phase", "message", "ready", "version"},
+				Required: []string{"phase", "message", "ready", "version", "url", "credentialSecret"},
 			},
 		},
-		Dependencies: []string{},
 	}
 }

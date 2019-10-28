@@ -170,6 +170,7 @@ type KeycloakRealmStatus struct {
 // KeycloakRealm is the Schema for the keycloakrealms API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:path=keycloakrealms,scope=Namespaced
 type KeycloakRealm struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

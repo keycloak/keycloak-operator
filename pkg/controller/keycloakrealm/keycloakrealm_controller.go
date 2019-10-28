@@ -8,7 +8,6 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
@@ -16,9 +15,9 @@ import (
 	config2 "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
@@ -186,11 +185,11 @@ func (r *ReconcileKeycloakRealm) getAuthenticatedClient(kc kc.Keycloak, realm *k
 // Try to get a list of keycloak instances that match the selector specified on the realm
 func (r *ReconcileKeycloakRealm) getMatchingKeycloaks(realm *kc.KeycloakRealm) (kc.KeycloakList, error) {
 	var list kc.KeycloakList
-	opts := &client.ListOptions{
-		LabelSelector: labels.SelectorFromSet(realm.Spec.InstanceSelector.MatchLabels),
+	opts := []client.ListOption{
+		client.MatchingLabels(realm.Spec.InstanceSelector.MatchLabels),
 	}
 
-	err := r.client.List(r.context, opts, &list)
+	err := r.client.List(r.context, &list, opts...)
 	if err != nil {
 		return list, err
 	}
