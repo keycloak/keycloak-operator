@@ -17,14 +17,16 @@ spec:
       description: Keycloak is the Schema for the keycloaks API
       properties:
         apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
+          description:
+            "APIVersion defines the versioned schema of this representation
             of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources"
           type: string
         kind:
-          description: 'Kind is a string value representing the REST resource this
+          description:
+            "Kind is a string value representing the REST resource this
             object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds"
           type: string
         metadata:
           type: object
@@ -32,7 +34,8 @@ spec:
           description: KeycloakSpec defines the desired state of Keycloak
           properties:
             extensions:
-              description: A list of extensions, where each one is a URL to a JAR
+              description:
+                A list of extensions, where each one is a URL to a JAR
                 files that will be deployed in Keycloak.
               items:
                 type: string
@@ -41,12 +44,14 @@ spec:
               description: Controls external Ingress/Route settings.
               properties:
                 enabled:
-                  description: If set to true, the Operator will create an Ingress
+                  description:
+                    If set to true, the Operator will create an Ingress
                     or a Route pointing to Keycloak.
                   type: boolean
               type: object
             externalDatabase:
-              description: "Controls external database settings. Using an external
+              description:
+                "Controls external database settings. Using an external
                 database requires providing a secret containing credentials as well
                 as connection details. Here's an example of such secret: \n     apiVersion:
                 v1     kind: Secret     metadata:         name: keycloak-db-secret
@@ -64,7 +69,8 @@ spec:
                 please refer to the Operator documentation."
               properties:
                 enabled:
-                  description: If set to true, the Operator will use an external database.
+                  description:
+                    If set to true, the Operator will use an external database.
                     pointing to Keycloak.
                   type: boolean
               type: object
@@ -72,7 +78,8 @@ spec:
               description: Number of Keycloak instances in HA mode. Default is 1.
               type: integer
             profile:
-              description: Profile used for controlling Operator behavior. Default
+              description:
+                Profile used for controlling Operator behavior. Default
                 is empty.
               type: string
           type: object
@@ -83,18 +90,21 @@ spec:
               description: The secret where the admin credentials are to be found
               type: string
             internalURL:
-              description: Service IP and Port for in-cluster access to the keycloak
+              description:
+                Service IP and Port for in-cluster access to the keycloak
                 instance
               type: string
             message:
-              description: Human-readable message indicating details about current
+              description:
+                Human-readable message indicating details about current
                 operator phase or error.
               type: string
             phase:
               description: Current phase of the operator.
               type: string
             ready:
-              description: True if all resources are in a ready state and all work
+              description:
+                True if all resources are in a ready state and all work
                 is done.
               type: boolean
             secondaryResources:
@@ -102,7 +112,8 @@ spec:
                 items:
                   type: string
                 type: array
-              description: 'A map of all the secondary resources types and names created
+              description:
+                'A map of all the secondary resources types and names created
                 for this CR. e.g "Deployment": [ "DeploymentName1", "DeploymentName2"
                 ]'
               type: object
@@ -110,16 +121,16 @@ spec:
               description: Version of Keycloak or RHSSO running on the cluster
               type: string
           required:
-          - credentialSecret
-          - internalURL
-          - message
-          - phase
-          - ready
-          - version
+            - credentialSecret
+            - internalURL
+            - message
+            - phase
+            - ready
+            - version
           type: object
       type: object
   version: v1alpha1
   versions:
-  - name: v1alpha1
-    served: true
-    storage: true
+    - name: v1alpha1
+      served: true
+      storage: true

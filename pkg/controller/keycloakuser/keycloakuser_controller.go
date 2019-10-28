@@ -47,7 +47,7 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 		scheme:   mgr.GetScheme(),
 		context:  ctx,
 		cancel:   cancel,
-		recorder: mgr.GetRecorder(ControllerName),
+		recorder: mgr.GetEventRecorderFor(ControllerName),
 	}
 }
 
