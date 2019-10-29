@@ -113,7 +113,7 @@ const GrafanaDashboardJSON = `{
       "tableColumn": "Value",
       "targets": [
         {
-          "expr": "sum(jvm_memory_bytes_used{instance=\"$instance\", area=\"heap\"})*100/sum(jvm_memory_bytes_max{instance=\"$instance\", area=\"heap\"})\n",
+          "expr": "sum(jvm_memory_bytes_used{namespace=\"$namespace\", area=\"heap\"})*100/sum(jvm_memory_bytes_max{namespace=\"$namespace\", area=\"heap\"})\n",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -195,7 +195,7 @@ const GrafanaDashboardJSON = `{
       "tableColumn": "Value",
       "targets": [
         {
-          "expr": "sum(jvm_memory_bytes_used{instance=\"$instance\", area=\"nonheap\"})*100/sum(jvm_memory_bytes_max{instance=\"$instance\", area=\"nonheap\"})",
+          "expr": "sum(jvm_memory_bytes_used{namespace=\"$namespace\", area=\"nonheap\"})*100/sum(jvm_memory_bytes_max{namespace=\"$namespace\", area=\"nonheap\"})",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -253,7 +253,7 @@ const GrafanaDashboardJSON = `{
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(jvm_memory_bytes_max{instance=\"$instance\",job=\"keycloak\"})",
+          "expr": "sum(jvm_memory_bytes_max{namespace=\"$namespace\",job=\"keycloak\"})",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -262,14 +262,14 @@ const GrafanaDashboardJSON = `{
           "refId": "A"
         },
         {
-          "expr": "sum(jvm_memory_bytes_committed{instance=\"$instance\",job=\"keycloak\"})",
+          "expr": "sum(jvm_memory_bytes_committed{namespace=\"$namespace\",job=\"keycloak\"})",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "Committed",
           "refId": "C"
         },
         {
-          "expr": "sum(jvm_memory_bytes_used{instance=\"$instance\",job=\"keycloak\"})",
+          "expr": "sum(jvm_memory_bytes_used{namespace=\"$namespace\",job=\"keycloak\"})",
           "format": "time_series",
           "instant": false,
           "intervalFactor": 1,
@@ -354,7 +354,7 @@ const GrafanaDashboardJSON = `{
       "strokeWidth": "",
       "targets": [
         {
-          "expr": "sum(keycloak_logins{instance=\"$instance\"}) by (realm)",
+          "expr": "sum(keycloak_logins{namespace=\"$namespace\"}) by (realm)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{realm}}",
@@ -401,7 +401,7 @@ const GrafanaDashboardJSON = `{
       "strokeWidth": "",
       "targets": [
         {
-          "expr": "sum(keycloak_logins{instance=\"$instance\"}) by (client_id)",
+          "expr": "sum(keycloak_logins{namespace=\"$namespace\"}) by (client_id)",
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{client_id}}",
@@ -448,7 +448,7 @@ const GrafanaDashboardJSON = `{
       "strokeWidth": "",
       "targets": [
         {
-          "expr": "sum(keycloak_registrations{instance=\"$instance\"}) by (client_id)",
+          "expr": "sum(keycloak_registrations{namespace=\"$namespace\"}) by (client_id)",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -504,7 +504,7 @@ const GrafanaDashboardJSON = `{
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum by (realm)(increase(keycloak_logins{instance=\"$instance\",job=\"keycloak\"}[1h]))",
+          "expr": "sum by (realm)(increase(keycloak_logins{namespace=\"$namespace\",job=\"keycloak\"}[1h]))",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -599,7 +599,7 @@ const GrafanaDashboardJSON = `{
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(keycloak_failed_login_attempts{instance=\"$instance\",job=\"keycloak\",provider=\"keycloak\",realm=\"$realm\"}[1h])",
+          "expr": "increase(keycloak_failed_login_attempts{namespace=\"$namespace\",job=\"keycloak\",provider=\"keycloak\",realm=\"$realm\"}[1h])",
           "format": "time_series",
           "hide": false,
           "instant": false,
@@ -693,7 +693,7 @@ const GrafanaDashboardJSON = `{
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(keycloak_logins{instance=\"$instance\",job=\"keycloak\",realm=\"$realm\",provider=\"keycloak\"}[1h])",
+          "expr": "increase(keycloak_logins{namespace=\"$namespace\",job=\"keycloak\",realm=\"$realm\",provider=\"keycloak\"}[1h])",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -787,7 +787,7 @@ const GrafanaDashboardJSON = `{
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(keycloak_failed_login_attempts{instance=\"$instance\",job=\"keycloak\",provider=\"keycloak\",realm=\"$realm\",client_id=\"$ClientId\"}[1h])",
+          "expr": "increase(keycloak_failed_login_attempts{namespace=\"$namespace\",job=\"keycloak\",provider=\"keycloak\",realm=\"$realm\",client_id=\"$ClientId\"}[1h])",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -880,7 +880,7 @@ const GrafanaDashboardJSON = `{
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(keycloak_registrations{instance=\"$instance\",job=\"keycloak\",realm=\"$realm\",provider=\"keycloak\"}[1h])",
+          "expr": "increase(keycloak_registrations{namespace=\"$namespace\",job=\"keycloak\",realm=\"$realm\",provider=\"keycloak\"}[1h])",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -974,7 +974,7 @@ const GrafanaDashboardJSON = `{
       "steppedLine": false,
       "targets": [
         {
-          "expr": "increase(keycloak_registrations_errors{instance=\"$instance\",job=\"keycloak\",provider=\"keycloak\",realm=\"$realm\",client_id=\"$ClientId\"}[1h])",
+          "expr": "increase(keycloak_registrations_errors{namespace=\"$namespace\",job=\"keycloak\",provider=\"keycloak\",realm=\"$realm\",client_id=\"$ClientId\"}[1h])",
           "format": "time_series",
           "hide": false,
           "interval": "",
@@ -1039,11 +1039,11 @@ const GrafanaDashboardJSON = `{
         "definition": "",
         "hide": 0,
         "includeAll": false,
-        "label": "Instance",
+        "label": "Namespace",
         "multi": false,
-        "name": "instance",
+        "name": "namespace",
         "options": [],
-        "query": "label_values(keycloak_logins,instance)",
+        "query": "label_values(keycloak_request_duration_count,namespace)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1065,7 +1065,7 @@ const GrafanaDashboardJSON = `{
         "multi": false,
         "name": "realm",
         "options": [],
-        "query": "label_values(keycloak_logins{instance=\"$instance\",job=\"keycloak\",provider=\"keycloak\"},realm)",
+        "query": "label_values(keycloak_logins{namespace=\"$namespace\",job=\"keycloak\",provider=\"keycloak\"},realm)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -1080,14 +1080,14 @@ const GrafanaDashboardJSON = `{
         "allValue": null,
         "current": {},
         "datasource": "Prometheus",
-        "definition": "label_values(keycloak_logins{instance=\"$instance\",job=\"keycloak\",provider=\"keycloak\",realm=\"$realm\"},client_id)",
+        "definition": "label_values(keycloak_logins{namespace=\"$namespace\",job=\"keycloak\",provider=\"keycloak\",realm=\"$realm\"},client_id)",
         "hide": 0,
         "includeAll": false,
         "label": "ClientId",
         "multi": false,
         "name": "ClientId",
         "options": [],
-        "query": "label_values(keycloak_logins{instance=\"$instance\",job=\"keycloak\",provider=\"keycloak\",realm=\"$realm\"},client_id)",
+        "query": "label_values(keycloak_logins{namespace=\"$namespace\",job=\"keycloak\",provider=\"keycloak\",realm=\"$realm\"},client_id)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,

@@ -8,6 +8,8 @@ spec:
     realm: "user_realm"
     enabled: True
     displayName: "Realm with users"
+    eventsListeners:
+      - "metrics-listener"
     users:
       - username: "realm_admin"
         firstName: "John"
@@ -17,9 +19,11 @@ spec:
         emailVerified: False
         realmRoles:
           - "offline_access"
+          - "uma_authorization"
         clientRoles:
           account:
             - "manage-account"
+            - "view-profile"
           realm-management:
             - "manage-users"
   realmOverrides:

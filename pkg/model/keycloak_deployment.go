@@ -1,6 +1,8 @@
 package model
 
 import (
+	"strings"
+
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v13 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -37,17 +39,8 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 					},
 				},
 				Spec: v1.PodSpec{
-					Volumes: []v1.Volume{
-						{
-							Name: ServingCertSecretName,
-							VolumeSource: v1.VolumeSource{
-								Secret: &v1.SecretVolumeSource{
-									SecretName: ServingCertSecretName,
-									Optional:   &[]bool{true}[0],
-								},
-							},
-						},
-					},
+					InitContainers: KeycloakExtensionsInitContainers(cr),
+					Volumes:        KeycloakVolumes(),
 					Containers: []v1.Container{
 						{
 							Name:  KeycloakDeploymentName,
@@ -151,12 +144,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 									},
 								},
 							},
-							VolumeMounts: []v1.VolumeMount{
-								{
-									Name:      ServingCertSecretName,
-									MountPath: "/etc/x509/https",
-								},
-							},
+							VolumeMounts: KeycloakVolumeMounts(KeycloakExtensionPath),
 							LivenessProbe: &v1.Probe{
 								InitialDelaySeconds: 60,
 								TimeoutSeconds:      1,
@@ -197,18 +185,7 @@ func KeycloakDeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet) *v13.StatefulSet {
 	reconciled := currentState.DeepCopy()
 	reconciled.ResourceVersion = currentState.ResourceVersion
-	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
-	reconciled.Spec.Template.Spec.Volumes = []v1.Volume{
-		{
-			Name: ServingCertSecretName,
-			VolumeSource: v1.VolumeSource{
-				Secret: &v1.SecretVolumeSource{
-					SecretName: ServingCertSecretName,
-					Optional:   &[]bool{true}[0],
-				},
-			},
-		},
-	}
+	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes()
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:  KeycloakDeploymentName,
@@ -227,12 +204,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 					Protocol:      "TCP",
 				},
 			},
-			VolumeMounts: []v1.VolumeMount{
-				{
-					Name:      ServingCertSecretName,
-					MountPath: "/etc/x509/https",
-				},
-			},
+			VolumeMounts: KeycloakVolumeMounts(KeycloakExtensionPath),
 			LivenessProbe: &v1.Probe{
 				InitialDelaySeconds: 60,
 				TimeoutSeconds:      1,
@@ -342,6 +314,65 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 			},
 		},
 	}
-
+	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
 	return reconciled
+}
+
+func KeycloakExtensionsInitContainers(cr *v1alpha1.Keycloak) []v1.Container {
+	return []v1.Container{
+		{
+			Name:  "extensions-init",
+			Image: KeycloakInitContainerImage,
+			Env: []v1.EnvVar{
+				{
+					Name:  KeycloakExtensionEnvVar,
+					Value: strings.Join(cr.Spec.Extensions, ","),
+				},
+			},
+			VolumeMounts: []v1.VolumeMount{
+				{
+					Name:      "keycloak-extensions",
+					ReadOnly:  false,
+					MountPath: KeycloakExtensionsInitContainerPath,
+				},
+			},
+			TerminationMessagePath:   "/dev/termination-log",
+			TerminationMessagePolicy: "File",
+			ImagePullPolicy:          "Always",
+		},
+	}
+}
+
+func KeycloakVolumeMounts(extensionsPath string) []v1.VolumeMount {
+	return []v1.VolumeMount{
+		{
+			Name:      ServingCertSecretName,
+			MountPath: "/etc/x509/https",
+		},
+		{
+			Name:      "keycloak-extensions",
+			ReadOnly:  false,
+			MountPath: extensionsPath,
+		},
+	}
+}
+
+func KeycloakVolumes() []v1.Volume {
+	return []v1.Volume{
+		{
+			Name: ServingCertSecretName,
+			VolumeSource: v1.VolumeSource{
+				Secret: &v1.SecretVolumeSource{
+					SecretName: ServingCertSecretName,
+					Optional:   &[]bool{true}[0],
+				},
+			},
+		},
+		{
+			Name: "keycloak-extensions",
+			VolumeSource: v1.VolumeSource{
+				EmptyDir: &v1.EmptyDirVolumeSource{},
+			},
+		},
+	}
 }
