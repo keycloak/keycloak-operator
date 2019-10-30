@@ -27,7 +27,7 @@ func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 					Annotations: map[string]string{
 						"message": `{{ printf "%0.0f" $value }}% heap usage of {{ $labels.area }} in pod {{$labels.pod }}, namespace {{ $labels.namespace }}.`,
 					},
-					Expr: intstr.FromString(`100 * jvm_memory_bytes_used{area="heap",namespace=` + cr.Namespace + `} / jvm_memory_bytes_max{area="heap",namespace=` + cr.Namespace + ` > 90`),
+					Expr: intstr.FromString(`100 * jvm_memory_bytes_used{area="heap",namespace="` + cr.Namespace + `"} / jvm_memory_bytes_max{area="heap",namespace="` + cr.Namespace + `"} > 90`),
 					For:  "1m",
 					Labels: map[string]string{
 						"severity": "critical",
@@ -37,7 +37,7 @@ func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 					Annotations: map[string]string{
 						"message": `{{ printf "%0.0f" $value }}% nonheap usage of {{ $labels.area }} in pod {{ $labels.pod }}, namespace {{ $labels.namespace }}.`,
 					},
-					Expr: intstr.FromString(`100 * jvm_memory_bytes_used{area="nonheap",namespace=` + cr.Namespace + `} / jvm_memory_bytes_max{area="nonheap",namespace=` + cr.Namespace + `} > 90`),
+					Expr: intstr.FromString(`100 * jvm_memory_bytes_used{area="nonheap",namespace="` + cr.Namespace + `"} / jvm_memory_bytes_max{area="nonheap",namespace="` + cr.Namespace + `"} > 90`),
 					For:  "1m",
 					Labels: map[string]string{
 						"severity": "critical",
@@ -47,7 +47,7 @@ func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 					Annotations: map[string]string{
 						"message": `Amount of time per minute spent on garbage collection of {{ $labels.area }} in pod {{ $labels.pod }}, namespace {{ $labels.namespace }} exceeds 90%. This could indicate that the available heap memory is insufficient.`,
 					},
-					Expr: intstr.FromString(`increase(jvm_gc_collection_seconds_sum{gc="PS Scavenge",namespace=` + cr.Namespace + `}[1m]) > 1 * 60 * 0.9`),
+					Expr: intstr.FromString(`increase(jvm_gc_collection_seconds_sum{gc="PS Scavenge",namespace="` + cr.Namespace + `"}[1m]) > 1 * 60 * 0.9`),
 					For:  "1m",
 					Labels: map[string]string{
 						"severity": "critical",
@@ -57,7 +57,7 @@ func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 					Annotations: map[string]string{
 						"message": `Amount of time per minute spent on garbage collection of {{ $labels.area }} in pod {{ $labels.pod }}, namespace {{ $labels.namespace }} exceeds 90%. This could indicate that the available heap memory is insufficient.`,
 					},
-					Expr: intstr.FromString(`increase(jvm_gc_collection_seconds_sum{gc="PS MarkSweep",namespace=` + cr.Namespace + `}[1m]) > 1 * 60 * 0.9`),
+					Expr: intstr.FromString(`increase(jvm_gc_collection_seconds_sum{gc="PS MarkSweep",namespace="` + cr.Namespace + `"}[1m]) > 1 * 60 * 0.9`),
 					For:  "1m",
 					Labels: map[string]string{
 						"severity": "critical",
@@ -67,7 +67,7 @@ func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 					Annotations: map[string]string{
 						"message": `Number of threads in deadlock state of {{ $labels.area }} in pod {{ $labels.pod }}, namespace {{ $labels.namespace }}`,
 					},
-					Expr: intstr.FromString(`jvm_threads_deadlocked{namespace=` + cr.Namespace + `} > 0`),
+					Expr: intstr.FromString(`jvm_threads_deadlocked{namespace="` + cr.Namespace + `"} > 0`),
 					For:  "1m",
 					Labels: map[string]string{
 						"severity": "warning",
@@ -77,7 +77,7 @@ func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 					Annotations: map[string]string{
 						"message": `More than 50 failed login attempts for realm {{ $labels.realm }}, provider {{ $labels.provider }}, namespace {{ $labels.namespace }} over the last 5 minutes. (Rate of {{ printf "%0f" $value }})`,
 					},
-					Expr: intstr.FromString(`rate(keycloak_failed_login_attempts{namespace=` + cr.Namespace + `}[5m]) * 300 > 50`),
+					Expr: intstr.FromString(`rate(keycloak_failed_login_attempts{namespace="` + cr.Namespace + `"}[5m]) * 300 > 50`),
 					For:  "5m",
 					Labels: map[string]string{
 						"severity": "warning",
@@ -87,7 +87,7 @@ func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 					Annotations: map[string]string{
 						"message": `Keycloak instance in namespace {{ $labels.namespace }} has not been available for the last 5 minutes.`,
 					},
-					Expr: intstr.FromString(`(1 - absent(kube_pod_status_ready{namespace=` + cr.Namespace + `, condition="true"} * on (pod) group_left (label_deploymentConfig) kube_pod_labels{label_deploymentConfig=` + "sso" + `})) == 0`),
+					Expr: intstr.FromString(`(1 - absent(kube_pod_status_ready{namespace="` + cr.Namespace + `", condition="true"} * on (pod) group_left (label_deploymentConfig) kube_pod_labels{label_deploymentConfig="` + "sso" + `"})) == 0`),
 					For:  "5m",
 					Labels: map[string]string{
 						"severity": "critical",
@@ -117,7 +117,7 @@ func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 					Annotations: map[string]string{
 						"message": `RH SSO database in namespace {{ $labels.namespace }} is not available for the last 5 minutes.`,
 					},
-					Expr: intstr.FromString(`(1 - absent(kube_pod_status_ready{namespace=` + cr.Namespace + `, condition="true"} * on (pod) group_left (label_deploymentConfig) kube_pod_labels{label_deploymentConfig=` + "sso-postgresql" + `})) == 0 `),
+					Expr: intstr.FromString(`(1 - absent(kube_pod_status_ready{namespace="` + cr.Namespace + `", condition="true"} * on (pod) group_left (label_deploymentConfig) kube_pod_labels{label_deploymentConfig="` + "sso-postgresql" + `"})) == 0 `),
 					For:  "5m",
 					Labels: map[string]string{
 						"severity": "critical",

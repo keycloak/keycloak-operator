@@ -207,9 +207,8 @@ func (i *KeycloakReconciler) GetKeycloakGrafanaDashboardDesiredState(clusterStat
 		}
 	}
 
-	grafanadashboard.ResourceVersion = clusterState.KeycloakGrafanaDashboard.ResourceVersion
 	return common.GenericUpdateAction{
-		Ref: grafanadashboard,
+		Ref: model.GrafanaDashboardReconciled(cr, clusterState.KeycloakGrafanaDashboard),
 		Msg: "update keycloak grafana dashboard",
 	}
 }
