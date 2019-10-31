@@ -10,7 +10,6 @@ spec:
     plural: keycloakrealms
     singular: keycloakrealm
   scope: Namespaced
-  preserveUnknownFields: false
   subresources:
     status: {}
   validation:
