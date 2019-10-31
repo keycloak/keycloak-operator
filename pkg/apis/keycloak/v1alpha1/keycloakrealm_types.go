@@ -167,8 +167,16 @@ type TokenResponse struct {
 // KeycloakRealmStatus defines the observed state of KeycloakRealm
 // +k8s:openapi-gen=true
 type KeycloakRealmStatus struct {
-	Phase    string `json:"phase"`
-	LoginURL string `json:"loginUrl"`
+	// Current phase of the operator.
+	Phase StatusPhase `json:"phase"`
+	// Human-readable message indicating details about current operator phase or error.
+	Message string `json:"message"`
+	// True if all resources are in a ready state and all work is done.
+	Ready bool `json:"ready"`
+	// A map of all the secondary resources types and names created for this CR. e.g "Deployment": [ "DeploymentName1", "DeploymentName2" ]
+	SecondaryResources map[string][]string `json:"secondaryResources,omitempty"`
+	// TODO
+	LoginURL string `json:"loginURL"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -195,4 +203,20 @@ type KeycloakRealmList struct {
 
 func init() {
 	SchemeBuilder.Register(&KeycloakRealm{}, &KeycloakRealmList{})
+}
+
+func (i *KeycloakRealm) UpdateStatusSecondaryResources(kind string, resourceName string) {
+	// If the map is nil, instansiate it
+	if i.Status.SecondaryResources == nil {
+		i.Status.SecondaryResources = make(map[string][]string)
+	}
+
+	// return if the resource name already exists in the slice
+	for _, ele := range i.Status.SecondaryResources[kind] {
+		if ele == resourceName {
+			return
+		}
+	}
+	// add the resource name to the list of secondary resources in the status
+	i.Status.SecondaryResources[kind] = append(i.Status.SecondaryResources[kind], resourceName)
 }

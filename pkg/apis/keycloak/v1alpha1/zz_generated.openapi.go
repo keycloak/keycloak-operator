@@ -111,10 +111,23 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmSpec(ref common.ReferenceCal
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "KeycloakRealmSpec defines the desired state of KeycloakRealm",
-				Properties:  map[string]spec.Schema{},
+				Properties: map[string]spec.Schema{
+					"instanceSelector": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"),
+						},
+					},
+					"realm": {
+						SchemaProps: spec.SchemaProps{
+							Ref: ref("github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakAPIRealm"),
+						},
+					},
+				},
+				Required: []string{"realm"},
 			},
 		},
-		Dependencies: []string{},
+		Dependencies: []string{
+			"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakAPIRealm", "k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"},
 	}
 }
 
@@ -123,7 +136,57 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmStatus(ref common.ReferenceC
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
 				Description: "KeycloakRealmStatus defines the observed state of KeycloakRealm",
-				Properties:  map[string]spec.Schema{},
+				Properties: map[string]spec.Schema{
+					"phase": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Current phase of the operator.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"message": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Human-readable message indicating details about current operator phase or error.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"ready": {
+						SchemaProps: spec.SchemaProps{
+							Description: "True if all resources are in a ready state and all work is done.",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
+					"secondaryResources": {
+						SchemaProps: spec.SchemaProps{
+							Description: "A map of all the secondary resources types and names created for this CR. e.g \"Deployment\": [ \"DeploymentName1\", \"DeploymentName2\" ]",
+							Type:        []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Type: []string{"array"},
+										Items: &spec.SchemaOrArray{
+											Schema: &spec.Schema{
+												SchemaProps: spec.SchemaProps{
+													Type:   []string{"string"},
+													Format: "",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+					"loginURL": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+				},
+				Required: []string{"phase", "message", "ready", "loginURL"},
 			},
 		},
 		Dependencies: []string{},
@@ -241,8 +304,22 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 							Format:      "",
 						},
 					},
+					"internalURL": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Service IP and Port for in-cluster access to the keycloak instance",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"credentialSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The secret where the admin credentials are to be found",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 				},
-				Required: []string{"phase", "message", "ready", "version"},
+				Required: []string{"phase", "message", "ready", "version", "internalURL", "credentialSecret"},
 			},
 		},
 		Dependencies: []string{},

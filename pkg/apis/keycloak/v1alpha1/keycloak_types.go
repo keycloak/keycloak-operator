@@ -36,7 +36,7 @@ type KeycloakStatus struct {
 	// Version of Keycloak or RHSSO running on the cluster
 	Version string `json:"version"`
 	// Service IP and Port for in-cluster access to the keycloak instance
-	InternalURL string `json:"url"`
+	InternalURL string `json:"internalURL"`
 	// The secret where the admin credentials are to be found
 	CredentialSecret string `json:"credentialSecret"`
 }

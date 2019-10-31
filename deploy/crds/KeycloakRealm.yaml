@@ -16,14 +16,16 @@ spec:
     openAPIV3Schema:
       properties:
         apiVersion:
-          description: 'APIVersion defines the versioned schema of this representation
+          description:
+            "APIVersion defines the versioned schema of this representation
             of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources"
           type: string
         kind:
-          description: 'Kind is a string value representing the REST resource this
+          description:
+            "Kind is a string value representing the REST resource this
             object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds"
           type: string
         metadata:
           type: object
@@ -114,13 +116,13 @@ spec:
                   items:
                     type: object
                 eventsListeners:
-                  description: 'A list of event listeners to attach to the realm'
+                  description: "A list of event listeners to attach to the realm"
                   type: array
                   items:
                     type: string
             instanceSelector:
               type: object
-              description: 'A label selector to determine the Keycloak instance to create the Realm in'
+              description: "A label selector to determine the Keycloak instance to create the Realm in"
             browserRedirectorIdentityProvider:
               type: string
         status:
