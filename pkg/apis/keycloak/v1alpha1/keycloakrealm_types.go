@@ -7,8 +7,9 @@ import (
 // KeycloakRealmSpec defines the desired state of KeycloakRealm
 // +k8s:openapi-gen=true
 type KeycloakRealmSpec struct {
-	InstanceSelector *metav1.LabelSelector `json:"instanceSelector,omitempty"`
-	Realm            *KeycloakAPIRealm     `json:"realm"`
+	InstanceSelector                  *metav1.LabelSelector `json:"instanceSelector,omitempty"`
+	BrowserRedirectorIdentityProvider string                `json:"browserRedirectorIdentityProvider,omitempty"`
+	Realm                             *KeycloakAPIRealm     `json:"realm"`
 }
 
 type KeycloakAPIRealm struct {
