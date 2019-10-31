@@ -44,6 +44,8 @@ func (i *RealmState) Read(cr *kc.KeycloakRealm, realmClient KeycloakInterface, c
 			return err
 		}
 		i.RealmUserSecrets[user.UserName] = secret
+
+		cr.UpdateStatusSecondaryResources(SecretKind, model.GetRealmUserSecretName(i.Keycloak.Namespace, cr.Spec.Realm.Realm, user.UserName))
 	}
 	return nil
 }

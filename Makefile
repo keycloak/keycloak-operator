@@ -38,7 +38,7 @@ cluster/clean:
 .PHONY: cluster/create/examples
 cluster/create/examples:
 	@kubectl create -f deploy/examples/keycloak/keycloak.yaml -n $(NAMESPACE)
-	@kubectl create -f deploy/examples/realm/realm.yaml -n $(NAMESPACE)
+	@kubectl create -f deploy/examples/realm/basic_realm.yaml -n $(NAMESPACE)
 
 ##############################
 # Tests                      #

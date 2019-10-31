@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	corev1 "k8s.io/api/core/v1"
@@ -12,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	config2 "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
@@ -25,7 +27,10 @@ import (
 var log = logf.Log.WithName("controller_keycloakrealm")
 
 const (
-	RealmFinalizer = "realm.cleanup"
+	RealmFinalizer           = "realm.cleanup"
+	RequeueDelaySeconds      = 30
+	RequeueDelayErrorSeconds = 5
+	ControllerName           = "keycloakrealm-controller"
 )
 
 /**
@@ -45,17 +50,18 @@ func newReconciler(mgr manager.Manager) reconcile.Reconciler {
 	ctx, cancel := context.WithCancel(ctx)
 
 	return &ReconcileKeycloakRealm{
-		client:  mgr.GetClient(),
-		scheme:  mgr.GetScheme(),
-		cancel:  cancel,
-		context: ctx,
+		client:   mgr.GetClient(),
+		scheme:   mgr.GetScheme(),
+		cancel:   cancel,
+		context:  ctx,
+		recorder: mgr.GetRecorder(ControllerName),
 	}
 }
 
 // add adds a new Controller to mgr with r as the reconcile.Reconciler
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
 	// Create a new controller
-	c, err := controller.New("keycloakrealm-controller", mgr, controller.Options{Reconciler: r})
+	c, err := controller.New(ControllerName, mgr, controller.Options{Reconciler: r})
 	if err != nil {
 		return err
 	}
@@ -85,10 +91,11 @@ var _ reconcile.Reconciler = &ReconcileKeycloakRealm{}
 type ReconcileKeycloakRealm struct {
 	// This client, initialized using mgr.Client() above, is a split client
 	// that reads objects from the cache and writes to the apiserver
-	client  client.Client
-	scheme  *runtime.Scheme
-	context context.Context
-	cancel  context.CancelFunc
+	client   client.Client
+	scheme   *runtime.Scheme
+	context  context.Context
+	cancel   context.CancelFunc
+	recorder record.EventRecorder
 }
 
 // Reconcile reads that state of the cluster for a KeycloakRealm object and makes changes based on the state read
@@ -120,7 +127,7 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 
 	keycloaks, err := r.getMatchingKeycloaks(instance)
 	if err != nil {
-		return reconcile.Result{}, err
+		return r.ManageError(instance, err)
 	}
 
 	log.Info(fmt.Sprintf("found %v matching keycloak(s) for realm %v/%v", len(keycloaks.Items), instance.Namespace, instance.Name))
@@ -131,7 +138,7 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 		// Get an authenticated keycloak api client for the instance
 		authenticated, err := r.getAuthenticatedClient(keycloak, instance)
 		if err != nil {
-			return reconcile.Result{}, err
+			return r.ManageError(instance, err)
 		}
 
 		// Compute the current state of the realm
@@ -146,7 +153,7 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 
 		err = realmState.Read(instance, authenticated, r.client)
 		if err != nil {
-			return reconcile.Result{}, err
+			return r.ManageError(instance, err)
 		}
 
 		// Figure out the actions to keep the realms up to date with
@@ -158,7 +165,7 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 		// Run all actions to keep the realms updated
 		err = actionRunner.RunAll(desiredState)
 		if err != nil {
-			return reconcile.Result{}, err
+			return r.ManageError(instance, err)
 		}
 	}
 
@@ -199,6 +206,15 @@ func (r *ReconcileKeycloakRealm) getMatchingKeycloaks(realm *kc.KeycloakRealm) (
 }
 
 func (r *ReconcileKeycloakRealm) manageSuccess(realm *kc.KeycloakRealm, deleted bool) error {
+	realm.Status.Ready = true
+	realm.Status.Message = ""
+	realm.Status.Phase = v1alpha1.PhaseReconciling
+
+	err := r.client.Status().Update(r.context, realm)
+	if err != nil {
+		log.Error(err, "unable to update status")
+	}
+
 	// Finalizer already set?
 	finalizerExists := false
 	for _, finalizer := range realm.Finalizers {
@@ -232,4 +248,22 @@ func (r *ReconcileKeycloakRealm) manageSuccess(realm *kc.KeycloakRealm, deleted 
 
 	realm.Finalizers = newFinalizers
 	return r.client.Update(r.context, realm)
+}
+
+func (r *ReconcileKeycloakRealm) ManageError(realm *kc.KeycloakRealm, issue error) (reconcile.Result, error) {
+	r.recorder.Event(realm, "Warning", "ProcessingError", issue.Error())
+
+	realm.Status.Message = issue.Error()
+	realm.Status.Ready = false
+	realm.Status.Phase = v1alpha1.PhaseFailing
+
+	err := r.client.Status().Update(r.context, realm)
+	if err != nil {
+		log.Error(err, "unable to update status")
+	}
+
+	return reconcile.Result{
+		RequeueAfter: RequeueDelayErrorSeconds,
+		Requeue:      true,
+	}, nil
 }
