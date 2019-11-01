@@ -20,7 +20,7 @@ type KeycloakAPIRealm struct {
 	Users             []*KeycloakAPIUser          `json:"users,omitempty"`
 	Clients           []*KeycloakAPIClient        `json:"clients,omitempty"`
 	IdentityProviders []*KeycloakIdentityProvider `json:"identityProviders,omitempty"`
-	EventsListeners   []string                    `json:"eventsListeners"`
+	EventsListeners   []string                    `json:"eventsListeners,omitempty"`
 }
 
 type KeycloakIdentityProvider struct {

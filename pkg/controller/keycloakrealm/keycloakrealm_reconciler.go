@@ -55,6 +55,8 @@ func (i *KeycloakRealmReconciler) ReconcileRealmCreate(state *common.RealmState,
 		desired.AddAction(i.getDesiredUserSate(state, cr, user))
 	}
 
+	desired.AddAction(i.getBrowserRedirectorDesiredState(state, cr))
+
 	return desired
 }
 
@@ -69,6 +71,23 @@ func (i *KeycloakRealmReconciler) ReconcileRealmDelete(state *common.RealmState,
 func (i *KeycloakRealmReconciler) getKeycloakDesiredState() common.ClusterAction {
 	return &common.PingAction{
 		Msg: "check if keycloak is available",
+	}
+}
+
+// Configure the browser redirector if provided by the user
+func (i *KeycloakRealmReconciler) getBrowserRedirectorDesiredState(state *common.RealmState, cr *kc.KeycloakRealm) common.ClusterAction {
+	if cr.Spec.BrowserRedirectorIdentityProvider == "" {
+		return nil
+	}
+
+	// Never update the realm configuration, leave it up to the users
+	if state.Realm != nil {
+		return nil
+	}
+
+	return &common.ConfigureRealmAction{
+		Ref: cr,
+		Msg: "configure browser redirector",
 	}
 }
 

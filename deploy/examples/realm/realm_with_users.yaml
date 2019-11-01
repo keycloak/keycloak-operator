@@ -21,7 +21,8 @@ spec:
           account:
             - "manage-account"
           realm-management:
-          - "manage-users"
+            - "manage-users"
+  browserRedirectorIdentityProvider: "github"
   instanceSelector:
     matchLabels:
       app: sso
