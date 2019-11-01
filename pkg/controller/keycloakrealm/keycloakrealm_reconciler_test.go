@@ -19,6 +19,7 @@ func getDummyRealm() *v1alpha1.KeycloakRealm {
 					"app": "keycloak",
 				},
 			},
+			BrowserRedirectorIdentityProvider: "github",
 			Realm: &v1alpha1.KeycloakAPIRealm{
 				ID:          "dummy",
 				Realm:       "dummy",
@@ -69,9 +70,11 @@ func TestKeycloakRealmReconciler_Reconcile(t *testing.T) {
 	// 0 - check keycloak available
 	// 1 - create realm
 	// 2 - create user credential secret
+	// 3 - configure browser redirector
 	assert.IsType(t, &common.PingAction{}, desiredState[0])
 	assert.IsType(t, &common.CreateRealmAction{}, desiredState[1])
 	assert.IsType(t, &common.GenericCreateAction{}, desiredState[2])
+	assert.IsType(t, &common.ConfigureRealmAction{}, desiredState[3])
 
 	state.Realm = realm
 
