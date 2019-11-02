@@ -254,3 +254,33 @@ func TestKeycloakReconciler_Test_No_Action_When_Monitoring_Resources_Dont_Exist(
 		assert.NotEqual(t, reflect.TypeOf(model.ServiceMonitor(cr)), reflect.TypeOf(element.(common.GenericCreateAction).Ref))
 	}
 }
+
+func TestKeycloakReconciler_Test_Recreate_Credentials_When_Missig(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	secret := model.KeycloakAdminSecret(cr)
+
+	// when
+	secret.Data[model.AdminUsernameProperty] = nil
+	secret.Data[model.AdminPasswordProperty] = nil
+	secret = model.KeycloakAdminSecretReconciled(cr, secret)
+
+	// then
+	assert.NotEmpty(t, secret.Data[model.AdminUsernameProperty])
+	assert.NotEmpty(t, secret.Data[model.AdminPasswordProperty])
+}
+
+func TestKeycloakReconciler_Test_Recreate_Does_Not_Update_Existing_Credentials(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	secret := model.KeycloakAdminSecret(cr)
+
+	// when
+	username := secret.Data[model.AdminUsernameProperty]
+	password := secret.Data[model.AdminPasswordProperty]
+	secret = model.KeycloakAdminSecretReconciled(cr, secret)
+
+	// then
+	assert.Equal(t, username, secret.Data[model.AdminUsernameProperty])
+	assert.Equal(t, password, secret.Data[model.AdminPasswordProperty])
+}
