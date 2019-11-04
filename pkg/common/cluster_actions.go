@@ -26,7 +26,7 @@ type ActionRunner interface {
 	Update(obj runtime.Object) error
 	CreateRealm(obj *v1alpha1.KeycloakRealm) error
 	DeleteRealm(obj *v1alpha1.KeycloakRealm) error
-	ConfigureBrowserRedirector(obj *v1alpha1.KeycloakRealm) error
+	ApplyOverrides(obj *v1alpha1.KeycloakRealm) error
 	Ping() error
 }
 
@@ -124,13 +124,24 @@ func (i *ClusterActionRunner) Ping() error {
 }
 
 // Delete a realm using the keycloak api
-func (i *ClusterActionRunner) ConfigureBrowserRedirector(obj *v1alpha1.KeycloakRealm) error {
+func (i *ClusterActionRunner) ApplyOverrides(obj *v1alpha1.KeycloakRealm) error {
 	if i.realmClient == nil {
 		return errors.New("cannot perform realm configure when client is nil")
 	}
 
+	for _, override := range obj.Spec.RealmOverrides {
+		err := i.configureBrowserRedirector(override.IdentityProvider, override.ForFlow, obj)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (i *ClusterActionRunner) configureBrowserRedirector(provider, flow string, obj *v1alpha1.KeycloakRealm) error {
 	realmName := obj.Spec.Realm.Realm
-	authenticationExecutionInfo, err := i.realmClient.ListAuthenticationExecutionsForFlow("browser", realmName)
+	authenticationExecutionInfo, err := i.realmClient.ListAuthenticationExecutionsForFlow(flow, realmName)
 	if err != nil {
 		return err
 	}
@@ -155,10 +166,10 @@ func (i *ClusterActionRunner) ConfigureBrowserRedirector(obj *v1alpha1.KeycloakR
 		}
 	}
 
-	if authenticatorConfig == nil && obj.Spec.BrowserRedirectorIdentityProvider != "" {
+	if authenticatorConfig == nil && flow != "" {
 		config := &v1alpha1.AuthenticatorConfig{
 			Alias:  authenticationConfigAlias,
-			Config: map[string]string{"defaultProvider": obj.Spec.BrowserRedirectorIdentityProvider},
+			Config: map[string]string{"defaultProvider": flow},
 		}
 		return i.realmClient.CreateAuthenticatorConfig(config, realmName, redirectorExecutionID)
 	}
@@ -220,5 +231,5 @@ func (i PingAction) Run(runner ActionRunner) (string, error) {
 }
 
 func (i ConfigureRealmAction) Run(runner ActionRunner) (string, error) {
-	return i.Msg, runner.ConfigureBrowserRedirector(i.Ref)
+	return i.Msg, runner.ApplyOverrides(i.Ref)
 }

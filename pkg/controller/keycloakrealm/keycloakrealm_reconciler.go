@@ -76,7 +76,7 @@ func (i *KeycloakRealmReconciler) getKeycloakDesiredState() common.ClusterAction
 
 // Configure the browser redirector if provided by the user
 func (i *KeycloakRealmReconciler) getBrowserRedirectorDesiredState(state *common.RealmState, cr *kc.KeycloakRealm) common.ClusterAction {
-	if cr.Spec.BrowserRedirectorIdentityProvider == "" {
+	if len(cr.Spec.RealmOverrides) == 0 {
 		return nil
 	}
 

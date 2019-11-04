@@ -7,9 +7,9 @@ import (
 // KeycloakRealmSpec defines the desired state of KeycloakRealm
 // +k8s:openapi-gen=true
 type KeycloakRealmSpec struct {
-	InstanceSelector                  *metav1.LabelSelector `json:"instanceSelector,omitempty"`
-	BrowserRedirectorIdentityProvider string                `json:"browserRedirectorIdentityProvider,omitempty"`
-	Realm                             *KeycloakAPIRealm     `json:"realm"`
+	InstanceSelector *metav1.LabelSelector                 `json:"instanceSelector,omitempty"`
+	Realm            *KeycloakAPIRealm                     `json:"realm"`
+	RealmOverrides   []*RedirectorIdentityProviderOverride `json:"realmOverrides,omitempty"`
 }
 
 type KeycloakAPIRealm struct {
@@ -21,6 +21,11 @@ type KeycloakAPIRealm struct {
 	Clients           []*KeycloakAPIClient        `json:"clients,omitempty"`
 	IdentityProviders []*KeycloakIdentityProvider `json:"identityProviders,omitempty"`
 	EventsListeners   []string                    `json:"eventsListeners,omitempty"`
+}
+
+type RedirectorIdentityProviderOverride struct {
+	IdentityProvider string `json:"identityProvider,omitempty"`
+	ForFlow          string `json:"forFlow,omitempty"`
 }
 
 type KeycloakIdentityProvider struct {

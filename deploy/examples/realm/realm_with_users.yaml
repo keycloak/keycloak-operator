@@ -22,7 +22,9 @@ spec:
             - "manage-account"
           realm-management:
             - "manage-users"
-  browserRedirectorIdentityProvider: "github"
+  realmOverrides:
+    - forFlow: "browser"
+      identityProvider: "openshift-v4"
   instanceSelector:
     matchLabels:
       app: sso
