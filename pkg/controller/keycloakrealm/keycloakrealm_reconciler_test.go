@@ -19,7 +19,12 @@ func getDummyRealm() *v1alpha1.KeycloakRealm {
 					"app": "keycloak",
 				},
 			},
-			BrowserRedirectorIdentityProvider: "github",
+			RealmOverrides: []*v1alpha1.RedirectorIdentityProviderOverride{
+				{
+					IdentityProvider: "openshift-v4",
+					ForFlow:          "browser",
+				},
+			},
 			Realm: &v1alpha1.KeycloakAPIRealm{
 				ID:          "dummy",
 				Realm:       "dummy",
