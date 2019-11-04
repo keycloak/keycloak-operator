@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"strings"
+
+	v13 "k8s.io/api/apps/v1"
 )
 
 // Copy pasted from https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
@@ -75,4 +77,14 @@ func SanitizeResourceName(name string) string {
 	}
 
 	return sb.String()
+}
+
+// Get image string from the statefulset. Default to RHSSOImage string
+func GetCurrentKeycloakImage(currentState *v13.StatefulSet) string {
+	for _, ele := range currentState.Spec.Template.Spec.Containers {
+		if ele.Name == KeycloakDeploymentName {
+			return ele.Image
+		}
+	}
+	return RHSSOImage
 }
