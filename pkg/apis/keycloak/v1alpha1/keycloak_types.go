@@ -77,17 +77,5 @@ func init() {
 }
 
 func (i *Keycloak) UpdateStatusSecondaryResources(kind string, resourceName string) {
-	// If the map is nil, instansiate it
-	if i.Status.SecondaryResources == nil {
-		i.Status.SecondaryResources = make(map[string][]string)
-	}
-
-	// return if the resource name already exists in the slice
-	for _, ele := range i.Status.SecondaryResources[kind] {
-		if ele == resourceName {
-			return
-		}
-	}
-	// add the resource name to the list of secondary resources in the status
-	i.Status.SecondaryResources[kind] = append(i.Status.SecondaryResources[kind], resourceName)
+	i.Status.SecondaryResources = UpdateStatusSecondaryResources(i.Status.SecondaryResources, kind, resourceName)
 }
