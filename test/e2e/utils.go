@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	PollDuration    = time.Second * 10
-	TimeoutDuration = time.Second * 240
+	PollDuration    = time.Second * 15
+	TimeoutDuration = time.Second * 480
 )
 
 // Stolen from https://github.com/kubernetes/kubernetes/blob/master/test/e2e/framework/util.go
