@@ -1,6 +1,8 @@
 package model
 
 import (
+	"strings"
+
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v13 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -187,7 +189,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:  KeycloakDeploymentName,
-			Image: KeycloakImage,
+			Image: getReconciledKeycloakImage(currentState),
 			Ports: []v1.ContainerPort{
 				{
 					ContainerPort: KeycloakServicePort,
@@ -348,4 +350,30 @@ func KeycloakVolumes() []v1.Volume {
 			},
 		},
 	}
+}
+
+// We allow the patch version of an image for keycloak to be modified outside of the operator on the cluster
+func getReconciledKeycloakImage(currentState *v13.StatefulSet) string {
+	currentImage := GetCurrentKeycloakImage(currentState)
+	currentImageRepo, currentImageMajor, currentImageMinor := getKeycloakImageRepoAndVersion(currentImage)
+	keycloakImageRepo, keycloakImageMajor, keycloakImageMinor := getKeycloakImageRepoAndVersion(KeycloakImage)
+
+	// Check the repos, major and minor versions match. If so, return and reconcile with the current cluster image
+	// E.g. quay.io/keycloak/keycloak:7.0.1
+	if currentImageRepo == keycloakImageRepo && currentImageMajor == keycloakImageMajor && currentImageMinor == keycloakImageMinor {
+		return currentImage
+	}
+
+	return KeycloakImage
+}
+
+// Split a full keycloak image string (e.g. quay.io/keycloak/keycloak:7.0.1) into it's repo and individual versions
+func getKeycloakImageRepoAndVersion(image string) (string, string, string) {
+	imageStrings := strings.Split(image, ":")
+	imageRepo, imageTag := imageStrings[0], imageStrings[1]
+
+	imageTagStrings := strings.Split(imageTag, ".")
+	imageMajor, imageMinor := imageTagStrings[0], imageTagStrings[1]
+
+	return imageRepo, imageMajor, imageMinor
 }

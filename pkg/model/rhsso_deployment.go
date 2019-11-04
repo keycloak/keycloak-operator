@@ -1,6 +1,8 @@
 package model
 
 import (
+	"strings"
+
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v13 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -181,7 +183,7 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:  KeycloakDeploymentName,
-			Image: RHSSOImage,
+			Image: getReconciledRHSSOImage(currentState),
 			Ports: []v1.ContainerPort{
 				{
 					ContainerPort: KeycloakServicePort,
@@ -304,4 +306,19 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
 
 	return reconciled
+}
+
+// We allow the patch version of an image for RH-SSO to be modified outside of the operator on the cluster
+func getReconciledRHSSOImage(currentState *v13.StatefulSet) string {
+	currentImage := GetCurrentKeycloakImage(currentState)
+	currentImageRepo := strings.Split(currentImage, ":")[0]
+	RHSSOImageRepo := strings.Split(RHSSOImage, ":")[0]
+
+	// Since all tags in the RHSSO image repo are patch versions, as long as the image repo is the same, the image tag change is allowed
+	// E.g. registry.access.redhat.com/redhat-sso-7/sso73-openshift:1.0-15
+	if currentImageRepo == RHSSOImageRepo {
+		return currentImage
+	}
+
+	return RHSSOImage
 }
