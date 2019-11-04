@@ -16,12 +16,17 @@ import (
 
 var log = logf.Log.WithName("action_runner")
 
+const (
+	authenticationConfigAlias string = "keycloak-operator-browser-redirector"
+)
+
 type ActionRunner interface {
 	RunAll(desiredState DesiredClusterState) error
 	Create(obj runtime.Object) error
 	Update(obj runtime.Object) error
 	CreateRealm(obj *v1alpha1.KeycloakRealm) error
 	DeleteRealm(obj *v1alpha1.KeycloakRealm) error
+	ApplyOverrides(obj *v1alpha1.KeycloakRealm) error
 	Ping() error
 }
 
@@ -118,6 +123,60 @@ func (i *ClusterActionRunner) Ping() error {
 	return i.realmClient.Ping()
 }
 
+// Delete a realm using the keycloak api
+func (i *ClusterActionRunner) ApplyOverrides(obj *v1alpha1.KeycloakRealm) error {
+	if i.realmClient == nil {
+		return errors.New("cannot perform realm configure when client is nil")
+	}
+
+	for _, override := range obj.Spec.RealmOverrides {
+		err := i.configureBrowserRedirector(override.IdentityProvider, override.ForFlow, obj)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (i *ClusterActionRunner) configureBrowserRedirector(provider, flow string, obj *v1alpha1.KeycloakRealm) error {
+	realmName := obj.Spec.Realm.Realm
+	authenticationExecutionInfo, err := i.realmClient.ListAuthenticationExecutionsForFlow(flow, realmName)
+	if err != nil {
+		return err
+	}
+
+	authenticationConfigID := ""
+	redirectorExecutionID := ""
+	for _, execution := range authenticationExecutionInfo {
+		if execution.ProviderID == "identity-provider-redirector" {
+			authenticationConfigID = execution.AuthenticationConfig
+			redirectorExecutionID = execution.ID
+		}
+	}
+	if redirectorExecutionID == "" {
+		return errors.New("'identity-provider-redirector' was not found in the list of executions of the 'browser' flow")
+	}
+
+	var authenticatorConfig *v1alpha1.AuthenticatorConfig
+	if authenticationConfigID != "" {
+		authenticatorConfig, err = i.realmClient.GetAuthenticatorConfig(authenticationConfigID, realmName)
+		if err != nil {
+			return err
+		}
+	}
+
+	if authenticatorConfig == nil && flow != "" {
+		config := &v1alpha1.AuthenticatorConfig{
+			Alias:  authenticationConfigAlias,
+			Config: map[string]string{"defaultProvider": flow},
+		}
+		return i.realmClient.CreateAuthenticatorConfig(config, realmName, redirectorExecutionID)
+	}
+
+	return nil
+}
+
 // An action to create generic kubernetes resources
 // (resources that don't require special treatment)
 type GenericCreateAction struct {
@@ -138,6 +197,11 @@ type CreateRealmAction struct {
 }
 
 type DeleteRealmAction struct {
+	Ref *v1alpha1.KeycloakRealm
+	Msg string
+}
+
+type ConfigureRealmAction struct {
 	Ref *v1alpha1.KeycloakRealm
 	Msg string
 }
@@ -164,4 +228,8 @@ func (i DeleteRealmAction) Run(runner ActionRunner) (string, error) {
 
 func (i PingAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.Ping()
+}
+
+func (i ConfigureRealmAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.ApplyOverrides(i.Ref)
 }

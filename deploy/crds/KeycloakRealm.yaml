@@ -113,9 +113,16 @@ spec:
                   type: array
                   items:
                     type: object
+                eventsListeners:
+                  description: 'A list of event listeners to attach to the realm'
+                  type: array
+                  items:
+                    type: string
             instanceSelector:
               type: object
               description: 'A label selector to determine the Keycloak instance to create the Realm in'
+            browserRedirectorIdentityProvider:
+              type: string
         status:
           type: object
   version: v1alpha1

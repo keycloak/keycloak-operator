@@ -21,7 +21,10 @@ spec:
           account:
             - "manage-account"
           realm-management:
-          - "manage-users"
+            - "manage-users"
+  realmOverrides:
+    - forFlow: "browser"
+      identityProvider: "openshift-v4"
   instanceSelector:
     matchLabels:
       app: sso
