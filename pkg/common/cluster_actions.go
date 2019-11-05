@@ -29,6 +29,13 @@ type ActionRunner interface {
 	CreateClient(keycloakClient *v1alpha1.KeycloakClient, Realm string) error
 	DeleteClient(keycloakClient *v1alpha1.KeycloakClient, Realm string) error
 	UpdateClient(keycloakClient *v1alpha1.KeycloakClient, Realm string) error
+	CreateUser(obj *v1alpha1.KeycloakUser, realm string) error
+	UpdateUser(obj *v1alpha1.KeycloakUser, realm string) error
+	DeleteUser(id, realm string) error
+	AssignRealmRole(obj *v1alpha1.KeycloakUserRole, userId, realm string) error
+	RemoveRealmRole(obj *v1alpha1.KeycloakUserRole, userId, realm string) error
+	AssignClientRole(obj *v1alpha1.KeycloakUserRole, clientId, userId, realm string) error
+	RemoveClientRole(obj *v1alpha1.KeycloakUserRole, clientId, userId, realm string) error
 	ApplyOverrides(obj *v1alpha1.KeycloakRealm) error
 	Ping() error
 }
@@ -139,12 +146,69 @@ func (i *ClusterActionRunner) DeleteClient(obj *v1alpha1.KeycloakClient, realm s
 	return i.realmClient.DeleteClient(obj.Spec.Client.ID, realm)
 }
 
-// Delete a realm using the keycloak api
+func (i *ClusterActionRunner) CreateUser(obj *v1alpha1.KeycloakUser, realm string) error {
+	if i.realmClient == nil {
+		return errors.New("cannot perform user create when client is nil")
+	}
+
+	// Create the user
+	return i.realmClient.CreateUser(&obj.Spec.User, realm)
+}
+
+func (i *ClusterActionRunner) UpdateUser(obj *v1alpha1.KeycloakUser, realm string) error {
+	if i.realmClient == nil {
+		return errors.New("cannot perform user update when client is nil")
+	}
+
+	err := i.realmClient.UpdateUser(&obj.Spec.User, realm)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i *ClusterActionRunner) DeleteUser(id, realm string) error {
+	if i.realmClient == nil {
+		return errors.New("cannot perform user delete when client is nil")
+	}
+	return i.realmClient.DeleteUser(id, realm)
+}
+
+// Check if Keycloak is available
 func (i *ClusterActionRunner) Ping() error {
 	if i.realmClient == nil {
 		return errors.New("cannot perform keycloak ping when client is nil")
 	}
 	return i.realmClient.Ping()
+}
+
+func (i *ClusterActionRunner) AssignRealmRole(obj *v1alpha1.KeycloakUserRole, userId, realm string) error {
+	if i.realmClient == nil {
+		return errors.New("cannot perform role assign when client is nil")
+	}
+	return i.realmClient.CreateUserRealmRole(obj, realm, userId)
+}
+
+func (i *ClusterActionRunner) RemoveRealmRole(obj *v1alpha1.KeycloakUserRole, userId, realm string) error {
+	if i.realmClient == nil {
+		return errors.New("cannot perform role assign when client is nil")
+	}
+	return i.realmClient.DeleteUserRealmRole(obj, realm, userId)
+}
+
+func (i *ClusterActionRunner) AssignClientRole(obj *v1alpha1.KeycloakUserRole, clientId, userId, realm string) error {
+	if i.realmClient == nil {
+		return errors.New("cannot perform role assign when client is nil")
+	}
+	return i.realmClient.CreateUserClientRole(obj, realm, clientId, userId)
+}
+
+func (i *ClusterActionRunner) RemoveClientRole(obj *v1alpha1.KeycloakUserRole, clientId, userId, realm string) error {
+	if i.realmClient == nil {
+		return errors.New("cannot perform role assign when client is nil")
+	}
+	return i.realmClient.DeleteUserClientRole(obj, realm, clientId, userId)
 }
 
 // Delete a realm using the keycloak api
@@ -252,6 +316,54 @@ type PingAction struct {
 	Msg string
 }
 
+type CreateUserAction struct {
+	Ref   *v1alpha1.KeycloakUser
+	Realm string
+	Msg   string
+}
+
+type UpdateUserAction struct {
+	Ref   *v1alpha1.KeycloakUser
+	Realm string
+	Msg   string
+}
+
+type DeleteUserAction struct {
+	ID    string
+	Realm string
+	Msg   string
+}
+
+type AssignRealmRoleAction struct {
+	UserID string
+	Ref    *v1alpha1.KeycloakUserRole
+	Realm  string
+	Msg    string
+}
+
+type RemoveRealmRoleAction struct {
+	UserID string
+	Ref    *v1alpha1.KeycloakUserRole
+	Realm  string
+	Msg    string
+}
+
+type AssignClientRoleAction struct {
+	UserID   string
+	ClientID string
+	Ref      *v1alpha1.KeycloakUserRole
+	Realm    string
+	Msg      string
+}
+
+type RemoveClientRoleAction struct {
+	UserID   string
+	ClientID string
+	Ref      *v1alpha1.KeycloakUserRole
+	Realm    string
+	Msg      string
+}
+
 func (i GenericCreateAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.Create(i.Ref)
 }
@@ -286,4 +398,32 @@ func (i PingAction) Run(runner ActionRunner) (string, error) {
 
 func (i ConfigureRealmAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.ApplyOverrides(i.Ref)
+}
+
+func (i CreateUserAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.CreateUser(i.Ref, i.Realm)
+}
+
+func (i UpdateUserAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.UpdateUser(i.Ref, i.Realm)
+}
+
+func (i DeleteUserAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.DeleteUser(i.ID, i.Realm)
+}
+
+func (i AssignRealmRoleAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.AssignRealmRole(i.Ref, i.UserID, i.Realm)
+}
+
+func (i RemoveRealmRoleAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.RemoveRealmRole(i.Ref, i.UserID, i.Realm)
+}
+
+func (i AssignClientRoleAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.AssignClientRole(i.Ref, i.ClientID, i.UserID, i.Realm)
+}
+
+func (i RemoveClientRoleAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.RemoveClientRole(i.Ref, i.ClientID, i.UserID, i.Realm)
 }

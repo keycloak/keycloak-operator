@@ -35,6 +35,13 @@ func (d *DesiredClusterState) AddActions(actions []ClusterAction) DesiredCluster
 	return *d
 }
 
+func (d *DesiredClusterState) AddActions(actions []ClusterAction) DesiredClusterState {
+	if actions != nil && len(actions) != 0 {
+		*d = append(*d, actions...)
+	}
+	return *d
+}
+
 type ClusterState struct {
 	KeycloakServiceMonitor          *monitoringv1.ServiceMonitor
 	KeycloakPrometheusRule          *monitoringv1.PrometheusRule

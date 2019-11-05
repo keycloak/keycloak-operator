@@ -109,6 +109,9 @@ rules:
   - keycloakbackups
   - keycloakbackups/status
   - keycloakbackups/finalizers
+  - keycloakusers
+  - keycloakusers/status
+  - keycloakusers/finalizers
   verbs:
   - get
   - list

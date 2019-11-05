@@ -1,0 +1,22 @@
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakUser
+metadata:
+  name: example-realm-user
+spec:
+  user:
+    username: "realm_user"
+    firstName: "Realm"
+    lastName: "User"
+    email: "realm_user@redhat.com"
+    enabled: True
+    emailVerified: False
+    realmRoles:
+      - "offline_access"
+    clientRoles:
+      account:
+        - "manage-account"
+      realm-management:
+        - "manage-users"
+  realmSelector:
+    matchLabels:
+      app: sso

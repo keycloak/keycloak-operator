@@ -3,13 +3,15 @@ package keycloakrealm
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"github.com/keycloak/keycloak-operator/pkg/controller/shared"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/record"
@@ -22,14 +24,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
-var log = logf.Log.WithName("controller_keycloakrealm")
-
 const (
 	RealmFinalizer           = "realm.cleanup"
-	RequeueDelaySeconds      = 30
 	RequeueDelayErrorSeconds = 5
-	ControllerName           = "keycloakrealm-controller"
+	ControllerName           = "controller_keycloakrealm"
 )
+
+var log = logf.Log.WithName(ControllerName)
 
 /**
 * USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
@@ -123,7 +124,7 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 		return reconcile.Result{Requeue: false}, nil
 	}
 
-	keycloaks, err := r.getMatchingKeycloaks(instance)
+	keycloaks, err := shared.GetMatchingKeycloaks(r.client, r.context, instance)
 	if err != nil {
 		return r.ManageError(instance, err)
 	}
@@ -136,6 +137,7 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 		// Get an authenticated keycloak api client for the instance
 		keycloakFactory := common.LocalConfigKeycloakFactory{}
 		authenticated, err := keycloakFactory.AuthenticatedClient(keycloak)
+
 		if err != nil {
 			return r.ManageError(instance, err)
 		}
@@ -169,21 +171,6 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 	}
 
 	return reconcile.Result{Requeue: false}, r.manageSuccess(instance, instance.DeletionTimestamp != nil)
-}
-
-// Try to get a list of keycloak instances that match the selector specified on the realm
-func (r *ReconcileKeycloakRealm) getMatchingKeycloaks(realm *kc.KeycloakRealm) (kc.KeycloakList, error) {
-	var list kc.KeycloakList
-	opts := &client.ListOptions{
-		LabelSelector: labels.SelectorFromSet(realm.Spec.InstanceSelector.MatchLabels),
-	}
-
-	err := r.client.List(r.context, opts, &list)
-	if err != nil {
-		return list, err
-	}
-
-	return list, nil
 }
 
 func (r *ReconcileKeycloakRealm) manageSuccess(realm *kc.KeycloakRealm, deleted bool) error {
@@ -250,7 +237,7 @@ func (r *ReconcileKeycloakRealm) ManageError(realm *kc.KeycloakRealm, issue erro
 	}
 
 	return reconcile.Result{
-		RequeueAfter: RequeueDelayErrorSeconds,
+		RequeueAfter: RequeueDelayErrorSeconds * time.Second,
 		Requeue:      true,
 	}, nil
 }
