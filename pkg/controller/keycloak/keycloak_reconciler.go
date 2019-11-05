@@ -26,10 +26,16 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 	desired = desired.AddAction(i.GetKeycloakPrometheusRuleDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakServiceMonitorDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakGrafanaDashboardDesiredState(clusterState, cr))
-	desired = desired.AddAction(i.getDatabaseSecretDesiredState(clusterState, cr))
-	desired = desired.AddAction(i.getPostgresqlPersistentVolumeClaimDesiredState(clusterState, cr))
-	desired = desired.AddAction(i.getPostgresqlDeploymentDesiredState(clusterState, cr))
+
+	if !cr.Spec.ExternalDatabase.Enabled {
+		desired = desired.AddAction(i.getDatabaseSecretDesiredState(clusterState, cr))
+		desired = desired.AddAction(i.getPostgresqlPersistentVolumeClaimDesiredState(clusterState, cr))
+		desired = desired.AddAction(i.getPostgresqlDeploymentDesiredState(clusterState, cr))
+	} else {
+		desired = desired.AddAction(i.getPostgresqlServiceEndpointsDesiredState(clusterState, cr))
+	}
 	desired = desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr))
+
 	desired = desired.AddAction(i.getKeycloakServiceDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDiscoveryServiceDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDeploymentOrRHSSODesiredState(clusterState, cr))
@@ -281,5 +287,16 @@ func (i *KeycloakReconciler) getKeycloakIngressDesiredState(clusterState *common
 	return common.GenericUpdateAction{
 		Ref: model.KeycloakIngressReconciled(cr, clusterState.KeycloakIngress),
 		Msg: "Update Keycloak Ingress",
+	}
+}
+
+func (i *KeycloakReconciler) getPostgresqlServiceEndpointsDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	if clusterState.PostgresqlServiceEndpoints == nil {
+		// This happens only during initial run
+		return nil
+	}
+	return common.GenericUpdateAction{
+		Ref: model.PostgresqlServiceEndpointsReconciled(cr, clusterState.PostgresqlServiceEndpoints, clusterState.DatabaseSecret),
+		Msg: "Update External Database Service Endpoints",
 	}
 }

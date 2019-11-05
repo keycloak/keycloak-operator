@@ -1,3 +1,4 @@
 = Index
 
 * link:backups.asciidoc[Backups]
+* link:external-database.asciidoc[Using external database]

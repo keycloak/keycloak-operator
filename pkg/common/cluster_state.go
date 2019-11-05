@@ -42,9 +42,10 @@ type ClusterState struct {
 	KeycloakAdminSecret             *v1.Secret
 	KeycloakIngress                 *v1beta1.Ingress
 	KeycloakRoute                   *v13.Route
+	PostgresqlServiceEndpoints      *v1.Endpoints
 }
 
-func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error { //nolint
 	stateManager := GetStateManager()
 	routeKindExists, keyExists := stateManager.GetState(RouteKind).(bool)
 
@@ -84,6 +85,11 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 	}
 
 	err = i.readPostgresqlServiceCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readPostgresqlServiceEndpointsCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
 	}
@@ -167,6 +173,24 @@ func (i *ClusterState) readPostgresqlServiceCurrentState(context context.Context
 	} else {
 		i.PostgresqlService = postgresqlService.DeepCopy()
 		cr.UpdateStatusSecondaryResources(i.PostgresqlService.Kind, i.PostgresqlService.Name)
+	}
+	return nil
+}
+
+func (i *ClusterState) readPostgresqlServiceEndpointsCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	postgresqlServiceEndpoints := model.PostgresqlServiceEndpoints(cr)
+	postgresqlServiceEndpointsSelector := model.PostgresqlServiceEndpointsSelector(cr)
+
+	err := controllerClient.Get(context, postgresqlServiceEndpointsSelector, postgresqlServiceEndpoints)
+	if err != nil {
+		if !apiErrors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.PostgresqlServiceEndpoints = postgresqlServiceEndpoints.DeepCopy()
+		if cr.Spec.ExternalDatabase.Enabled {
+			cr.UpdateStatusSecondaryResources(i.PostgresqlService.Kind, i.PostgresqlService.Name)
+		}
 	}
 	return nil
 }

@@ -28,15 +28,17 @@ const (
 	// Required by the Integreately Backup Image
 	DatabaseSecretDatabaseProperty = "POSTGRES_DATABASE" // nolint
 	// Required by the Integreately Backup Image
-	DatabaseSecretSuperuserProperty     = "POSTGRES_SUPERUSER" // nolint
-	KeycloakServicePort                 = 8443
-	AdminUsernameProperty               = "ADMIN_USERNAME"        // nolint
-	AdminPasswordProperty               = "ADMIN_PASSWORD"        // nolint
-	ServingCertSecretName               = "sso-x509-https-secret" // nolint
-	RouteLoadBalancingStrategy          = "source"
-	PostgresqlBackupServiceAccountName  = "keycloak-operator"
-	KeycloakExtensionEnvVar             = "KEYCLOAK_EXTENSIONS"
-	KeycloakExtensionPath               = "/opt/jboss/keycloak/providers"
-	KeycloakExtensionsInitContainerPath = "/opt/extensions"
-	RhssoExtensionPath                  = "/opt/eap/providers"
+	DatabaseSecretSuperuserProperty       = "POSTGRES_SUPERUSER"        // nolint
+	DatabaseSecretExternalAddressProperty = "POSTGRES_EXTERNAL_ADDRESS" // nolint
+	DatabaseSecretExternalPortProperty    = "POSTGRES_EXTERNAL_PORT"    // nolint
+	KeycloakServicePort                   = 8443
+	AdminUsernameProperty                 = "ADMIN_USERNAME"        // nolint
+	AdminPasswordProperty                 = "ADMIN_PASSWORD"        // nolint
+	ServingCertSecretName                 = "sso-x509-https-secret" // nolint
+	RouteLoadBalancingStrategy            = "source"
+	PostgresqlBackupServiceAccountName    = "keycloak-operator"
+	KeycloakExtensionEnvVar               = "KEYCLOAK_EXTENSIONS"
+	KeycloakExtensionPath                 = "/opt/jboss/keycloak/providers"
+	KeycloakExtensionsInitContainerPath   = "/opt/extensions"
+	RhssoExtensionPath                    = "/opt/eap/providers"
 )

@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
@@ -253,6 +254,61 @@ func TestKeycloakReconciler_Test_No_Action_When_Monitoring_Resources_Dont_Exist(
 		assert.NotEqual(t, reflect.TypeOf(model.GrafanaDashboard(cr)), reflect.TypeOf(element.(common.GenericCreateAction).Ref))
 		assert.NotEqual(t, reflect.TypeOf(model.ServiceMonitor(cr)), reflect.TypeOf(element.(common.GenericCreateAction).Ref))
 	}
+}
+
+func TestKeycloakReconciler_Test_Creating_All_With_External_Database(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.ExternalDatabase.Enabled = true
+
+	currentState := common.NewClusterState()
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[0])
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[1])
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[3])
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[4])
+	assert.IsType(t, model.DatabaseSecret(cr), desiredState[0].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.PostgresqlService(cr), desiredState[1].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakService(cr), desiredState[2].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakDiscoveryService(cr), desiredState[3].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakDeployment(cr), desiredState[4].(common.GenericCreateAction).Ref)
+}
+
+func TestKeycloakReconciler_Test_Updating_External_Database(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.ExternalDatabase.Enabled = true
+
+	currentState := common.NewClusterState()
+	currentState.PostgresqlServiceEndpoints = model.PostgresqlServiceEndpoints(cr)
+	currentState.DatabaseSecret = model.DatabaseSecret(cr)
+	// This conversion is done my K8s. In the tests, we need to fake it.
+	currentState.DatabaseSecret.Data = map[string][]byte{
+		model.DatabaseSecretExternalAddressProperty: []byte("10.10.10.1"),
+		model.DatabaseSecretExternalPortProperty:    []byte("5432"),
+	}
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	var endpoints *v1.Endpoints
+	for _, v := range desiredState {
+		if reflect.TypeOf(v) == reflect.TypeOf(common.GenericUpdateAction{}) {
+			if reflect.TypeOf(v.(common.GenericUpdateAction).Ref) == reflect.TypeOf(model.PostgresqlServiceEndpoints(cr)) {
+				endpoints = v.(common.GenericUpdateAction).Ref.(*v1.Endpoints)
+			}
+		}
+	}
+	assert.NotNil(t, endpoints)
+	assert.Equal(t, model.PostgresqlServiceEndpointsReconciled(cr, currentState.PostgresqlServiceEndpoints, currentState.DatabaseSecret), endpoints)
 }
 
 func TestKeycloakReconciler_Test_Recreate_Credentials_When_Missig(t *testing.T) {
