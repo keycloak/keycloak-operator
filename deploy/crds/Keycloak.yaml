@@ -33,23 +33,6 @@ spec:
           type: object
           required: []
           properties:
-            externalDatabaseSecret:
-              description: |
-                A Secret containing the connection string and credentials to an external database. The Secret should be in the following format:
-
-                 apiVersion: v1
-                 kind: Secret
-                 metadata:
-                   name: <adminCredentialSecret>
-                 type: Opaque
-                 data:
-                   connectionString: <database connection string>
-                   user: <database user>
-                   password: <password>
-                   database: <database name>
-
-                If not provided a Postgres instance will be created in the same namespace.
-              type: string
             adminCredentialSecret:
               description: |
                 The name of the Secret that contains the admin password in a `password` property. The Secret should be in the following format:
@@ -57,7 +40,7 @@ spec:
                  apiVersion: v1
                  kind: Secret
                  metadata:
-                   name: <adminCredentialSecret>
+                   name: <admin credential>
                  type: Opaque
                  data:
                    password: <admin user password>
@@ -80,6 +63,29 @@ spec:
                 enabled:
                   type: boolean
                   description: "If enabled the operator will create an Ingress (or a Route on OpenShift) for the Keycloak Service"
+            externalDatabase:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  description: |
+                    If enabled the operator will not create a Postgresql deployment and connect to an external database.
+                    The same Secret with database credentials will be reused to configure Endpoints object corresponding
+                    to the database Service. The Secret should be in the following format:
+
+                    apiVersion: v1
+                    kind: Secret
+                    metadata:
+                      name: keycloak-db-secret
+                    type: Opaque
+                    data:
+                      POSTGRES_USERNAME: <database username>
+                      POSTGRES_PASSWORD: <database password>
+                      POSTGRES_DATABASE: <database name>
+                      POSTGRES_EXTERNAL_ADDRESS: <external database address resolvable by k8s cluster>
+                      POSTGRES_EXTERNAL_PORT: <external database port>
+                      POSTGRES_HOST: keycloak-postgresql
+                      POSTGRES_SUPERUSER: true
             Profile:
               description: "A profile for running the deployment. Default is empty. Use RHSSO to run the product image instead of Keycloak."
               type: string
