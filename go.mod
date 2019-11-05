@@ -11,7 +11,6 @@ require (
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/integr8ly/grafana-operator v1.4.0
 	github.com/json-iterator/go v1.1.7
-	github.com/mattn/goveralls v0.0.3 // indirect
 	github.com/onsi/ginkgo v1.10.1 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
 	github.com/openshift/api v3.9.0+incompatible
