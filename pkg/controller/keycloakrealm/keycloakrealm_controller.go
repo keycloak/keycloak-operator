@@ -149,7 +149,7 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 			keycloak.Namespace,
 			keycloak.Name,
 			instance.Namespace,
-			instance.Spec.Realm))
+			instance.Spec.Realm.Realm))
 
 		err = realmState.Read(instance, authenticated, r.client)
 		if err != nil {
@@ -232,7 +232,10 @@ func (r *ReconcileKeycloakRealm) manageSuccess(realm *kc.KeycloakRealm, deleted 
 	// Resource created and finalizer does not exist: add finalizer
 	if !deleted && !finalizerExists {
 		realm.Finalizers = append(realm.Finalizers, RealmFinalizer)
-		log.Info(fmt.Sprintf("added finalizer to keycloak realm %v/%v", realm.Namespace, realm.Spec.Realm))
+		log.Info(fmt.Sprintf("added finalizer to keycloak realm %v/%v",
+			realm.Namespace,
+			realm.Spec.Realm.Realm))
+
 		return r.client.Update(r.context, realm)
 	}
 
@@ -240,7 +243,10 @@ func (r *ReconcileKeycloakRealm) manageSuccess(realm *kc.KeycloakRealm, deleted 
 	newFinalizers := []string{}
 	for _, finalizer := range realm.Finalizers {
 		if finalizer == RealmFinalizer {
-			log.Info(fmt.Sprintf("removed finalizer from keycloak realm %v/%v", realm.Namespace, realm.Spec.Realm))
+			log.Info(fmt.Sprintf("removed finalizer from keycloak realm %v/%v",
+				realm.Namespace,
+				realm.Spec.Realm.Realm))
+
 			continue
 		}
 		newFinalizers = append(newFinalizers, finalizer)

@@ -35,10 +35,10 @@ func KeycloakAdminSecretSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 func KeycloakAdminSecretReconciled(cr *v1alpha1.Keycloak, currentState *v1.Secret) *v1.Secret {
 	reconciled := currentState.DeepCopy()
 	// K8s automatically converts StringData to Data when getting the resource
-	if _, ok := reconciled.Data[AdminUsernameProperty]; !ok {
+	if val, ok := reconciled.Data[AdminUsernameProperty]; !ok || len(val) == 0 {
 		reconciled.Data[AdminUsernameProperty] = []byte("admin")
 	}
-	if _, ok := reconciled.Data[AdminPasswordProperty]; !ok {
+	if val, ok := reconciled.Data[AdminPasswordProperty]; !ok || len(val) == 0 {
 		reconciled.Data[AdminPasswordProperty] = []byte(RandStringRunes(10))
 	}
 	return reconciled

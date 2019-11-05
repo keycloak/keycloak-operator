@@ -36,17 +36,8 @@ func RHSSODeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 					},
 				},
 				Spec: v1.PodSpec{
-					Volumes: []v1.Volume{
-						{
-							Name: ServingCertSecretName,
-							VolumeSource: v1.VolumeSource{
-								Secret: &v1.SecretVolumeSource{
-									SecretName: ServingCertSecretName,
-									Optional:   &[]bool{true}[0],
-								},
-							},
-						},
-					},
+					Volumes:        KeycloakVolumes(),
+					InitContainers: KeycloakExtensionsInitContainers(cr),
 					Containers: []v1.Container{
 						{
 							Name:  KeycloakDeploymentName,
@@ -145,12 +136,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 									},
 								},
 							},
-							VolumeMounts: []v1.VolumeMount{
-								{
-									Name:      ServingCertSecretName,
-									MountPath: "/etc/x509/https",
-								},
-							},
+							VolumeMounts: KeycloakVolumeMounts(RhssoExtensionPath),
 							LivenessProbe: &v1.Probe{
 								InitialDelaySeconds: 60,
 								TimeoutSeconds:      1,
@@ -191,17 +177,7 @@ func RHSSODeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet) *v13.StatefulSet {
 	reconciled := currentState.DeepCopy()
 	reconciled.ResourceVersion = currentState.ResourceVersion
-	reconciled.Spec.Template.Spec.Volumes = []v1.Volume{
-		{
-			Name: ServingCertSecretName,
-			VolumeSource: v1.VolumeSource{
-				Secret: &v1.SecretVolumeSource{
-					SecretName: ServingCertSecretName,
-					Optional:   &[]bool{true}[0],
-				},
-			},
-		},
-	}
+	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes()
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:  KeycloakDeploymentName,
@@ -224,12 +200,7 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 					Protocol:      "TCP",
 				},
 			},
-			VolumeMounts: []v1.VolumeMount{
-				{
-					Name:      ServingCertSecretName,
-					MountPath: "/etc/x509/https",
-				},
-			},
+			VolumeMounts: KeycloakVolumeMounts(RhssoExtensionPath),
 			LivenessProbe: &v1.Probe{
 				InitialDelaySeconds: 60,
 				TimeoutSeconds:      1,
@@ -330,6 +301,7 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 			},
 		},
 	}
+	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
 
 	return reconciled
 }
