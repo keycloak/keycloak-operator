@@ -1,9 +1,14 @@
 package common
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/source"
@@ -52,4 +57,34 @@ func WatchSecondaryResource(c controller.Controller, controllerName string, reso
 
 func GetStateFieldName(controllerName string, kind string) string {
 	return controllerName + "-watch-" + kind
+}
+
+// Try to get a list of keycloak instances that match the selector specified on the realm
+func GetMatchingKeycloaks(ctx context.Context, c client.Client, labelSelector *v1.LabelSelector) (v1alpha1.KeycloakList, error) {
+	var list v1alpha1.KeycloakList
+	opts := &client.ListOptions{
+		LabelSelector: labels.SelectorFromSet(labelSelector.MatchLabels),
+	}
+
+	err := c.List(ctx, opts, &list)
+	if err != nil {
+		return list, err
+	}
+
+	return list, nil
+}
+
+// Try to get a list of keycloak instances that match the selector specified on the realm
+func GetMatchingRealms(ctx context.Context, c client.Client, labelSelector *v1.LabelSelector) (v1alpha1.KeycloakRealmList, error) {
+	var list v1alpha1.KeycloakRealmList
+	opts := &client.ListOptions{
+		LabelSelector: labels.SelectorFromSet(labelSelector.MatchLabels),
+	}
+
+	err := c.List(ctx, opts, &list)
+	if err != nil {
+		return list, err
+	}
+
+	return list, nil
 }

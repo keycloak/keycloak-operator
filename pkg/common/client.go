@@ -16,7 +16,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/kubernetes"
+	config2 "sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 const (
@@ -219,10 +220,15 @@ func (c *Client) get(resourcePath, resourceName string, unMarshalFunc func(body 
 		return nil, errors.Wrapf(err, "error performing GET %s request", resourceName)
 	}
 
+	defer res.Body.Close()
+	if res.StatusCode == 404 {
+		logrus.Errorf("Resource %v/%v doesn't exist", resourcePath, resourceName)
+		return nil, nil
+	}
+
 	if res.StatusCode != 200 {
 		return nil, fmt.Errorf("failed to GET %s: (%d) %s", resourceName, res.StatusCode, res.Status)
 	}
-	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
@@ -263,6 +269,9 @@ func (c *Client) GetClient(clientID, realmName string) (*v1alpha1.KeycloakAPICli
 	if err != nil {
 		return nil, err
 	}
+	if result == nil {
+		return nil, nil
+	}
 	ret := result.(*v1alpha1.KeycloakAPIClient)
 	return ret, err
 }
@@ -278,6 +287,9 @@ func (c *Client) GetClientSecret(clientID, realmName string) (string, error) {
 	})
 	if err != nil {
 		return "", errors.Wrap(err, "failed to get: "+fmt.Sprintf("realms/%s/clients/%s/client-secret", realmName, clientID))
+	}
+	if result == nil {
+		return "", nil
 	}
 	return result.(string), nil
 }
@@ -302,6 +314,9 @@ func (c *Client) GetUser(userID, realmName string) (*v1alpha1.KeycloakAPIUser, e
 	if err != nil {
 		return nil, err
 	}
+	if result == nil {
+		return nil, nil
+	}
 	ret := result.(*v1alpha1.KeycloakAPIUser)
 	return ret, err
 }
@@ -315,6 +330,9 @@ func (c *Client) GetIdentityProvider(alias string, realmName string) (*v1alpha1.
 	if err != nil {
 		return nil, err
 	}
+	if result == nil {
+		return nil, nil
+	}
 	return result.(*v1alpha1.KeycloakIdentityProvider), err
 }
 
@@ -324,6 +342,12 @@ func (c *Client) GetAuthenticatorConfig(configID, realmName string) (*v1alpha1.A
 		err := json.Unmarshal(body, authenticatorConfig)
 		return authenticatorConfig, err
 	})
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
 	return result.(*v1alpha1.AuthenticatorConfig), err
 }
 
@@ -416,7 +440,10 @@ func (c *Client) delete(resourcePath, resourceName string, obj T) error {
 		return errors.Wrapf(err, "error performing DELETE %s request", resourceName)
 	}
 	defer res.Body.Close()
-	if res.StatusCode != 204 {
+	if res.StatusCode == 404 {
+		logrus.Errorf("Resource %v/%v already deleted", resourcePath, resourceName)
+	}
+	if res.StatusCode != 204 && res.StatusCode != 404 {
 		return fmt.Errorf("failed to DELETE %s: (%d) %s", resourceName, res.StatusCode, res.Status)
 	}
 
@@ -743,13 +770,22 @@ type KeycloakClientFactory interface {
 	AuthenticatedClient(kc v1alpha1.Keycloak) (KeycloakInterface, error)
 }
 
-type KeycloakFactory struct {
-	SecretClient v1.SecretInterface
+type LocalConfigKeycloakFactory struct {
 }
 
 // AuthenticatedClient returns an authenticated client for requesting endpoints from the Keycloak api
-func (kf *KeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (KeycloakInterface, error) {
-	adminCreds, err := kf.SecretClient.Get(kc.Status.CredentialSecret, v12.GetOptions{})
+func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (KeycloakInterface, error) {
+	config, err := config2.GetConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	secretClient, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
+	adminCreds, err := secretClient.CoreV1().Secrets(kc.Namespace).Get(kc.Status.CredentialSecret, v12.GetOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get the admin credentials")
 	}

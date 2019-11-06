@@ -28,6 +28,13 @@ func (d *DesiredClusterState) AddAction(action ClusterAction) DesiredClusterStat
 	return *d
 }
 
+func (d *DesiredClusterState) AddActions(actions []ClusterAction) DesiredClusterState {
+	for _, action := range actions {
+		*d = d.AddAction(action)
+	}
+	return *d
+}
+
 type ClusterState struct {
 	KeycloakServiceMonitor          *monitoringv1.ServiceMonitor
 	KeycloakPrometheusRule          *monitoringv1.PrometheusRule

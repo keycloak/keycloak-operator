@@ -26,6 +26,9 @@ type ActionRunner interface {
 	Update(obj runtime.Object) error
 	CreateRealm(obj *v1alpha1.KeycloakRealm) error
 	DeleteRealm(obj *v1alpha1.KeycloakRealm) error
+	CreateClient(keycloakClient *v1alpha1.KeycloakClient, Realm string) error
+	DeleteClient(keycloakClient *v1alpha1.KeycloakClient, Realm string) error
+	UpdateClient(keycloakClient *v1alpha1.KeycloakClient, Realm string) error
 	ApplyOverrides(obj *v1alpha1.KeycloakRealm) error
 	Ping() error
 }
@@ -107,12 +110,33 @@ func (i *ClusterActionRunner) CreateRealm(obj *v1alpha1.KeycloakRealm) error {
 	return i.realmClient.CreateRealm(obj)
 }
 
+func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm string) error {
+	if i.realmClient == nil {
+		return errors.New("cannot perform client create when client is nil")
+	}
+	return i.realmClient.CreateClient(obj.Spec.Client, realm)
+}
+
+func (i *ClusterActionRunner) UpdateClient(obj *v1alpha1.KeycloakClient, realm string) error {
+	if i.realmClient == nil {
+		return errors.New("cannot perform client update when client is nil")
+	}
+	return i.realmClient.UpdateClient(obj.Spec.Client, realm)
+}
+
 // Delete a realm using the keycloak api
 func (i *ClusterActionRunner) DeleteRealm(obj *v1alpha1.KeycloakRealm) error {
 	if i.realmClient == nil {
 		return errors.New("cannot perform realm delete when client is nil")
 	}
 	return i.realmClient.DeleteRealm(obj.Spec.Realm.Realm)
+}
+
+func (i *ClusterActionRunner) DeleteClient(obj *v1alpha1.KeycloakClient, realm string) error {
+	if i.realmClient == nil {
+		return errors.New("cannot perform client delete when client is nil")
+	}
+	return i.realmClient.DeleteClient(obj.Spec.Client.ID, realm)
 }
 
 // Delete a realm using the keycloak api
@@ -196,9 +220,27 @@ type CreateRealmAction struct {
 	Msg string
 }
 
+type CreateClientAction struct {
+	Ref   *v1alpha1.KeycloakClient
+	Msg   string
+	Realm string
+}
+
+type UpdateClientAction struct {
+	Ref   *v1alpha1.KeycloakClient
+	Msg   string
+	Realm string
+}
+
 type DeleteRealmAction struct {
 	Ref *v1alpha1.KeycloakRealm
 	Msg string
+}
+
+type DeleteClientAction struct {
+	Ref   *v1alpha1.KeycloakClient
+	Realm string
+	Msg   string
 }
 
 type ConfigureRealmAction struct {
@@ -222,8 +264,20 @@ func (i CreateRealmAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.CreateRealm(i.Ref)
 }
 
+func (i CreateClientAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.CreateClient(i.Ref, i.Realm)
+}
+
+func (i UpdateClientAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.UpdateClient(i.Ref, i.Realm)
+}
+
 func (i DeleteRealmAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.DeleteRealm(i.Ref)
+}
+
+func (i DeleteClientAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.DeleteClient(i.Ref, i.Realm)
 }
 
 func (i PingAction) Run(runner ActionRunner) (string, error) {

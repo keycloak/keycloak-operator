@@ -13,10 +13,11 @@ Currently in development. Will eventually replace https://github.com/integr8ly/k
 The documentation might be found in the  [docs](./docs/README.asciidoc) directory.
 
 ## Supported Custom Resources
-| *CustomResourceDefinition*                        | *Description*                                            |
-| ------------------------------------------------- | -------------------------------------------------------- |
-| [Keycloak](./deploy/crds/Keycloak.yaml)           | Manages, installs and configures Keycloak on the cluster |
-| [KeycloakRealm](./deploy/crds/KeycloakRealm.yaml) | Represents a realm in a keycloak server                  |
+| *CustomResourceDefinition*                          | *Description*                                            |
+| --------------------------------------------------- | -------------------------------------------------------- |
+| [Keycloak](./deploy/crds/Keycloak.yaml)             | Manages, installs and configures Keycloak on the cluster |
+| [KeycloakRealm](./deploy/crds/KeycloakRealm.yaml)   | Represents a realm in a keycloak server                  |
+| [KeycloakClient](./deploy/crds/KeycloakClient.yaml) | Represents a client in a keycloak server                 |
 
 ## Local Development
 *Note*: You will need a running Kubernetes or OpenShift cluster to use the Operator
@@ -109,8 +110,8 @@ Keycloak Operator supports the following version of key components:
 
  | *Component*              | *Version/Tag*                                                          |
  | ------------------------ | ---------------------------------------------------------------------- |
- | `Keycloak`               | `jboss/keycloak:7.0.0`                                                 |
- | `Red Hat Single-Sign-On` | `registry.redhat.io/redhat-sso-7-tech-preview/sso-cd-openshift:6`      |
+ | `Keycloak`               | `jboss/keycloak:7.0.1`                                                 |
+ | `Red Hat Single-Sign-On` | `registry.access.redhat.com/redhat-sso-7/sso73-openshift:1.0-15`       |
  | `Postgresql`             | `9.5`                                                                  |
 
 ## Activating Red Hat Single-Sign-On
