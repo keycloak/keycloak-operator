@@ -1,4 +1,5 @@
 = Index
 
+* link:keycloak-client.asciidoc[KeycloakClient Custom Resource]
 * link:backups.asciidoc[Backups]
 * link:external-database.asciidoc[Using external database]

@@ -12,10 +12,8 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/record"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	config2 "sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
@@ -136,7 +134,8 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 	// process all of them
 	for _, keycloak := range keycloaks.Items {
 		// Get an authenticated keycloak api client for the instance
-		authenticated, err := r.getAuthenticatedClient(keycloak, instance)
+		keycloakFactory := common.LocalConfigKeycloakFactory{}
+		authenticated, err := keycloakFactory.AuthenticatedClient(keycloak)
 		if err != nil {
 			return r.ManageError(instance, err)
 		}
@@ -170,24 +169,6 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 	}
 
 	return reconcile.Result{Requeue: false}, r.manageSuccess(instance, instance.DeletionTimestamp != nil)
-}
-
-func (r *ReconcileKeycloakRealm) getAuthenticatedClient(kc kc.Keycloak, realm *kc.KeycloakRealm) (common.KeycloakInterface, error) {
-	config, err := config2.GetConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	secretClient, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	factory := common.KeycloakFactory{
-		SecretClient: secretClient.CoreV1().Secrets(kc.Namespace),
-	}
-
-	return factory.AuthenticatedClient(kc)
 }
 
 // Try to get a list of keycloak instances that match the selector specified on the realm

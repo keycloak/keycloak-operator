@@ -1,0 +1,137 @@
+package keycloakclient
+
+import (
+	"testing"
+	"time"
+
+	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
+	"github.com/keycloak/keycloak-operator/pkg/common"
+	"github.com/keycloak/keycloak-operator/pkg/model"
+	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/api/core/v1"
+	v13 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+func TestKeycloakBackupReconciler_Test_Creating_Client(t *testing.T) {
+	// given
+	keycloakCr := v1alpha1.Keycloak{}
+	cr := &v1alpha1.KeycloakClient{
+		ObjectMeta: v13.ObjectMeta{
+			Name:      "test",
+			Namespace: "test",
+		},
+		Spec: v1alpha1.KeycloakClientSpec{
+			RealmSelector: &v13.LabelSelector{
+				MatchLabels: map[string]string{"application": "sso"},
+			},
+			Client: &v1alpha1.KeycloakAPIClient{
+				ClientID: "test",
+				Secret:   "test",
+			},
+		},
+	}
+
+	currentState := &common.ClientState{
+		Realm: &v1alpha1.KeycloakRealm{
+			Spec: v1alpha1.KeycloakRealmSpec{
+				Realm: &v1alpha1.KeycloakAPIRealm{
+					Realm: "test",
+				},
+			},
+		},
+	}
+
+	// when
+	reconciler := NewKeycloakClientReconciler(keycloakCr)
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	assert.IsType(t, common.PingAction{}, desiredState[0])
+	assert.IsType(t, common.CreateClientAction{}, desiredState[1])
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
+	assert.IsType(t, model.ClientSecret(cr), desiredState[2].(common.GenericCreateAction).Ref)
+}
+
+func TestKeycloakBackupReconciler_Test_Delete_Client(t *testing.T) {
+	// given
+	keycloakCr := v1alpha1.Keycloak{}
+	cr := &v1alpha1.KeycloakClient{
+		ObjectMeta: v13.ObjectMeta{
+			Name:      "test",
+			Namespace: "test",
+			DeletionTimestamp: &v13.Time{
+				Time: time.Now(),
+			},
+		},
+		Spec: v1alpha1.KeycloakClientSpec{
+			RealmSelector: &v13.LabelSelector{
+				MatchLabels: map[string]string{"application": "sso"},
+			},
+			Client: &v1alpha1.KeycloakAPIClient{
+				ClientID: "test",
+				Secret:   "test",
+			},
+		},
+	}
+
+	currentState := &common.ClientState{
+		Realm: &v1alpha1.KeycloakRealm{
+			Spec: v1alpha1.KeycloakRealmSpec{
+				Realm: &v1alpha1.KeycloakAPIRealm{
+					Realm: "test",
+				},
+			},
+		},
+	}
+
+	// when
+	reconciler := NewKeycloakClientReconciler(keycloakCr)
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	assert.IsType(t, common.PingAction{}, desiredState[0])
+	assert.IsType(t, common.DeleteClientAction{}, desiredState[1])
+}
+
+func TestKeycloakBackupReconciler_Test_Update_Client(t *testing.T) {
+	// given
+	keycloakCr := v1alpha1.Keycloak{}
+	cr := &v1alpha1.KeycloakClient{
+		ObjectMeta: v13.ObjectMeta{
+			Name:      "test",
+			Namespace: "test",
+		},
+		Spec: v1alpha1.KeycloakClientSpec{
+			RealmSelector: &v13.LabelSelector{
+				MatchLabels: map[string]string{"application": "sso"},
+			},
+			Client: &v1alpha1.KeycloakAPIClient{
+				ClientID: "test",
+				Secret:   "test",
+			},
+		},
+	}
+
+	currentState := &common.ClientState{
+		Client:       &v1alpha1.KeycloakAPIClient{},
+		ClientSecret: &v1.Secret{},
+		Realm: &v1alpha1.KeycloakRealm{
+			Spec: v1alpha1.KeycloakRealmSpec{
+				Realm: &v1alpha1.KeycloakAPIRealm{
+					Realm: "test",
+				},
+			},
+		},
+	}
+
+	// when
+	reconciler := NewKeycloakClientReconciler(keycloakCr)
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	assert.IsType(t, common.PingAction{}, desiredState[0])
+	assert.IsType(t, common.UpdateClientAction{}, desiredState[1])
+	assert.Equal(t, "test", desiredState[1].(common.UpdateClientAction).Realm)
+	assert.IsType(t, common.GenericUpdateAction{}, desiredState[2])
+	assert.IsType(t, model.ClientSecretReconciled(cr, currentState.ClientSecret), desiredState[2].(common.GenericUpdateAction).Ref)
+}

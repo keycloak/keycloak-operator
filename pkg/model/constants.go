@@ -41,4 +41,7 @@ const (
 	KeycloakExtensionPath                 = "/opt/jboss/keycloak/providers"
 	KeycloakExtensionsInitContainerPath   = "/opt/extensions"
 	RhssoExtensionPath                    = "/opt/eap/providers"
+	ClientSecretName                      = ApplicationName + "-client-secret"
+	ClientSecretClientIDProperty          = "CLIENT_ID"
+	ClientSecretClientSecretProperty      = "CLIENT_SECRET"
 )
