@@ -185,6 +185,7 @@ func KeycloakDeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet) *v13.StatefulSet {
 	reconciled := currentState.DeepCopy()
 	reconciled.ResourceVersion = currentState.ResourceVersion
+	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
 	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes()
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
