@@ -358,7 +358,8 @@ const GrafanaDashboardJSON = `{
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{realm}}",
-          "refId": "B"
+          "refId": "B",
+          "instant": true
         }
       ],
       "timeFrom": null,
@@ -405,7 +406,8 @@ const GrafanaDashboardJSON = `{
           "format": "time_series",
           "intervalFactor": 1,
           "legendFormat": "{{client_id}}",
-          "refId": "B"
+          "refId": "B",
+          "instant": true
         }
       ],
       "timeFrom": null,
@@ -451,7 +453,7 @@ const GrafanaDashboardJSON = `{
           "expr": "sum(keycloak_registrations{namespace=\"$namespace\"}) by (client_id)",
           "format": "time_series",
           "hide": false,
-          "instant": false,
+          "instant": true,
           "intervalFactor": 1,
           "legendFormat": "{{client_id}}",
           "refId": "A"
@@ -1038,7 +1040,7 @@ const GrafanaDashboardJSON = `{
         "datasource": "Prometheus",
         "definition": "",
         "hide": 0,
-        "includeAll": false,
+        "includeAll": true,
         "label": "Namespace",
         "multi": false,
         "name": "namespace",
@@ -1060,7 +1062,7 @@ const GrafanaDashboardJSON = `{
         "datasource": "Prometheus",
         "definition": "",
         "hide": 0,
-        "includeAll": false,
+        "includeAll": true,
         "label": "Realm",
         "multi": false,
         "name": "realm",
@@ -1082,7 +1084,7 @@ const GrafanaDashboardJSON = `{
         "datasource": "Prometheus",
         "definition": "label_values(keycloak_logins{namespace=\"$namespace\",job=\"keycloak\",provider=\"keycloak\",realm=\"$realm\"},client_id)",
         "hide": 0,
-        "includeAll": false,
+        "includeAll": true,
         "label": "ClientId",
         "multi": false,
         "name": "ClientId",

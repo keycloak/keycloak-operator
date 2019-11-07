@@ -26,6 +26,9 @@ spec:
             - "view-profile"
           realm-management:
             - "manage-users"
+            - "view-users"
+            - "query-users"
+            - "create-client"
   realmOverrides:
     - forFlow: "browser"
       identityProvider: "openshift-v4"
