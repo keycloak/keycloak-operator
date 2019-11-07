@@ -1,7 +1,7 @@
 package model
 
 import (
-	"strings"
+	"strconv"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v13 "k8s.io/api/apps/v1"
@@ -353,28 +353,31 @@ func KeycloakVolumes() []v1.Volume {
 	}
 }
 
-// We allow the patch version of an image for keycloak to be modified outside of the operator on the cluster
+// We allow the patch version of an image for keycloak to be increased outside of the operator on the cluster
 func getReconciledKeycloakImage(currentState *v13.StatefulSet) string {
 	currentImage := GetCurrentKeycloakImage(currentState)
-	currentImageRepo, currentImageMajor, currentImageMinor := getKeycloakImageRepoAndVersion(currentImage)
-	keycloakImageRepo, keycloakImageMajor, keycloakImageMinor := getKeycloakImageRepoAndVersion(KeycloakImage)
+	currentImageRepo, currentImageMajor, currentImageMinor, currentImagePatch := GetImageRepoAndVersion(currentImage)
+	keycloakImageRepo, keycloakImageMajor, keycloakImageMinor, keycloakImagePatch := GetImageRepoAndVersion(KeycloakImage)
 
-	// Check the repos, major and minor versions match. If so, return and reconcile with the current cluster image
+	// Need to convert the patch version strings to ints for a > comparison.
+	currentImagePatchInt, err := strconv.Atoi(currentImagePatch)
+	// If we are unable to convert to an int, always default to the operator image
+	if err != nil {
+		return KeycloakImage
+	}
+
+	// Need to convert the patch version strings to ints for a > comparison.
+	keycloakImagePatchInt, err := strconv.Atoi(keycloakImagePatch)
+	// If we are unable to convert to an int, always default to the operator image
+	if err != nil {
+		return KeycloakImage
+	}
+
+	// Check the repos, major and minor versions match. Check the cluster patch version is greater. If so, return and reconcile with the current cluster image
 	// E.g. quay.io/keycloak/keycloak:7.0.1
-	if currentImageRepo == keycloakImageRepo && currentImageMajor == keycloakImageMajor && currentImageMinor == keycloakImageMinor {
+	if currentImageRepo == keycloakImageRepo && currentImageMajor == keycloakImageMajor && currentImageMinor == keycloakImageMinor && currentImagePatchInt > keycloakImagePatchInt {
 		return currentImage
 	}
 
 	return KeycloakImage
-}
-
-// Split a full keycloak image string (e.g. quay.io/keycloak/keycloak:7.0.1) into it's repo and individual versions
-func getKeycloakImageRepoAndVersion(image string) (string, string, string) {
-	imageStrings := strings.Split(image, ":")
-	imageRepo, imageTag := imageStrings[0], imageStrings[1]
-
-	imageTagStrings := strings.Split(imageTag, ".")
-	imageMajor, imageMinor := imageTagStrings[0], imageTagStrings[1]
-
-	return imageRepo, imageMajor, imageMinor
 }
