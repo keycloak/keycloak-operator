@@ -1,6 +1,7 @@
 package model
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -308,15 +309,42 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 	return reconciled
 }
 
-// We allow the patch version of an image for RH-SSO to be modified outside of the operator on the cluster
+// We allow the patch version of an image for RH-SSO to be increased outside of the operator on the cluster
 func getReconciledRHSSOImage(currentState *v13.StatefulSet) string {
 	currentImage := GetCurrentKeycloakImage(currentState)
-	currentImageRepo := strings.Split(currentImage, ":")[0]
-	RHSSOImageRepo := strings.Split(RHSSOImage, ":")[0]
+	currentImageRepo, currentImageMajor, currentImageMinor, currentImagePatch := GetImageRepoAndVersion(currentImage)
+	RHSSOImageRepo, RHSSOImageMajor, RHSSOImageMinor, RHSSOImagePatch := GetImageRepoAndVersion(KeycloakImage)
 
-	// Since all tags in the RHSSO image repo are patch versions, as long as the image repo is the same, the image tag change is allowed
-	// E.g. registry.access.redhat.com/redhat-sso-7/sso73-openshift:1.0-15
-	if currentImageRepo == RHSSOImageRepo {
+	// Since the minor version of the RHSSO image should always be 0-X, we can ignore all before the -
+	currentImageMinorStrings := strings.Split(currentImageMinor, "-")
+	if len(currentImageMinorStrings) > 1 {
+		currentImageMinor = currentImageMinorStrings[1]
+	}
+	RHSSOImageMinorStrings := strings.Split(RHSSOImageMinor, "-")
+	if len(RHSSOImageMinor) > 1 {
+		RHSSOImageMinor = RHSSOImageMinorStrings[1]
+	}
+
+	// Need to convert the minor and patch version strings to ints for a > comparison.
+	// If we are unable to convert to an int, default to the operator image
+	currentImageMinorInt, err := strconv.Atoi(currentImageMinor)
+	if err != nil {
+		return RHSSOImage
+	}
+
+	RHSSOImageMinorInt, err := strconv.Atoi(RHSSOImageMinor)
+	if err != nil {
+		return RHSSOImage
+	}
+
+	// The patch version usually doesn't exist so we can ignore the error
+	currentImagePatchInt, _ := strconv.Atoi(currentImagePatch)
+	RHSSOImagePatchInt, _ := strconv.Atoi(RHSSOImagePatch)
+
+	// All tags in the RHSSO image repo are technically patch versions
+	// Image repo should match, the "major" version should match which is always "1". If the minor or patch tag versions have increased on the cluster, we will allow it ot reconcile this image
+	// E.g. registry.access.redhat.com/redhat-sso-7/sso73-openshift:1.0-15 or registry.access.redhat.com/redhat-sso-7/sso73-openshift:1.0-15.1567588155
+	if currentImageRepo == RHSSOImageRepo && currentImageMajor == RHSSOImageMajor && (currentImageMinorInt > RHSSOImageMinorInt || currentImagePatchInt > RHSSOImagePatchInt) {
 		return currentImage
 	}
 
