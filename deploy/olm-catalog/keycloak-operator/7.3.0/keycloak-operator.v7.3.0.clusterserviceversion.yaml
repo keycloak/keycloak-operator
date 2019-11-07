@@ -1,0 +1,242 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    capabilities: Basic Install
+    categories: security
+    certified: 'False'
+    containerImage: 'quay.io/keycloak/keycloak-operator:v7.3.0'
+    createdAt: 2019-11-08 00:00:00
+    description: 'An Operator for installing and managing Keycloak'
+    repository: 'https://github.com/keycloak/keycloak-operator'
+    support: Red Hat
+    alm-examples: |-
+      [
+        {
+          "apiVersion": "keycloak.org/v1alpha1",
+          "kind": "Keycloak",
+          "metadata": {
+            "name": "example-keycloak",
+            "labels": {
+              "app": "sso"
+            }
+          },
+          "spec": {
+            "instances": 1,
+            "extensions": [
+              "https://github.com/aerogear/keycloak-metrics-spi/releases/download/1.0.4/keycloak-metrics-spi-1.0.4.jar"
+            ],
+            "externalAccess": {
+              "enabled": true
+            }
+          }
+        },
+        {
+          "apiVersion": "keycloak.org/v1alpha1",
+          "kind": "KeycloakRealm",
+          "metadata": {
+            "name": "example-keycloakrealm"
+          },
+          "spec": {
+            "realm": {
+              "id": "basic",
+              "realm": "basic",
+              "enabled": true,
+              "displayName": "Basic Realm"
+            },
+            "instanceSelector": {
+              "matchLabels": {
+                "app": "sso"
+              }
+            }
+          }
+        },
+        {
+          "apiVersion": "keycloak.org/v1alpha1",
+          "kind": "KeycloakBackup",
+          "metadata": {
+            "name": "example-keycloakbackup"
+          }
+        }
+      ]
+  name: keycloak-operator.v7.3.0
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+      - description: "Represents a Keycloak Instance"
+        displayName: "Keycloak"
+        kind: Keycloak
+        name: keycloaks.keycloak.org
+        version: v1alpha1
+      - description: "Represents a Keycloak Realm"
+        displayName: "KeycloakRealm"
+        kind: KeycloakRealm
+        name: keycloakrealms.keycloak.org
+        version: v1alpha1
+      - description: "Represents a Keycloak Backup"
+        displayName: "KeycloakBackup"
+        kind: KeycloakBackup
+        name: keycloakbackups.keycloak.org
+        version: v1alpha1
+  description: |
+    A Kubernetes Operator based on the Operator SDK for installing and managing Keycloak.
+
+    Keycloak lets you add authentication to applications and secure services with minimum fuss. No need to deal with storing users or authenticating users. It's all available out of the box.
+
+    The operator can deploy and manage Keycloak instances on Kubernetes and OpenShift.
+    The following features are supported:
+
+    * Install Keycloak to a namespace
+    * Import Keycloak Realms from the same or other namespaces
+    * Create scheduled backups of the database
+    * Install Extensions
+  displayName: Keycloak Operator
+  icon:
+    - base64data: PHN2ZyBpZD0iR3VpZGVzIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6bm9uZTt9LmNscy0ye2NsaXAtcGF0aDp1cmwoI2NsaXAtcGF0aCk7fS5jbHMtM3tmaWxsOiM0ZDRkNGQ7fS5jbHMtNHtmaWxsOiNlMWUxZTE7fS5jbHMtNXtmaWxsOiNjOGM4Yzg7fS5jbHMtNntmaWxsOiNjMmMyYzI7fS5jbHMtN3tmaWxsOiNjN2M3Yzc7fS5jbHMtOHtmaWxsOiNjZWNlY2U7fS5jbHMtOXtmaWxsOiNkM2QzZDM7fS5jbHMtMTB7ZmlsbDojYzZjNmM2O30uY2xzLTExe2ZpbGw6I2Q1ZDVkNTt9LmNscy0xMntmaWxsOiNkMGQwZDA7fS5jbHMtMTN7ZmlsbDojYmZiZmJmO30uY2xzLTE0e2ZpbGw6I2Q5ZDlkOTt9LmNscy0xNXtmaWxsOiNkNGQ0ZDQ7fS5jbHMtMTZ7ZmlsbDojZDhkOGQ4O30uY2xzLTE3e2ZpbGw6I2UyZTJlMjt9LmNscy0xOHtmaWxsOiNlNGU0ZTQ7fS5jbHMtMTl7ZmlsbDojZGVkZWRlO30uY2xzLTIwe2ZpbGw6I2M1YzVjNTt9LmNscy0yMXtmaWxsOiNkMWQxZDE7fS5jbHMtMjJ7ZmlsbDojZGRkO30uY2xzLTIze2ZpbGw6I2UzZTNlMzt9LmNscy0yNHtmaWxsOiMwMGI4ZTM7fS5jbHMtMjV7ZmlsbDojMzNjNmU5O30uY2xzLTI2e2ZpbGw6IzAwOGFhYTt9PC9zdHlsZT48Y2xpcFBhdGggaWQ9ImNsaXAtcGF0aCI+PHJlY3QgY2xhc3M9ImNscy0xIiB4PSIwLjAyIiB5PSIwLjAyIiB3aWR0aD0iMjU1Ljk4IiBoZWlnaHQ9IjI1NS45OCIvPjwvY2xpcFBhdGg+PC9kZWZzPjx0aXRsZT5rZXljbG9ha19kZWxpdmVyYWJsZXM8L3RpdGxlPjxnIGNsYXNzPSJjbHMtMiI+PHBhdGggY2xhc3M9ImNscy0zIiBkPSJNMjE5LjI0LDc2YTEuOSwxLjksMCwwLDEtMS42Ni0uOTVMMTg4LjcsMjVBMiwyLDAsMCwwLDE4NywyNEg2OS4xOGExLjksMS45LDAsMCwwLTEuNjYuOTVsLTMwLDUyYTAsMCwwLDAsMCwwLDBMOC42LDEyNy4wNWExLjk0LDEuOTQsMCwwLDAsMCwxLjkxTDM3LjUsMTc5bDMwLDUyYTEuOSwxLjksMCwwLDAsMS42Ni45NUgxODdhMiwyLDAsMCwwLDEuNjgtLjk1TDIxNy42LDE4MWExLjksMS45LDAsMCwxLDEuNjYtLjk1aDM2YTIuMTYsMi4xNiwwLDAsMCwyLjE2LTIuMTZWNzguMTdBMi4xNiwyLjE2LDAsMCwwLDI1NS4yMiw3NmgtMzZaIi8+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMjU1LjIzLDc2aC0yMTZhMiwyLDAsMCwwLTEuNjYuOTNzMCwwLDAsMGwtMS4wNywxLjg1TDIzLjIyLDEwMS43NSw4LjYxLDEyNy4wNmExLjksMS45LDAsMCwwLDAsMS45MmwzLjE3LDUuNUwzNy41MSwxNzlhMS45MiwxLjkyLDAsMCwwLDEuNjcsMUgyNTUuMjZhMi4xNCwyLjE0LDAsMCwwLDIuMTItMi4xNFY3OC4xOEEyLjE2LDIuMTYsMCwwLDAsMjU1LjIzLDc2WiIvPjxwYXRoIGNsYXNzPSJjbHMtNCIgZD0iTTQ0LjA2LDEyMi43NkwxMS43OCwxMzQuNDgsOC42MSwxMjlhMS45LDEuOSwwLDAsMSwwLTEuOTJsMTQuNjEtMjUuMzFaIi8+PHBvbHlnb24gY2xhc3M9ImNscy01IiBwb2ludHM9IjIzNi4xMSAxMzIuMTEgMjU3LjM4IDEyOS4wNyAyNTcuMzggMTUzLjc1IDIzNi4xMSAxMzIuMTEiLz48cGF0aCBjbGFzcz0iY2xzLTYiIGQ9Ik0yMzYuMTEsMTMyLjExbDIxLjI3LDIxLjY0djI0LjFhMi4xNCwyLjE0LDAsMCwxLTIuMTIsMi4xNEgyMzAuNVoiLz48cG9seWdvbiBjbGFzcz0iY2xzLTciIHBvaW50cz0iMjM2LjExIDEzMi4xMSAyMzAuNSAxNzkuOTkgMjAwLjc0IDE3OS45OSAxOTEuNzEgMTU4LjI3IDIzNi4xMSAxMzIuMTEiLz48cG9seWdvbiBjbGFzcz0iY2xzLTgiIHBvaW50cz0iMjM2LjExIDEzMi4xMSAyNTcuMzggMTA2LjIxIDI1Ny4zOCAxMjkuMDcgMjM2LjExIDEzMi4xMSIvPjxwYXRoIGNsYXNzPSJjbHMtOSIgZD0iTTI1Ny4zOCw3OC4xN3YyOGwtMjEuMjcsMjUuOUwyMjAuMDYsNzZoMzUuMTZBMi4xNiwyLjE2LDAsMCwxLDI1Ny4zOCw3OC4xN1oiLz48cG9seWdvbiBjbGFzcz0iY2xzLTEwIiBwb2ludHM9IjIwMC43NCAxNzkuOTkgMTg1LjAzIDE3OS45OSAxODAuOTYgMTc0LjE2IDE5MS43MSAxNTguMjcgMjAwLjc0IDE3OS45OSIvPjxwb2x5Z29uIGNsYXNzPSJjbHMtMTEiIHBvaW50cz0iMjM2LjExIDEzMi4xMSAxNzcuMjIgMTA3LjIyIDIwOC4xOSA3Ni4wMiAyMjAuMDYgNzYuMDIgMjM2LjExIDEzMi4xMSIvPjxwYXRoIGNsYXNzPSJjbHMtMTIiIGQ9Ik0xNzcuMjIsMTA3LjIybDE0LjQ5LDUxLjA1LDQ0LjQtMjYuMTZaIi8+PHBvbHlnb24gY2xhc3M9ImNscy0xMyIgcG9pbnRzPSIxODUuMDMgMTc5Ljk5IDE4MC43NyAxNzkuOTkgMTgwLjk2IDE3NC4xNiAxODUuMDMgMTc5Ljk5Ii8+PHBvbHlnb24gY2xhc3M9ImNscy0xNCIgcG9pbnRzPSIyMDguMTkgNzYuMDIgMTc3LjIyIDEwNy4yMiAxNzEuNjMgNzkuMzEgMTgzLjU5IDc2LjAyIDIwOC4xOSA3Ni4wMiIvPjxwYXRoIGNsYXNzPSJjbHMtMTUiIGQ9Ik0xNzcuMjIsMTA3LjIyTDEwNS43NCwxMjMuNywxODEsMTc0LjE2WiIvPjxwYXRoIGNsYXNzPSJjbHMtMTIiIGQ9Ik0xNzcuMjIsMTA3LjIyTDE4MSwxNzQuMTZsMTAuNzUtMTUuODlaIi8+PHBhdGggY2xhc3M9ImNscy0xNCIgZD0iTTE3MS42Myw3OS4zMUwxMDUuNzQsMTIzLjdsNzEuNDgtMTYuNDhaIi8+PHBvbHlnb24gY2xhc3M9ImNscy0xNiIgcG9pbnRzPSIxMDUuNzQgMTIzLjcgNzQuNzYgMTc5Ljk5IDU3LjExIDE3OS45OSA0NC4wNiAxMjIuNzYgMTA1Ljc0IDEyMy43Ii8+PHBhdGggY2xhc3M9ImNscy0xNyIgZD0iTTc0LDc2TDQ0LjA2LDEyMi43NiwzNi40NCw3OC44MywzNy41MSw3N3MwLDAsMCwwQTIsMiwwLDAsMSwzOS4xOCw3Nkg3NFoiLz48cGF0aCBjbGFzcz0iY2xzLTE2IiBkPSJNNTcuMTEsMTgwSDM5LjE4YTEuOTIsMS45MiwwLDAsMS0xLjY3LTFMMTEuNzgsMTM0LjQ4bDMyLjI4LTExLjcyWiIvPjxwb2x5Z29uIGNsYXNzPSJjbHMtMTgiIHBvaW50cz0iNDQuMDYgMTIyLjc2IDIzLjIyIDEwMS43NCAzNi40NCA3OC44MyA0NC4wNiAxMjIuNzYiLz48cG9seWdvbiBjbGFzcz0iY2xzLTE5IiBwb2ludHM9IjEzOC40IDc2LjAyIDExNy43OCA3Ni4wMiA4Ni4yIDc2LjAyIDEwNS43NCAxMjMuNyAxNzEuNjMgNzkuMzEgMTUxLjc3IDc2LjAyIDEzOC40IDc2LjAyIi8+PHBvbHlnb24gY2xhc3M9ImNscy0xOSIgcG9pbnRzPSI3OC4wNiA3Ni4wMiA3My45OCA3Ni4wMiA0NC4wNiAxMjIuNzYgMTA1Ljc0IDEyMy43IDg2LjIgNzYuMDIgNzguMDYgNzYuMDIiLz48cG9seWdvbiBjbGFzcz0iY2xzLTIwIiBwb2ludHM9IjE2Ni42MiAxNzkuOTkgMTc4LjEyIDE3OS45OSAxODAuNzcgMTc5Ljk5IDE4MC45NiAxNzQuMTYgMTY2LjYyIDE3OS45OSIvPjxwb2x5Z29uIGNsYXNzPSJjbHMtMTIiIHBvaW50cz0iMTgwLjk2IDE3NC4xNiAxMDUuNzQgMTIzLjcgMTE5LjI5IDE3OS45OSAxMzguNCAxNzkuOTkgMTY2LjYyIDE3OS45OSAxODAuOTYgMTc0LjE2Ii8+PHBvbHlnb24gY2xhc3M9ImNscy0yMSIgcG9pbnRzPSI3NC43NiAxNzkuOTkgNzguMDYgMTc5Ljk5IDExNy43OCAxNzkuOTkgMTE5LjI5IDE3OS45OSAxMDUuNzQgMTIzLjcgNzQuNzYgMTc5Ljk5Ii8+PHBvbHlnb24gY2xhc3M9ImNscy0yMiIgcG9pbnRzPSIxNzEuODMgNzYuMDIgMTcxLjYzIDc5LjMxIDE4My41OSA3Ni4wMiAxNzguMTIgNzYuMDIgMTcxLjgzIDc2LjAyIi8+PHBvbHlnb24gY2xhc3M9ImNscy0yMyIgcG9pbnRzPSIxNTEuNzcgNzYuMDIgMTcxLjYzIDc5LjMxIDE2OS43OSA3Ni4wMiAxNTEuNzcgNzYuMDIiLz48cG9seWdvbiBjbGFzcz0iY2xzLTE3IiBwb2ludHM9IjE2OS43OSA3Ni4wMiAxNzEuNjMgNzkuMzEgMTcxLjgzIDc2LjAyIDE2OS43OSA3Ni4wMiIvPjxwYXRoIGNsYXNzPSJjbHMtMjQiIGQ9Ik0xMTcuNTgsNzYuOTFMODguNTIsMTI3LjI0YTEuNjksMS42OSwwLDAsMC0uMjEuODJINjhMMTA3LjkxLDU5YTEuNTcsMS41NywwLDAsMSwuNTkuNThsMC4wNSwwLjA1LDksMTUuN0ExLjc0LDEuNzQsMCwwLDEsMTE3LjU4LDc2LjkxWiIvPjxwYXRoIGNsYXNzPSJjbHMtMjUiIGQ9Ik0xMTcuNTUsMTgxbC05LDE1LjYzYTEuNzUsMS43NSwwLDAsMS0uNjEuNThMNjgsMTI4LjA4djBIODguMzFhMS41NCwxLjU0LDAsMCwwLC4xOS43OSwwLjE4LDAuMTgsMCwwLDAsMCwuMDlsMjksNTAuMjlBMS43LDEuNywwLDAsMSwxMTcuNTUsMTgxWiIvPjxwYXRoIGNsYXNzPSJjbHMtMjYiIGQ9Ik0xMDcuOTEsNTlMNjgsMTI4LjA2aDB2MEw1OCwxNDUuNGwtOS41NS0xNi41NmExLjU0LDEuNTQsMCwwLDEtLjE5LTAuNzksMS42OSwxLjY5LDAsMCwxLC4yMS0wLjgybDkuNjctMTYuNzVMODcuNTQsNTkuNjJBMS43LDEuNywwLDAsMSw4OSw1OC43NWgxOEExLjc5LDEuNzksMCwwLDEsMTA3LjkxLDU5WiIvPjxwYXRoIGNsYXNzPSJjbHMtMjQiIGQ9Ik0xMDcuOTEsMTk3LjE2YTEuNzksMS43OSwwLDAsMS0uODYuMjNIODlhMS43LDEuNywwLDAsMS0xLjQ5LS44N0w2MC42OSwxNTAsNTgsMTQ1LjRsMTAtMTcuMzNaIi8+PHBhdGggY2xhc3M9ImNscy0yNiIgZD0iTTE4OC4xLDEyOC4wNmwtMzkuOSw2OS4xYTEuODcsMS44NywwLDAsMS0uNTktMC41OGwwLS4wNS05LTE1LjY3YTEuNzQsMS43NCwwLDAsMSwwLTEuNjFsMjktNTAuMzJhMS42OSwxLjY5LDAsMCwwLC4yNC0wLjg3SDE4OC4xWiIvPjxwYXRoIGNsYXNzPSJjbHMtMjQiIGQ9Ik0yMDcuODQsMTI4LjA2YTEuNjksMS42OSwwLDAsMS0uMjQuODdsLTM5LjA2LDY3LjY1YTEuNzEsMS43MSwwLDAsMS0xLjQ1LjhoLTE4YTEuODYsMS44NiwwLDAsMS0uODctMC4yM2wzOS45LTY5LjEsMTAtMTcuMzEsOS40OSwxNi40NUExLjY4LDEuNjgsMCwwLDEsMjA3Ljg0LDEyOC4wNloiLz48cGF0aCBjbGFzcz0iY2xzLTI0IiBkPSJNMTg4LjEsMTI4LjA2SDE2Ny44MmExLjY4LDEuNjgsMCwwLDAtLjI0LTAuODZsLTI5LTUwLjI3YTEuNywxLjcsMCwwLDEsMC0xLjczbDktMTUuNjVBMS44NywxLjg3LDAsMCwxLDE0OC4yLDU5WiIvPjxwYXRoIGNsYXNzPSJjbHMtMjUiIGQ9Ik0xOTguMSwxMTAuNzN2MGwtMTAsMTcuMzFMMTQ4LjIsNTlhMS44NiwxLjg2LDAsMCwxLC44Ny0wLjIzaDE4YTEuNzEsMS43MSwwLDAsMSwxLjQ1LjhaIi8+PC9nPjwvc3ZnPg==
+      mediatype: image/svg+xml
+  install:
+    spec:
+      deployments:
+      - name: keycloak-operator
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              name: keycloak-operator
+          strategy: {}
+          template:
+            metadata:
+              labels:
+                name: keycloak-operator
+            spec:
+              containers:
+              - command:
+                - keycloak-operator
+                env:
+                - name: WATCH_NAMESPACE
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.annotations['olm.targetNamespaces']
+                - name: POD_NAME
+                  valueFrom:
+                    fieldRef:
+                      fieldPath: metadata.name
+                - name: OPERATOR_NAME
+                  value: keycloak-operator
+                image: quay.io/keycloak/keycloak-operator:latest
+                imagePullPolicy: Always
+                name: keycloak-operator
+                resources: {}
+              serviceAccountName: keycloak-operator
+      permissions:
+      - rules:
+        - apiGroups:
+          - ""
+          resources:
+          - pods
+          - services
+          - services/finalizers
+          - endpoints
+          - persistentvolumeclaims
+          - events
+          - configmaps
+          - secrets
+          verbs:
+          - list
+          - get
+          - create
+          - update
+          - watch
+        - apiGroups:
+          - apps
+          resources:
+          - deployments
+          - daemonsets
+          - replicasets
+          - statefulsets
+          verbs:
+          - list
+          - get
+          - create
+          - update
+          - watch
+        - apiGroups:
+          - route.openshift.io
+          resources:
+          - routes
+          verbs:
+          - list
+          - get
+          - create
+          - update
+          - watch
+        - apiGroups:
+          - extensions
+          resources:
+          - ingresses
+          verbs:
+          - list
+          - get
+          - create
+          - update
+          - watch
+        - apiGroups:
+          - monitoring.coreos.com
+          resources:
+          - servicemonitors
+          - prometheusrules
+          verbs:
+          - list
+          - get
+          - create
+          - update
+          - watch
+        - apiGroups:
+          - integreatly.org
+          resources:
+          - grafanadashboards
+          verbs:
+          - get
+          - list
+          - create
+          - update
+          - watch
+        - apiGroups:
+          - apps
+          resourceNames:
+          - keycloak-operator
+          resources:
+          - deployments/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - keycloak.org
+          resources:
+          - keycloaks
+          - keycloaks/status
+          - keycloaks/finalizers
+          - keycloakrealms
+          - keycloakrealms/status
+          - keycloakrealms/finalizers
+          verbs:
+          - get
+          - list
+          - update
+          - watch
+        serviceAccountName: keycloak-operator
+    strategy: deployment
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  maturity: alpha
+  provider:
+    name: Red Hat
+  version: 7.3.0

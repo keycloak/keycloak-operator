@@ -1,0 +1,134 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: keycloakrealms.keycloak.org
+spec:
+  group: keycloak.org
+  names:
+    kind: KeycloakRealm
+    listKind: KeycloakRealmList
+    plural: keycloakrealms
+    singular: keycloakrealm
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description:
+            "APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources"
+          type: string
+        kind:
+          description:
+            "Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds"
+          type: string
+        metadata:
+          type: object
+        spec:
+          type: object
+          properties:
+            realm:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                displayName:
+                  type: string
+                enabled:
+                  type: boolean
+                identityProviders:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      alias:
+                        type: string
+                      displayName:
+                        type: string
+                      internalId:
+                        type: string
+                      providerId:
+                        type: string
+                      enabled:
+                        type: boolean
+                      trustEmail:
+                        type: boolean
+                      storeToken:
+                        type: boolean
+                      addReadTokenRoleOnCreate:
+                        type: boolean
+                      firstBrokerLoginFlowAlias:
+                        type: string
+                      postBrokerLoginFlowAlias:
+                        type: string
+                      linkOnly:
+                        type: boolean
+                      config:
+                        type: object
+                users:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                        firstName:
+                          type: string
+                        lastName:
+                          type: string
+                        email:
+                          type: string
+                        emailVerified:
+                          type: boolean
+                        enabled:
+                          type: boolean
+                        realmRoles:
+                          type: array
+                          items:
+                            type: string
+                        clientRoles:
+                          type: object
+                        requiredActions:
+                          type: array
+                          items:
+                            type: string
+                        groups:
+                          type: array
+                          items:
+                            type: string
+                        federatedIdentities:
+                          type: array
+                          items:
+                            type: object
+                        credentials:
+                          type: array
+                          items:
+                            type: object
+                clients:
+                  type: array
+                  items:
+                    type: object
+                eventsListeners:
+                  description: "A list of event listeners to attach to the realm"
+                  type: array
+                  items:
+                    type: string
+            instanceSelector:
+              type: object
+              description: "A label selector to determine the Keycloak instance to create the Realm in"
+            browserRedirectorIdentityProvider:
+              type: string
+        status:
+          type: object
+  version: v1alpha1
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true

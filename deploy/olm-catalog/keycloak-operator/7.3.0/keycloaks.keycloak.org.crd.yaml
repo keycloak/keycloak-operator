@@ -1,0 +1,92 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: keycloaks.keycloak.org
+spec:
+  group: keycloak.org
+  names:
+    kind: Keycloak
+    listKind: KeycloakList
+    plural: keycloaks
+    singular: keycloak
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      properties:
+        apiVersion:
+          description:
+            "APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources"
+          type: string
+        kind:
+          description:
+            "Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds"
+          type: string
+        metadata:
+          type: object
+        spec:
+          type: object
+          required: []
+          properties:
+            externalDatabaseSecret:
+              description: |
+                A Secret containing the connection string and credentials to an external database. The Secret should be in the following format:
+
+                 apiVersion: v1
+                 kind: Secret
+                 metadata:
+                   name: <adminCredentialSecret>
+                 type: Opaque
+                 data:
+                   connectionString: <database connection string>
+                   user: <database user>
+                   password: <password>
+                   database: <database name>
+
+                If not provided a Postgres instance will be created in the same namespace.
+              type: string
+            adminCredentialSecret:
+              description: |
+                The name of the Secret that contains the admin password in a `password` property. The Secret should be in the following format:
+
+                 apiVersion: v1
+                 kind: Secret
+                 metadata:
+                   name: <adminCredentialSecret>
+                 type: Opaque
+                 data:
+                   password: <admin user password>
+
+                If not provided a password will be auto generated and written to a Secret with the name `admin-credentials`.
+              type: string
+            instances:
+              description: "The number of Keycloak instances in a HA setup. Defaults to one if not provided."
+              type: number
+            extensions:
+              description:
+                "A list of extensions to be loaded by Keycloak on startup. Extensions are bundled with an Operator release and the list should contain
+                the names of the extensions required at startup"
+              type: array
+              items:
+                type: string
+            externalAccess:
+              type: object
+              properties:
+                enabled:
+                  type: boolean
+                  description: "If enabled the operator will create an Ingress (or a Route on OpenShift) for the Keycloak Service"
+            Profile:
+              description: "A profile for running the deployment. Default is empty. Use RHSSO to run the product image instead of Keycloak."
+              type: string
+        status:
+          type: object
+  version: v1alpha1
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
