@@ -5,7 +5,7 @@ metadata:
     capabilities: Basic Install
     categories: security
     certified: 'False'
-    containerImage: 'quay.io/keycloak/keycloak-operator:v7.3.0'
+    containerImage: 'quay.io/keycloak/keycloak-operator:v7.0.1'
     createdAt: 2019-11-08 00:00:00
     description: 'An Operator for installing and managing Keycloak'
     repository: 'https://github.com/keycloak/keycloak-operator'
@@ -59,7 +59,7 @@ metadata:
           }
         }
       ]
-  name: keycloak-operator.v7.3.0
+  name: keycloak-operator.v7.0.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -89,7 +89,7 @@ spec:
     The following features are supported:
 
     * Install Keycloak to a namespace
-    * Import Keycloak Realms from the same or other namespaces
+    * Import Keycloak Realms
     * Create scheduled backups of the database
     * Install Extensions
   displayName: Keycloak Operator
@@ -234,9 +234,9 @@ spec:
     type: SingleNamespace
   - supported: false
     type: MultiNamespace
-  - supported: true
+  - supported: false
     type: AllNamespaces
   maturity: alpha
   provider:
     name: Red Hat
-  version: 7.3.0
+  version: 7.0.1
