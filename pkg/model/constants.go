@@ -10,7 +10,7 @@ const (
 	PostgresqlDeploymentName             = ApplicationName + "-postgresql"
 	PostgresqlDeploymentComponent        = "database"
 	PostgresqlServiceName                = ApplicationName + "-postgresql"
-	PostgresqlImage                      = "postgres:9.5"
+	PostgresqlImage                      = "postgres:11.5"
 	KeycloakImage                        = "quay.io/keycloak/keycloak:7.0.1"
 	KeycloakInitContainerImage           = "quay.io/keycloak/keycloak-init-container:master"
 	RHSSOImage                           = "registry.access.redhat.com/redhat-sso-7/sso73-openshift:1.0-15"
