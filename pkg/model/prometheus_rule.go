@@ -103,7 +103,7 @@ func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 						"severity": "critical",
 					},
 				}, {
-					Alert: "KeycloakAPIRequestDuration99PercThresholdExceeded",
+					Alert: "KeycloakAPIRequestDuration99.5PercThresholdExceeded",
 					Annotations: map[string]string{
 						"message": `Less than 99.5% of the RH SSO API endpoints in namespace {{ $labels.namespace }} are taking longer than 10s for the last 5 minutes.`,
 					},
