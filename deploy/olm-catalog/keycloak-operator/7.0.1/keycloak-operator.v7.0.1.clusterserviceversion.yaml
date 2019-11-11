@@ -125,7 +125,7 @@ spec:
                       fieldPath: metadata.name
                 - name: OPERATOR_NAME
                   value: keycloak-operator
-                image: quay.io/keycloak/keycloak-operator:latest
+                image: quay.io/keycloak/keycloak-operator:v7.0.1
                 imagePullPolicy: Always
                 name: keycloak-operator
                 resources: {}
