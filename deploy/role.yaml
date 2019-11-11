@@ -35,6 +35,17 @@ rules:
       - update
       - watch
   - apiGroups:
+      - batch
+    resources:
+      - cronjobs
+      - jobs
+    verbs:
+      - list
+      - get
+      - create
+      - update
+      - watch
+  - apiGroups:
       - route.openshift.io
     resources:
       - routes
@@ -92,6 +103,9 @@ rules:
       - keycloakrealms
       - keycloakrealms/status
       - keycloakrealms/finalizers
+      - keycloakbackups
+      - keycloakbackups/status
+      - keycloakbackups/finalizers
     verbs:
       - get
       - list
