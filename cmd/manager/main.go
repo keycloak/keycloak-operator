@@ -32,6 +32,7 @@ import (
 	"github.com/spf13/pflag"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/config"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	logf "sigs.k8s.io/controller-runtime/pkg/runtime/log"
@@ -164,6 +165,11 @@ func main() {
 		log.Info("Could not create metrics Service", "error", err.Error())
 	}
 
+	err = addMonitoringKeyLabelToOperatorService(ctx, cfg, service)
+	if err != nil {
+		log.Error(err, "Could not add monitoring-key label to operator metrics Service")
+	}
+
 	// CreateServiceMonitors will automatically create the prometheus-operator ServiceMonitor resources
 	// necessary to configure Prometheus to scrape metrics from this operator.
 	services := []*v1.Service{service}
@@ -184,6 +190,30 @@ func main() {
 		log.Error(err, "Manager exited non-zero")
 		os.Exit(1)
 	}
+}
+
+func addMonitoringKeyLabelToOperatorService(ctx context.Context, cfg *rest.Config, service *v1.Service) error {
+	if service == nil {
+		return fmt.Errorf("service doesn't exist")
+	}
+
+	kclient, err := client.New(cfg, client.Options{})
+	if err != nil {
+		return err
+	}
+
+	updatedLabels := map[string]string{"monitoring-key": "middleware"}
+	for k, v := range service.ObjectMeta.Labels {
+		updatedLabels[k] = v
+	}
+	service.ObjectMeta.Labels = updatedLabels
+
+	err = kclient.Update(ctx, service)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // serveCRMetrics gets the Operator/CustomResource GVKs and generates metrics based on those types.
