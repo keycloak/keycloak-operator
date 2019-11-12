@@ -178,13 +178,15 @@ func RHSSODeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 }
 
 func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet) *v13.StatefulSet {
+	currentImage := GetCurrentKeycloakImage(currentState)
+
 	reconciled := currentState.DeepCopy()
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes()
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:  KeycloakDeploymentName,
-			Image: getReconciledRHSSOImage(currentState),
+			Image: GetReconciledRHSSOImage(currentImage),
 			Ports: []v1.ContainerPort{
 				{
 					ContainerPort: KeycloakServicePort,
@@ -310,10 +312,9 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 }
 
 // We allow the patch version of an image for RH-SSO to be increased outside of the operator on the cluster
-func getReconciledRHSSOImage(currentState *v13.StatefulSet) string {
-	currentImage := GetCurrentKeycloakImage(currentState)
+func GetReconciledRHSSOImage(currentImage string) string {
 	currentImageRepo, currentImageMajor, currentImageMinor, currentImagePatch := GetImageRepoAndVersion(currentImage)
-	RHSSOImageRepo, RHSSOImageMajor, RHSSOImageMinor, RHSSOImagePatch := GetImageRepoAndVersion(KeycloakImage)
+	RHSSOImageRepo, RHSSOImageMajor, RHSSOImageMinor, RHSSOImagePatch := GetImageRepoAndVersion(RHSSOImage)
 
 	// Since the minor version of the RHSSO image should always be 0-X, we can ignore all before the -
 	currentImageMinorStrings := strings.Split(currentImageMinor, "-")

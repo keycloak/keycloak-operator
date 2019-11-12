@@ -183,6 +183,8 @@ func KeycloakDeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 }
 
 func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet) *v13.StatefulSet {
+	currentImage := GetCurrentKeycloakImage(currentState)
+
 	reconciled := currentState.DeepCopy()
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
@@ -190,7 +192,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:  KeycloakDeploymentName,
-			Image: getReconciledKeycloakImage(currentState),
+			Image: GetReconciledKeycloakImage(currentImage),
 			Ports: []v1.ContainerPort{
 				{
 					ContainerPort: KeycloakServicePort,
@@ -354,8 +356,7 @@ func KeycloakVolumes() []v1.Volume {
 }
 
 // We allow the patch version of an image for keycloak to be increased outside of the operator on the cluster
-func getReconciledKeycloakImage(currentState *v13.StatefulSet) string {
-	currentImage := GetCurrentKeycloakImage(currentState)
+func GetReconciledKeycloakImage(currentImage string) string {
 	currentImageRepo, currentImageMajor, currentImageMinor, currentImagePatch := GetImageRepoAndVersion(currentImage)
 	keycloakImageRepo, keycloakImageMajor, keycloakImageMinor, keycloakImagePatch := GetImageRepoAndVersion(KeycloakImage)
 
