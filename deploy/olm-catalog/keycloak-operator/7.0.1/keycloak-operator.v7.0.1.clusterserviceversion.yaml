@@ -2,7 +2,7 @@ apiVersion: operators.coreos.com/v1alpha1
 kind: ClusterServiceVersion
 metadata:
   annotations:
-    capabilities: Basic Install
+    capabilities: Deep Insights
     categories: security
     certified: 'False'
     containerImage: 'quay.io/keycloak/keycloak-operator:v7.0.1'
@@ -99,143 +99,157 @@ spec:
   install:
     spec:
       deployments:
-      - name: keycloak-operator
-        spec:
-          replicas: 1
-          selector:
-            matchLabels:
-              name: keycloak-operator
-          strategy: {}
-          template:
-            metadata:
-              labels:
+        - name: keycloak-operator
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
                 name: keycloak-operator
-            spec:
-              containers:
-              - command:
-                - keycloak-operator
-                env:
-                - name: WATCH_NAMESPACE
-                  valueFrom:
-                    fieldRef:
-                      fieldPath: metadata.annotations['olm.targetNamespaces']
-                - name: POD_NAME
-                  valueFrom:
-                    fieldRef:
-                      fieldPath: metadata.name
-                - name: OPERATOR_NAME
-                  value: keycloak-operator
-                image: quay.io/keycloak/keycloak-operator:v7.0.1
-                imagePullPolicy: Always
-                name: keycloak-operator
-                resources: {}
-              serviceAccountName: keycloak-operator
+            strategy: {}
+            template:
+              metadata:
+                labels:
+                  name: keycloak-operator
+              spec:
+                containers:
+                  - command:
+                      - keycloak-operator
+                    env:
+                      - name: WATCH_NAMESPACE
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.annotations['olm.targetNamespaces']
+                      - name: POD_NAME
+                        valueFrom:
+                          fieldRef:
+                            fieldPath: metadata.name
+                      - name: OPERATOR_NAME
+                        value: keycloak-operator
+                    image: quay.io/keycloak/keycloak-operator:v7.0.1
+                    imagePullPolicy: Always
+                    name: keycloak-operator
+                    resources: {}
+                serviceAccountName: keycloak-operator
       permissions:
-      - rules:
-        - apiGroups:
-          - ""
-          resources:
-          - pods
-          - services
-          - services/finalizers
-          - endpoints
-          - persistentvolumeclaims
-          - events
-          - configmaps
-          - secrets
-          verbs:
-          - list
-          - get
-          - create
-          - update
-          - watch
-        - apiGroups:
-          - apps
-          resources:
-          - deployments
-          - daemonsets
-          - replicasets
-          - statefulsets
-          verbs:
-          - list
-          - get
-          - create
-          - update
-          - watch
-        - apiGroups:
-          - route.openshift.io
-          resources:
-          - routes
-          verbs:
-          - list
-          - get
-          - create
-          - update
-          - watch
-        - apiGroups:
-          - extensions
-          resources:
-          - ingresses
-          verbs:
-          - list
-          - get
-          - create
-          - update
-          - watch
-        - apiGroups:
-          - monitoring.coreos.com
-          resources:
-          - servicemonitors
-          - prometheusrules
-          verbs:
-          - list
-          - get
-          - create
-          - update
-          - watch
-        - apiGroups:
-          - integreatly.org
-          resources:
-          - grafanadashboards
-          verbs:
-          - get
-          - list
-          - create
-          - update
-          - watch
-        - apiGroups:
-          - apps
-          resourceNames:
-          - keycloak-operator
-          resources:
-          - deployments/finalizers
-          verbs:
-          - update
-        - apiGroups:
-          - keycloak.org
-          resources:
-          - keycloaks
-          - keycloaks/status
-          - keycloaks/finalizers
-          - keycloakrealms
-          - keycloakrealms/status
-          - keycloakrealms/finalizers
-          verbs:
-          - get
-          - list
-          - update
-          - watch
-        serviceAccountName: keycloak-operator
+        - rules:
+            - apiGroups:
+                - ""
+              resources:
+                - pods
+                - services
+                - services/finalizers
+                - endpoints
+                - persistentvolumeclaims
+                - events
+                - configmaps
+                - secrets
+              verbs:
+                - list
+                - get
+                - create
+                - update
+                - watch
+            - apiGroups:
+                - apps
+              resources:
+                - deployments
+                - daemonsets
+                - replicasets
+                - statefulsets
+              verbs:
+                - list
+                - get
+                - create
+                - update
+                - watch
+            - apiGroups:
+                - batch
+              resources:
+                - cronjobs
+                - jobs
+              verbs:
+                - list
+                - get
+                - create
+                - update
+                - watch
+            - apiGroups:
+                - route.openshift.io
+              resources:
+                - routes
+              verbs:
+                - list
+                - get
+                - create
+                - update
+                - watch
+            - apiGroups:
+                - extensions
+              resources:
+                - ingresses
+              verbs:
+                - list
+                - get
+                - create
+                - update
+                - watch
+            - apiGroups:
+                - monitoring.coreos.com
+              resources:
+                - servicemonitors
+                - prometheusrules
+              verbs:
+                - list
+                - get
+                - create
+                - update
+                - watch
+            - apiGroups:
+                - integreatly.org
+              resources:
+                - grafanadashboards
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - watch
+            - apiGroups:
+                - apps
+              resourceNames:
+                - keycloak-operator
+              resources:
+                - deployments/finalizers
+              verbs:
+                - update
+            - apiGroups:
+                - keycloak.org
+              resources:
+                - keycloaks
+                - keycloaks/status
+                - keycloaks/finalizers
+                - keycloakrealms
+                - keycloakrealms/status
+                - keycloakrealms/finalizers
+                - keycloakbackups
+                - keycloakbackups/status
+                - keycloakbackups/finalizers
+              verbs:
+                - get
+                - list
+                - update
+                - watch
+          serviceAccountName: keycloak-operator
     strategy: deployment
   installModes:
-  - supported: true
-    type: OwnNamespace
-  - supported: true
-    type: SingleNamespace
-  - supported: false
-    type: MultiNamespace
-  - supported: false
-    type: AllNamespaces
+    - supported: true
+      type: OwnNamespace
+    - supported: true
+      type: SingleNamespace
+    - supported: false
+      type: MultiNamespace
+    - supported: false
+      type: AllNamespaces
   maturity: alpha
   provider:
     name: Red Hat
