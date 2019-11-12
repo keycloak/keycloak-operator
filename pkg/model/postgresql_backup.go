@@ -35,7 +35,8 @@ func PostgresqlBackup(cr *v1alpha1.KeycloakBackup) *v13.Job {
 						{
 							Name:    cr.Name,
 							Image:   PostgresqlImage,
-							Command: []string{"pg_dumpall", "--clean", "--if-exists", "--oids", "--file", "/backup/backup.sql"},
+							Command: []string{"/bin/sh", "-c"},
+							Args:    []string{"pg_dumpall --clean --if-exists --oids | tee /backup/backup.sql"},
 							Env: []v1.EnvVar{
 								{
 									Name: "POSTGRES_USER",
@@ -118,7 +119,8 @@ func PostgresqlBackupReconciled(cr *v1alpha1.KeycloakBackup, currentState *v13.J
 		{
 			Name:    cr.Name,
 			Image:   PostgresqlImage,
-			Command: []string{"pg_dumpall", "--clean", "--if-exists", "--oids", "--file", "/backup/backup.sql"},
+			Command: []string{"/bin/sh", "-c"},
+			Args:    []string{"pg_dumpall --clean --if-exists --oids | tee /backup/backup.sql"},
 			Env: []v1.EnvVar{
 				{
 					Name: "POSTGRES_USER",
