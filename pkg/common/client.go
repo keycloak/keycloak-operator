@@ -184,6 +184,7 @@ func (c *Client) FindUserByUsername(name, realm string) (*v1alpha1.KeycloakAPIUs
 		if err := json.Unmarshal(body, &users); err != nil {
 			return nil, err
 		}
+
 		if len(users) == 0 {
 			return nil, errors.New("not found")
 		}
@@ -239,6 +240,7 @@ func (c *Client) get(resourcePath, resourceName string, unMarshalFunc func(body 
 	obj, err := unMarshalFunc(body)
 	if err != nil {
 		logrus.Error(err)
+		return nil, err
 	}
 	return obj, nil
 }

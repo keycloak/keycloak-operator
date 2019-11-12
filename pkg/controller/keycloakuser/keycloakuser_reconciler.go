@@ -80,13 +80,14 @@ func (i *KeycloakuserReconciler) getKeycloakUserDesiredState(state *common.UserS
 		actions = append(actions, common.UpdateUserAction{
 			Ref:   cr,
 			Realm: i.Realm,
-			Msg:   fmt.Sprintf("update roles for user %v", cr.Spec.User.UserName),
+			Msg:   fmt.Sprintf("update user %v", cr.Spec.User.UserName),
 		})
+
+		// Sync the requested roles
+		actions = append(actions, i.getUserRealmRolesDesiredState(state, cr)...)
+		actions = append(actions, i.getUserClientRolesDesiredState(state, cr)...)
 	}
 
-	// Sync the requested roles
-	actions = append(actions, i.getUserRealmRolesDesiredState(state, cr)...)
-	actions = append(actions, i.getUserClientRolesDesiredState(state, cr)...)
 	return actions
 }
 
@@ -95,31 +96,31 @@ func (i *KeycloakuserReconciler) getUserRealmRolesDesiredState(state *common.Use
 	removeRoles := []common.ClusterAction{}
 
 	for _, role := range cr.Spec.User.RealmRoles {
+		// Is the role available for this user?
+		roleRef := state.GetAvailableRealmRole(role)
+		if roleRef == nil {
+			continue
+		}
+
 		// Role requested but not assigned?
 		if !containsRole(state.RealmRoles, role) {
 			assignRoles = append(assignRoles, common.AssignRealmRoleAction{
 				UserID: state.User.ID,
-				Ref: &v1alpha1.KeycloakUserRole{
-					ID:         role,
-					ClientRole: false,
-				},
-				Realm: i.Realm,
-				Msg:   fmt.Sprintf("assign realm role %v to user %v", role, state.User.UserName),
+				Ref:    roleRef,
+				Realm:  i.Realm,
+				Msg:    fmt.Sprintf("assign realm role %v to user %v", role, state.User.UserName),
 			})
 		}
 	}
 
 	for _, role := range state.RealmRoles {
 		// Role assigned but not requested?
-		if !containsRoleID(cr.Spec.User.RealmRoles, role.ID) {
+		if !containsRoleID(cr.Spec.User.RealmRoles, role.Name) {
 			removeRoles = append(removeRoles, common.RemoveRealmRoleAction{
 				UserID: state.User.ID,
-				Ref: &v1alpha1.KeycloakUserRole{
-					ID:         role.ID,
-					ClientRole: false,
-				},
-				Realm: i.Realm,
-				Msg:   fmt.Sprintf("remove realm role %v from user %v", role, state.User.UserName),
+				Ref:    role,
+				Realm:  i.Realm,
+				Msg:    fmt.Sprintf("remove realm role %v from user %v", role.Name, state.User.UserName),
 			})
 		}
 	}
@@ -130,8 +131,8 @@ func (i *KeycloakuserReconciler) getUserRealmRolesDesiredState(state *common.Use
 func (i *KeycloakuserReconciler) getUserClientRolesDesiredState(state *common.UserState, cr *v1alpha1.KeycloakUser) []common.ClusterAction {
 	actions := []common.ClusterAction{}
 
-	for clientID, _ := range cr.Spec.User.ClientRoles {
-		actions = append(actions, i.syncRolesForClient(state, cr, clientID)...)
+	for _, client := range state.Clients {
+		actions = append(actions, i.syncRolesForClient(state, cr, client.ClientID)...)
 	}
 
 	return actions
@@ -142,33 +143,45 @@ func (i *KeycloakuserReconciler) syncRolesForClient(state *common.UserState, cr 
 	removeRoles := []common.ClusterAction{}
 
 	for _, role := range cr.Spec.User.ClientRoles[clientID] {
+		// Is the role available for this user?
+		roleRef := state.GetAvailableClientRole(role, clientID)
+		if roleRef == nil {
+			continue
+		}
+
+		// Valid client?
+		client := state.GetClientByID(clientID)
+		if client == nil {
+			continue
+		}
+
 		// Role requested but not assigned?
 		if !containsRole(state.ClientRoles[clientID], role) {
 			assignRoles = append(assignRoles, common.AssignClientRoleAction{
 				UserID:   state.User.ID,
-				ClientID: clientID,
-				Ref: &v1alpha1.KeycloakUserRole{
-					ID:         role,
-					ClientRole: true,
-				},
-				Realm: i.Realm,
-				Msg:   fmt.Sprintf("assign role %v of client %v to user %v", role, clientID, state.User.UserName),
+				ClientID: client.ID,
+				Ref:      roleRef,
+				Realm:    i.Realm,
+				Msg:      fmt.Sprintf("assign role %v of client %v to user %v", role, clientID, state.User.UserName),
 			})
 		}
 	}
 
 	for _, role := range state.ClientRoles[clientID] {
+		// Valid client?
+		client := state.GetClientByID(clientID)
+		if client == nil {
+			continue
+		}
+
 		// Role assigned but not requested?
-		if !containsRoleID(cr.Spec.User.ClientRoles[clientID], role.ID) {
+		if !containsRoleID(cr.Spec.User.ClientRoles[clientID], role.Name) {
 			removeRoles = append(removeRoles, common.RemoveClientRoleAction{
 				UserID:   state.User.ID,
-				ClientID: clientID,
-				Ref: &v1alpha1.KeycloakUserRole{
-					ID:         role.ID,
-					ClientRole: true,
-				},
-				Realm: i.Realm,
-				Msg:   fmt.Sprintf("remove role %v of client %v from user %v", role, clientID, state.User.UserName),
+				ClientID: client.ID,
+				Ref:      role,
+				Realm:    i.Realm,
+				Msg:      fmt.Sprintf("remove role %v of client %v from user %v", role.Name, clientID, state.User.UserName),
 			})
 		}
 	}

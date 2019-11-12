@@ -181,7 +181,7 @@ func (r *ReconcileKeycloakUser) Reconcile(request reconcile.Request) (reconcile.
 		}
 	}
 
-	return reconcile.Result{Requeue: false}, r.manageSuccess(instance, instance.DeletionTimestamp != nil)
+	return reconcile.Result{RequeueAfter: RequeueDelayErrorSeconds * time.Second}, r.manageSuccess(instance, instance.DeletionTimestamp != nil)
 }
 
 func (r *ReconcileKeycloakUser) manageSuccess(user *kc.KeycloakUser, deleted bool) error {

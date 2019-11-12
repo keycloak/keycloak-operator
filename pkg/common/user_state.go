@@ -1,16 +1,22 @@
 package common
 
-import "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
+import (
+	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
+)
 
 type UserState struct {
-	User        *v1alpha1.KeycloakAPIUser
-	ClientRoles map[string][]*v1alpha1.KeycloakUserRole
-	RealmRoles  []*v1alpha1.KeycloakUserRole
+	User                 *v1alpha1.KeycloakAPIUser
+	ClientRoles          map[string][]*v1alpha1.KeycloakUserRole
+	RealmRoles           []*v1alpha1.KeycloakUserRole
+	AvailableClientRoles map[string][]*v1alpha1.KeycloakUserRole
+	AvailableRealmRoles  []*v1alpha1.KeycloakUserRole
+	Clients              []*v1alpha1.KeycloakAPIClient
 }
 
 func NewUserState() *UserState {
 	return &UserState{
-		ClientRoles: map[string][]*v1alpha1.KeycloakUserRole{},
+		ClientRoles:          map[string][]*v1alpha1.KeycloakUserRole{},
+		AvailableClientRoles: map[string][]*v1alpha1.KeycloakUserRole{},
 	}
 }
 
@@ -45,8 +51,14 @@ func (i *UserState) readRealmRoles(client KeycloakInterface, user *v1alpha1.Keyc
 	if err != nil {
 		return err
 	}
-
 	i.RealmRoles = roles
+
+	availableRoles, err := client.ListAvailableUserRealmRoles(realm, i.User.ID)
+	if err != nil {
+		return err
+	}
+	i.AvailableRealmRoles = availableRoles
+
 	return nil
 }
 
@@ -55,14 +67,47 @@ func (i *UserState) readClientRoles(client KeycloakInterface, user *v1alpha1.Key
 	if err != nil {
 		return err
 	}
+	i.Clients = clients
 
 	for _, c := range clients {
 		roles, err := client.ListUserClientRoles(realm, c.ID, i.User.ID)
 		if err != nil {
 			return err
 		}
+		i.ClientRoles[c.ClientID] = roles
 
-		i.ClientRoles[c.ID] = roles
+		availableRoles, err := client.ListAvailableUserClientRoles(realm, c.ID, i.User.ID)
+		if err != nil {
+			return err
+		}
+		i.AvailableClientRoles[c.ClientID] = availableRoles
+	}
+	return nil
+}
+
+func (i *UserState) GetAvailableRealmRole(name string) *v1alpha1.KeycloakUserRole {
+	for _, role := range i.AvailableRealmRoles {
+		if role.Name == name {
+			return role
+		}
+	}
+	return nil
+}
+
+func (i *UserState) GetAvailableClientRole(name, clientId string) *v1alpha1.KeycloakUserRole {
+	for _, role := range i.AvailableClientRoles[clientId] {
+		if role.Name == name {
+			return role
+		}
+	}
+	return nil
+}
+
+func (i *UserState) GetClientByID(clientID string) *v1alpha1.KeycloakAPIClient {
+	for _, client := range i.Clients {
+		if client.ClientID == clientID {
+			return client
+		}
 	}
 	return nil
 }
