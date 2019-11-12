@@ -140,8 +140,9 @@ func RHSSODeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 							},
 							VolumeMounts: KeycloakVolumeMounts(RhssoExtensionPath),
 							LivenessProbe: &v1.Probe{
-								InitialDelaySeconds: 60,
+								InitialDelaySeconds: 30,
 								TimeoutSeconds:      1,
+								FailureThreshold:    20,
 								Handler: v1.Handler{
 									HTTPGet: &v1.HTTPGetAction{
 										Path:   "/auth/realms/master",
@@ -151,8 +152,9 @@ func RHSSODeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 								},
 							},
 							ReadinessProbe: &v1.Probe{
+								InitialDelaySeconds: 30,
 								TimeoutSeconds:      1,
-								InitialDelaySeconds: 10,
+								FailureThreshold:    20,
 								Handler: v1.Handler{
 									HTTPGet: &v1.HTTPGetAction{
 										Path:   "/auth/realms/master",

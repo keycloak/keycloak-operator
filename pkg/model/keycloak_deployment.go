@@ -146,8 +146,9 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 							},
 							VolumeMounts: KeycloakVolumeMounts(KeycloakExtensionPath),
 							LivenessProbe: &v1.Probe{
-								InitialDelaySeconds: 60,
+								InitialDelaySeconds: 30,
 								TimeoutSeconds:      1,
+								FailureThreshold:    20,
 								Handler: v1.Handler{
 									HTTPGet: &v1.HTTPGetAction{
 										Path:   "/auth/realms/master",
@@ -157,8 +158,9 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 								},
 							},
 							ReadinessProbe: &v1.Probe{
+								InitialDelaySeconds: 30,
 								TimeoutSeconds:      1,
-								InitialDelaySeconds: 10,
+								FailureThreshold:    10,
 								Handler: v1.Handler{
 									HTTPGet: &v1.HTTPGetAction{
 										Path:   "/auth/realms/master",
