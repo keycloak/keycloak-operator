@@ -4,10 +4,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # Keycloak Operator
-A Kubernetes Operator based on the Operator SDK for syncing resources in Keycloak.
-
-## Current status
-Currently in development. Will eventually replace https://github.com/integr8ly/keycloak-operator
+A Kubernetes Operator based on the Operator SDK for creating and syncing resources in Keycloak.
 
 # Documentation
 The documentation might be found in the  [docs](./docs/README.asciidoc) directory.
@@ -18,13 +15,25 @@ The documentation might be found in the  [docs](./docs/README.asciidoc) director
 | [Keycloak](./deploy/crds/Keycloak.yaml)             | Manages, installs and configures Keycloak on the cluster |
 | [KeycloakRealm](./deploy/crds/KeycloakRealm.yaml)   | Represents a realm in a keycloak server                  |
 | [KeycloakClient](./deploy/crds/KeycloakClient.yaml) | Represents a client in a keycloak server                 |
+| [KeycloakBackup](./deploy/crds/KeycloakBackup.yaml) | Manage Keycloak database backups                         |
+
+## Deploying to a Cluster
+*Note*: You will need a running Kubernetes or OpenShift cluster to use the Operator
+
+1. Run `make cluster/prepare` # This will apply the necessary Custom Resource Definitions (CRDs) and RBAC rules to the clusters
+2. Run `kubectl apply -f deploy/operator.yaml` # This will start the operator in the current namespace
+
+### Creating Keycloak Instance
+Once the CRDs and RBAC rules are applied and the operator is running. Use the examples from the operator.
+
+1. Run `kubectl apply -f deploy/examples/keycloak/keycloak.yaml` 
 
 ## Local Development
 *Note*: You will need a running Kubernetes or OpenShift cluster to use the Operator
 
 1.  clone this repo to `$GOPATH/src/github.com/keycloak/keycloak-operator`
 2.  run `make setup/mod cluster/prepare`
-3.  run `code/run`
+3.  run `make code/run`
 -- The above step will launch the operator on the local machine
 -- To see how do debug the operator or how to deploy to a cluster, see below alternatives to step 3
 4. In a new terminal run `make cluster/create/examples`
@@ -73,6 +82,7 @@ Deploy the operator into the running cluster
 2. Change the `image` property in `deploy/operator.yaml` to the above full image path
 3. run `kubectl apply -f deploy/operator.yaml -n <NAMESPACE>`
 
+
 ### Makefile command reference
 #### Operator Setup Management
 | *Command*                      | *Description*                                                                                          |
@@ -82,22 +92,26 @@ Deploy the operator into the running cluster
 | `make cluster/create/examples` | Applies the example Keycloak and KeycloakRealm CRs                                                     |
 
 #### Tests
-| *Command*        | *Description*   |
-| ---------------- | --------------- |
-| `make test/unit` | Runs unit tests |
+| *Command*                    | *Description*                                           |
+| ---------------------------- | ------------------------------------------------------- |
+| `make test/unit`             | Runs unit tests                                         |
+| `make test/e2e`              | Runs e2e tests                                          |
+| `make test/coverage/prepare` | Prepares coverage report from unit and e2e test results |
+| `make test/coverage`         | Generates coverage report                               |
 
 #### Local Development
-| *Command*             | *Description*                                                                    |
-| --------------------- | -------------------------------------------------------------------------------- |
-| `make setup`          | Runs `setup/mod` `setup/githooks` `code/gen`                                     |
-| `make setup/githooks` | Copys githooks from `./githooks` to `.git/hooks`                                 |
-| `make setup/mod`      | Resets the main module's vendor directory to include all packages                |
-| `make code/run`       | Runs the operator locally for development purposes                               |
-| `make code/compile`   | Builds the operator                                                              |
-| `make code/gen`       | Generates/Updates the operator files based on the CR status and spec definitions |
-| `make code/check`     | Checks for linting errors in the code                                            |
-| `make code/fix`       | Formats code using [gofmt](https://golang.org/cmd/gofmt/)                        |
-| `make code/lint`      | Checks for linting errors in the code                                            |
+| *Command*                 | *Description*                                                                    |
+| ------------------------- | -------------------------------------------------------------------------------- |
+| `make setup`              | Runs `setup/mod` `setup/githooks` `code/gen`                                     |
+| `make setup/githooks`     | Copys githooks from `./githooks` to `.git/hooks`                                 |
+| `make setup/mod`          | Resets the main module's vendor directory to include all packages                |
+| `make setup/operator-sdk` | Installs the operator-sdk                                                        |
+| `make code/run`           | Runs the operator locally for development purposes                               |
+| `make code/compile`       | Builds the operator                                                              |
+| `make code/gen`           | Generates/Updates the operator files based on the CR status and spec definitions |
+| `make code/check`         | Checks for linting errors in the code                                            |
+| `make code/fix`           | Formats code using [gofmt](https://golang.org/cmd/gofmt/)                        |
+| `make code/lint`          | Checks for linting errors in the code                                            |
 
 #### CI
 | *Command*           | *Description*                                                              |
@@ -108,15 +122,7 @@ Deploy the operator into the running cluster
 
 Keycloak Operator supports the following version of key components:
 
- | *Component*              | *Version/Tag*                                                          |
- | ------------------------ | ---------------------------------------------------------------------- |
- | `Keycloak`               | `jboss/keycloak:7.0.1`                                                 |
- | `Red Hat Single-Sign-On` | `registry.access.redhat.com/redhat-sso-7/sso73-openshift:1.0-15`       |
- | `Postgresql`             | `9.5`                                                                  |
-
-## Activating Red Hat Single-Sign-On
-
-It is possible to use Red Hat Single-Sign-On instead of Keycloak deployment. Pulling images
-from Red Hat Container Registry requires additional configuration steps
-(see [the manual](https://access.redhat.com/containers/?tab=images#/registry.access.redhat.com/redhat-sso-7-tech-preview/sso-cd-openshift)).
-In order to activate Red Hat Single-Sign-on, set the profile in the Keycloak CR Spec to "RHSSO".
+ | *Component*  | *Version/Tag*          |
+ | ------------ | ---------------------- |
+ | `Keycloak`   | `jboss/keycloak:7.0.1` |
+ | `Postgresql` | `9.5`                  |
