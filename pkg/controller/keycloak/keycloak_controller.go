@@ -36,8 +36,8 @@ import (
 var log = logf.Log.WithName("controller_keycloak")
 
 const (
-	RequeueDelaySeconds      = 30
-	RequeueDelayErrorSeconds = 5
+	RequeueDelaySeconds      = 30 * time.Second
+	RequeueDelayErrorSeconds = 5 * time.Second
 	ControllerName           = "keycloak-controller"
 )
 
@@ -247,5 +247,5 @@ func (r *ReconcileKeycloak) ManageSuccess(instance *v1alpha1.Keycloak, currentSt
 	}
 
 	log.Info("desired cluster state met")
-	return reconcile.Result{RequeueAfter: RequeueDelaySeconds * time.Second}, nil
+	return reconcile.Result{RequeueAfter: RequeueDelaySeconds}, nil
 }
