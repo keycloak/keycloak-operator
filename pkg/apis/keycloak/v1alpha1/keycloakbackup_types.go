@@ -7,9 +7,8 @@ import (
 // KeycloakBackupSpec defines the desired state of KeycloakBackup
 // +k8s:openapi-gen=true
 type KeycloakBackupSpec struct {
-	Restore        bool            `json:"restoreFrom,omitempty"`
-	AWS            KeycloakAWSSpec `json:"aws,omitempty"`
-	ExternalAccess KeycloakExternalAccess
+	Restore bool            `json:"restore,omitempty"`
+	AWS     KeycloakAWSSpec `json:"aws,omitempty"`
 }
 
 // KeycloakAWSSpec defines the desired state of KeycloakBackupSpec

@@ -22,22 +22,6 @@ func NewKeycloakRealmReconciler(keycloak kc.Keycloak) *KeycloakRealmReconciler {
 	}
 }
 
-// Auto generate a password if the user didn't specify one
-// It will be written to the secret
-func ensureCredentials(users []*kc.KeycloakAPIUser) {
-	for _, user := range users {
-		if len(user.Credentials) == 0 {
-			user.Credentials = []kc.KeycloakCredential{
-				{
-					Type:      "password",
-					Value:     model.RandStringRunes(10),
-					Temporary: false,
-				},
-			}
-		}
-	}
-}
-
 func (i *KeycloakRealmReconciler) Reconcile(state *common.RealmState, cr *kc.KeycloakRealm) common.DesiredClusterState {
 	if cr.DeletionTimestamp == nil {
 		return i.ReconcileRealmCreate(state, cr)
@@ -102,7 +86,7 @@ func (i *KeycloakRealmReconciler) getDesiredRealmState(state *common.RealmState,
 	// Ensure that all users have credentials, if not provided then
 	// automatically create a password. The user can later find the
 	// credentials in the output secret
-	ensureCredentials(cr.Spec.Realm.Users)
+	common.EnsureCredentials(cr.Spec.Realm.Users)
 
 	if state.Realm == nil {
 		return &common.CreateRealmAction{
