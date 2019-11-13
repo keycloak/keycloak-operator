@@ -155,7 +155,7 @@ func (r *ReconcileKeycloakClient) Reconcile(request reconcile.Request) (reconcil
 			// the desired state
 			reconciler := NewKeycloakClientReconciler(keycloak)
 			desiredState := reconciler.Reconcile(clientState, instance)
-			actionRunner := common.NewRealmActionRunner(r.context, r.client, r.scheme, instance, authenticated)
+			actionRunner := common.NewClusterAndKeycloakActionRunner(r.context, r.client, r.scheme, instance, authenticated)
 
 			// Run all actions to keep the realms updated
 			err = actionRunner.RunAll(desiredState)

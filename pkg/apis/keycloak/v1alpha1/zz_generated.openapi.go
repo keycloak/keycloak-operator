@@ -713,8 +713,14 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakUserStatus(ref common.ReferenceCa
 							Format: "",
 						},
 					},
+					"message": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
 				},
-				Required: []string{"phase"},
+				Required: []string{"phase", "message"},
 			},
 		},
 		Dependencies: []string{},

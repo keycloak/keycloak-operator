@@ -45,11 +45,11 @@ type ClusterAction interface {
 }
 
 type ClusterActionRunner struct {
-	client      client.Client
-	realmClient KeycloakInterface
-	context     context.Context
-	scheme      *runtime.Scheme
-	cr          runtime.Object
+	client         client.Client
+	keycloakClient KeycloakInterface
+	context        context.Context
+	scheme         *runtime.Scheme
+	cr             runtime.Object
 }
 
 // Create an action runner to run kubernetes actions
@@ -63,13 +63,13 @@ func NewClusterActionRunner(context context.Context, client client.Client, schem
 }
 
 // Create an action runner to run kubernetes and keycloak api actions
-func NewRealmActionRunner(context context.Context, client client.Client, scheme *runtime.Scheme, cr runtime.Object, realmClient KeycloakInterface) ActionRunner {
+func NewClusterAndKeycloakActionRunner(context context.Context, client client.Client, scheme *runtime.Scheme, cr runtime.Object, keycloakClient KeycloakInterface) ActionRunner {
 	return &ClusterActionRunner{
-		client:      client,
-		context:     context,
-		scheme:      scheme,
-		cr:          cr,
-		realmClient: realmClient,
+		client:         client,
+		context:        context,
+		scheme:         scheme,
+		cr:             cr,
+		keycloakClient: keycloakClient,
 	}
 }
 
@@ -111,56 +111,56 @@ func (i *ClusterActionRunner) Update(obj runtime.Object) error {
 
 // Create a new realm using the keycloak api
 func (i *ClusterActionRunner) CreateRealm(obj *v1alpha1.KeycloakRealm) error {
-	if i.realmClient == nil {
+	if i.keycloakClient == nil {
 		return errors.New("cannot perform realm create when client is nil")
 	}
-	return i.realmClient.CreateRealm(obj)
+	return i.keycloakClient.CreateRealm(obj)
 }
 
 func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm string) error {
-	if i.realmClient == nil {
+	if i.keycloakClient == nil {
 		return errors.New("cannot perform client create when client is nil")
 	}
-	return i.realmClient.CreateClient(obj.Spec.Client, realm)
+	return i.keycloakClient.CreateClient(obj.Spec.Client, realm)
 }
 
 func (i *ClusterActionRunner) UpdateClient(obj *v1alpha1.KeycloakClient, realm string) error {
-	if i.realmClient == nil {
+	if i.keycloakClient == nil {
 		return errors.New("cannot perform client update when client is nil")
 	}
-	return i.realmClient.UpdateClient(obj.Spec.Client, realm)
+	return i.keycloakClient.UpdateClient(obj.Spec.Client, realm)
 }
 
 // Delete a realm using the keycloak api
 func (i *ClusterActionRunner) DeleteRealm(obj *v1alpha1.KeycloakRealm) error {
-	if i.realmClient == nil {
+	if i.keycloakClient == nil {
 		return errors.New("cannot perform realm delete when client is nil")
 	}
-	return i.realmClient.DeleteRealm(obj.Spec.Realm.Realm)
+	return i.keycloakClient.DeleteRealm(obj.Spec.Realm.Realm)
 }
 
 func (i *ClusterActionRunner) DeleteClient(obj *v1alpha1.KeycloakClient, realm string) error {
-	if i.realmClient == nil {
+	if i.keycloakClient == nil {
 		return errors.New("cannot perform client delete when client is nil")
 	}
-	return i.realmClient.DeleteClient(obj.Spec.Client.ID, realm)
+	return i.keycloakClient.DeleteClient(obj.Spec.Client.ID, realm)
 }
 
 func (i *ClusterActionRunner) CreateUser(obj *v1alpha1.KeycloakUser, realm string) error {
-	if i.realmClient == nil {
+	if i.keycloakClient == nil {
 		return errors.New("cannot perform user create when client is nil")
 	}
 
 	// Create the user
-	return i.realmClient.CreateUser(&obj.Spec.User, realm)
+	return i.keycloakClient.CreateUser(&obj.Spec.User, realm)
 }
 
 func (i *ClusterActionRunner) UpdateUser(obj *v1alpha1.KeycloakUser, realm string) error {
-	if i.realmClient == nil {
+	if i.keycloakClient == nil {
 		return errors.New("cannot perform user update when client is nil")
 	}
 
-	err := i.realmClient.UpdateUser(&obj.Spec.User, realm)
+	err := i.keycloakClient.UpdateUser(&obj.Spec.User, realm)
 	if err != nil {
 		return err
 	}
@@ -169,51 +169,51 @@ func (i *ClusterActionRunner) UpdateUser(obj *v1alpha1.KeycloakUser, realm strin
 }
 
 func (i *ClusterActionRunner) DeleteUser(id, realm string) error {
-	if i.realmClient == nil {
+	if i.keycloakClient == nil {
 		return errors.New("cannot perform user delete when client is nil")
 	}
-	return i.realmClient.DeleteUser(id, realm)
+	return i.keycloakClient.DeleteUser(id, realm)
 }
 
 // Check if Keycloak is available
 func (i *ClusterActionRunner) Ping() error {
-	if i.realmClient == nil {
+	if i.keycloakClient == nil {
 		return errors.New("cannot perform keycloak ping when client is nil")
 	}
-	return i.realmClient.Ping()
+	return i.keycloakClient.Ping()
 }
 
 func (i *ClusterActionRunner) AssignRealmRole(obj *v1alpha1.KeycloakUserRole, userId, realm string) error {
-	if i.realmClient == nil {
+	if i.keycloakClient == nil {
 		return errors.New("cannot perform role assign when client is nil")
 	}
-	return i.realmClient.CreateUserRealmRole(obj, realm, userId)
+	return i.keycloakClient.CreateUserRealmRole(obj, realm, userId)
 }
 
 func (i *ClusterActionRunner) RemoveRealmRole(obj *v1alpha1.KeycloakUserRole, userId, realm string) error {
-	if i.realmClient == nil {
+	if i.keycloakClient == nil {
 		return errors.New("cannot perform role assign when client is nil")
 	}
-	return i.realmClient.DeleteUserRealmRole(obj, realm, userId)
+	return i.keycloakClient.DeleteUserRealmRole(obj, realm, userId)
 }
 
 func (i *ClusterActionRunner) AssignClientRole(obj *v1alpha1.KeycloakUserRole, clientId, userId, realm string) error {
-	if i.realmClient == nil {
+	if i.keycloakClient == nil {
 		return errors.New("cannot perform role assign when client is nil")
 	}
-	return i.realmClient.CreateUserClientRole(obj, realm, clientId, userId)
+	return i.keycloakClient.CreateUserClientRole(obj, realm, clientId, userId)
 }
 
 func (i *ClusterActionRunner) RemoveClientRole(obj *v1alpha1.KeycloakUserRole, clientId, userId, realm string) error {
-	if i.realmClient == nil {
+	if i.keycloakClient == nil {
 		return errors.New("cannot perform role assign when client is nil")
 	}
-	return i.realmClient.DeleteUserClientRole(obj, realm, clientId, userId)
+	return i.keycloakClient.DeleteUserClientRole(obj, realm, clientId, userId)
 }
 
 // Delete a realm using the keycloak api
 func (i *ClusterActionRunner) ApplyOverrides(obj *v1alpha1.KeycloakRealm) error {
-	if i.realmClient == nil {
+	if i.keycloakClient == nil {
 		return errors.New("cannot perform realm configure when client is nil")
 	}
 
@@ -229,7 +229,7 @@ func (i *ClusterActionRunner) ApplyOverrides(obj *v1alpha1.KeycloakRealm) error 
 
 func (i *ClusterActionRunner) configureBrowserRedirector(provider, flow string, obj *v1alpha1.KeycloakRealm) error {
 	realmName := obj.Spec.Realm.Realm
-	authenticationExecutionInfo, err := i.realmClient.ListAuthenticationExecutionsForFlow(flow, realmName)
+	authenticationExecutionInfo, err := i.keycloakClient.ListAuthenticationExecutionsForFlow(flow, realmName)
 	if err != nil {
 		return err
 	}
@@ -248,7 +248,7 @@ func (i *ClusterActionRunner) configureBrowserRedirector(provider, flow string, 
 
 	var authenticatorConfig *v1alpha1.AuthenticatorConfig
 	if authenticationConfigID != "" {
-		authenticatorConfig, err = i.realmClient.GetAuthenticatorConfig(authenticationConfigID, realmName)
+		authenticatorConfig, err = i.keycloakClient.GetAuthenticatorConfig(authenticationConfigID, realmName)
 		if err != nil {
 			return err
 		}
@@ -259,7 +259,7 @@ func (i *ClusterActionRunner) configureBrowserRedirector(provider, flow string, 
 			Alias:  authenticationConfigAlias,
 			Config: map[string]string{"defaultProvider": flow},
 		}
-		return i.realmClient.CreateAuthenticatorConfig(config, realmName, redirectorExecutionID)
+		return i.keycloakClient.CreateAuthenticatorConfig(config, realmName, redirectorExecutionID)
 	}
 
 	return nil

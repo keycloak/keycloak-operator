@@ -9,8 +9,6 @@ import (
 
 	"k8s.io/client-go/tools/record"
 
-	"github.com/keycloak/keycloak-operator/pkg/controller/shared"
-
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -135,7 +133,7 @@ func (r *ReconcileKeycloakUser) Reconcile(request reconcile.Request) (reconcile.
 	}
 
 	// Find the realms that this user should be added to based on the label selector
-	realms, err := shared.GetMatchingRealms(r.client, r.context, instance)
+	realms, err := common.GetMatchingRealms(r.context, r.client, instance.Spec.RealmSelector)
 	if err != nil {
 		return reconcile.Result{}, err
 	}
@@ -143,21 +141,22 @@ func (r *ReconcileKeycloakUser) Reconcile(request reconcile.Request) (reconcile.
 	log.Info(fmt.Sprintf("found %v matching realm(s) for user %v/%v", len(realms.Items), instance.Namespace, instance.Name))
 
 	for _, realm := range realms.Items {
-		keycloaks, err := shared.GetMatchingKeycloaks(r.client, r.context, &realm)
+		keycloaks, err := common.GetMatchingKeycloaks(r.context, r.client, realm.Spec.InstanceSelector)
 		if err != nil {
 			return r.ManageError(instance, err)
 		}
 
 		for _, keycloak := range keycloaks.Items {
 			// Get an authenticated keycloak api client for the instance
-			authenticated, err := shared.GetAuthenticatedClient(keycloak)
+			keycloakFactory := common.LocalConfigKeycloakFactory{}
+			authenticated, err := keycloakFactory.AuthenticatedClient(keycloak)
 			if err != nil {
 				return r.ManageError(instance, err)
 			}
 
 			// Compute the current state of the realm
 			log.Info(fmt.Sprintf("got authenticated client for keycloak at %v", keycloak.Status.InternalURL))
-			userState := common.NewUserState()
+			userState := common.NewUserState(&keycloak)
 
 			log.Info(fmt.Sprintf("read state for keycloak %v/%v, realm %v/%v",
 				keycloak.Namespace,
@@ -165,15 +164,15 @@ func (r *ReconcileKeycloakUser) Reconcile(request reconcile.Request) (reconcile.
 				instance.Namespace,
 				realm.Spec.Realm.Realm))
 
-			userState.Read(authenticated, instance, realm.Spec.Realm.Realm)
+			userState.Read(authenticated, r.client, instance, &realm)
 			if err != nil {
 				return r.ManageError(instance, err)
 			}
 
-			reconciler := NewKeycloakuserReconciler(realm.Spec.Realm.Realm)
+			reconciler := NewKeycloakuserReconciler(&keycloak, &realm)
 			desiredState := reconciler.Reconcile(userState, instance)
 
-			actionRunner := common.NewRealmActionRunner(r.context, r.client, r.scheme, instance, authenticated)
+			actionRunner := common.NewClusterAndKeycloakActionRunner(r.context, r.client, r.scheme, instance, authenticated)
 			err = actionRunner.RunAll(desiredState)
 			if err != nil {
 				return r.ManageError(instance, err)

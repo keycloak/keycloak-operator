@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/keycloak/keycloak-operator/pkg/controller/shared"
-
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
@@ -124,7 +122,7 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 		return reconcile.Result{Requeue: false}, nil
 	}
 
-	keycloaks, err := shared.GetMatchingKeycloaks(r.client, r.context, instance)
+	keycloaks, err := common.GetMatchingKeycloaks(r.context, r.client, instance.Spec.InstanceSelector)
 	if err != nil {
 		return r.ManageError(instance, err)
 	}
@@ -161,7 +159,7 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 		// the desired state
 		reconciler := NewKeycloakRealmReconciler(keycloak)
 		desiredState := reconciler.Reconcile(realmState, instance)
-		actionRunner := common.NewRealmActionRunner(r.context, r.client, r.scheme, instance, authenticated)
+		actionRunner := common.NewClusterAndKeycloakActionRunner(r.context, r.client, r.scheme, instance, authenticated)
 
 		// Run all actions to keep the realms updated
 		err = actionRunner.RunAll(desiredState)
