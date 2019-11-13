@@ -5,7 +5,7 @@ metadata:
     capabilities: Deep Insights
     categories: security
     certified: 'False'
-    containerImage: 'quay.io/keycloak/keycloak-operator:v7.0.1'
+    containerImage: 'quay.io/keycloak/keycloak-operator:7.0.1'
     createdAt: 2019-11-08 00:00:00
     description: 'An Operator for installing and managing Keycloak'
     repository: 'https://github.com/keycloak/keycloak-operator'
@@ -107,7 +107,7 @@ metadata:
           }
         }
       ]
-  name: keycloak-operator.v7.0.1
+  name: keycloak-operator.7.0.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -185,7 +185,7 @@ spec:
                             fieldPath: metadata.name
                       - name: OPERATOR_NAME
                         value: keycloak-operator
-                    image: quay.io/keycloak/keycloak-operator:v7.0.1
+                    image: quay.io/keycloak/keycloak-operator:7.0.1
                     imagePullPolicy: Always
                     name: keycloak-operator
                     resources: {}
@@ -322,7 +322,7 @@ spec:
     - Access
   links:
     - name: Documentation
-      url: https://github.com/keycloak/keycloak-operator/tree/v7.0.1/documentation
+      url: https://github.com/keycloak/keycloak-operator/tree/7.0.1/docs
     - name: Keycloak
       url: https://www.keycloak.org/
   maturity: alpha
