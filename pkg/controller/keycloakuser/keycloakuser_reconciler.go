@@ -51,7 +51,7 @@ func (i *KeycloakuserReconciler) reconcileUserDelete(state *common.UserState, cr
 	// probably been deleted in the Admin UI. Nothing to do for us
 	// here
 	if state.User != nil {
-		desired.AddAction(common.DeleteUserAction{
+		desired.AddAction(&common.DeleteUserAction{
 			ID:    state.User.ID,
 			Realm: i.Realm.Spec.Realm.Realm,
 			Msg:   fmt.Sprintf("delete user %v", cr.Spec.User.UserName),
@@ -73,7 +73,7 @@ func (i *KeycloakuserReconciler) getKeycloakUserDesiredState(state *common.UserS
 	var actions []common.ClusterAction
 
 	if state.User == nil {
-		actions = append(actions, common.CreateUserAction{
+		actions = append(actions, &common.CreateUserAction{
 			Ref:   cr,
 			Realm: i.Realm.Spec.Realm.Realm,
 			Msg:   fmt.Sprintf("create user %v", cr.Spec.User.UserName),
@@ -82,7 +82,7 @@ func (i *KeycloakuserReconciler) getKeycloakUserDesiredState(state *common.UserS
 		// The ID is expected along with the user representation
 		cr.Spec.User.ID = state.User.ID
 
-		actions = append(actions, common.UpdateUserAction{
+		actions = append(actions, &common.UpdateUserAction{
 			Ref:   cr,
 			Realm: i.Realm.Spec.Realm.Realm,
 			Msg:   fmt.Sprintf("update user %v", cr.Spec.User.UserName),
@@ -97,8 +97,8 @@ func (i *KeycloakuserReconciler) getKeycloakUserDesiredState(state *common.UserS
 }
 
 func (i *KeycloakuserReconciler) getUserRealmRolesDesiredState(state *common.UserState, cr *v1alpha1.KeycloakUser) []common.ClusterAction {
-	assignRoles := []common.ClusterAction{}
-	removeRoles := []common.ClusterAction{}
+	var assignRoles []common.ClusterAction
+	var removeRoles []common.ClusterAction
 
 	for _, role := range cr.Spec.User.RealmRoles {
 		// Is the role available for this user?
@@ -109,7 +109,7 @@ func (i *KeycloakuserReconciler) getUserRealmRolesDesiredState(state *common.Use
 
 		// Role requested but not assigned?
 		if !containsRole(state.RealmRoles, role) {
-			assignRoles = append(assignRoles, common.AssignRealmRoleAction{
+			assignRoles = append(assignRoles, &common.AssignRealmRoleAction{
 				UserID: state.User.ID,
 				Ref:    roleRef,
 				Realm:  i.Realm.Spec.Realm.Realm,
@@ -121,7 +121,7 @@ func (i *KeycloakuserReconciler) getUserRealmRolesDesiredState(state *common.Use
 	for _, role := range state.RealmRoles {
 		// Role assigned but not requested?
 		if !containsRoleID(cr.Spec.User.RealmRoles, role.Name) {
-			removeRoles = append(removeRoles, common.RemoveRealmRoleAction{
+			removeRoles = append(removeRoles, &common.RemoveRealmRoleAction{
 				UserID: state.User.ID,
 				Ref:    role,
 				Realm:  i.Realm.Spec.Realm.Realm,
@@ -149,7 +149,7 @@ func (i *KeycloakuserReconciler) getUserSecretDesiredState(state *common.UserSta
 	// reference ensures that it gets deleted once the User CR is
 	// deleted
 	if state.Secret == nil {
-		return common.GenericCreateAction{
+		return &common.GenericCreateAction{
 			Ref: model.RealmCredentialSecret(i.Realm, &cr.Spec.User, i.Keycloak),
 			Msg: fmt.Sprintf("create credential secret for user %v in realm %v/%v",
 				cr.Spec.User.UserName,
@@ -161,8 +161,8 @@ func (i *KeycloakuserReconciler) getUserSecretDesiredState(state *common.UserSta
 }
 
 func (i *KeycloakuserReconciler) syncRolesForClient(state *common.UserState, cr *v1alpha1.KeycloakUser, clientID string) []common.ClusterAction {
-	assignRoles := []common.ClusterAction{}
-	removeRoles := []common.ClusterAction{}
+	var assignRoles []common.ClusterAction
+	var removeRoles []common.ClusterAction
 
 	for _, role := range cr.Spec.User.ClientRoles[clientID] {
 		// Is the role available for this user?
@@ -179,7 +179,7 @@ func (i *KeycloakuserReconciler) syncRolesForClient(state *common.UserState, cr 
 
 		// Role requested but not assigned?
 		if !containsRole(state.ClientRoles[clientID], role) {
-			assignRoles = append(assignRoles, common.AssignClientRoleAction{
+			assignRoles = append(assignRoles, &common.AssignClientRoleAction{
 				UserID:   state.User.ID,
 				ClientID: client.ID,
 				Ref:      roleRef,
@@ -198,7 +198,7 @@ func (i *KeycloakuserReconciler) syncRolesForClient(state *common.UserState, cr 
 
 		// Role assigned but not requested?
 		if !containsRoleID(cr.Spec.User.ClientRoles[clientID], role.Name) {
-			removeRoles = append(removeRoles, common.RemoveClientRoleAction{
+			removeRoles = append(removeRoles, &common.RemoveClientRoleAction{
 				UserID:   state.User.ID,
 				ClientID: client.ID,
 				Ref:      role,

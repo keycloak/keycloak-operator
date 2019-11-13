@@ -184,7 +184,6 @@ func (c *Client) FindUserByUsername(name, realm string) (*v1alpha1.KeycloakAPIUs
 		if err := json.Unmarshal(body, &users); err != nil {
 			return nil, err
 		}
-
 		if len(users) == 0 {
 			return nil, errors.New("not found")
 		}
@@ -192,6 +191,9 @@ func (c *Client) FindUserByUsername(name, realm string) (*v1alpha1.KeycloakAPIUs
 	})
 	if err != nil {
 		return nil, err
+	}
+	if result == nil {
+		return nil, nil
 	}
 	return result.(*v1alpha1.KeycloakAPIUser), nil
 }
@@ -581,6 +583,9 @@ func (c *Client) ListUserClientRoles(realmName, clientID, userID string) ([]*v1a
 	if err != nil {
 		return nil, err
 	}
+	if objects == nil {
+		return nil, nil
+	}
 	return objects.([]*v1alpha1.KeycloakUserRole), err
 }
 
@@ -592,6 +597,9 @@ func (c *Client) ListAvailableUserClientRoles(realmName, clientID, userID string
 	})
 	if err != nil {
 		return nil, err
+	}
+	if objects == nil {
+		return nil, nil
 	}
 	return objects.([]*v1alpha1.KeycloakUserRole), err
 }
@@ -605,6 +613,9 @@ func (c *Client) ListUserRealmRoles(realmName, userID string) ([]*v1alpha1.Keycl
 	if err != nil {
 		return nil, err
 	}
+	if objects == nil {
+		return nil, nil
+	}
 	return objects.([]*v1alpha1.KeycloakUserRole), err
 }
 
@@ -616,6 +627,9 @@ func (c *Client) ListAvailableUserRealmRoles(realmName, userID string) ([]*v1alp
 	})
 	if err != nil {
 		return nil, err
+	}
+	if objects == nil {
+		return nil, nil
 	}
 	return objects.([]*v1alpha1.KeycloakUserRole), err
 }

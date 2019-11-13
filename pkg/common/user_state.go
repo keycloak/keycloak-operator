@@ -43,7 +43,12 @@ func (i *UserState) Read(keycloakClient KeycloakInterface, userClient client.Cli
 		return err
 	}
 
-	return i.readClientRoles(keycloakClient, user, realm.Spec.Realm.Realm)
+	err = i.readClientRoles(keycloakClient, user, realm.Spec.Realm.Realm)
+	if err != nil {
+		return err
+	}
+
+	return i.readSecretState(userClient, user, realm)
 }
 
 func (i *UserState) readUser(client KeycloakInterface, user *v1alpha1.KeycloakUser, realm string) error {
