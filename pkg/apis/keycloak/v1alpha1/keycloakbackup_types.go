@@ -9,7 +9,6 @@ import (
 type KeycloakBackupSpec struct {
 	Restore bool            `json:"restore,omitempty"`
 	AWS     KeycloakAWSSpec `json:"aws,omitempty"`
-	Enabled bool            `json:"enabled,omitempty"`
 }
 
 // KeycloakAWSSpec defines the desired state of KeycloakBackupSpec

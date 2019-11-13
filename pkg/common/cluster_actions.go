@@ -32,10 +32,10 @@ type ActionRunner interface {
 	CreateUser(obj *v1alpha1.KeycloakUser, realm string) error
 	UpdateUser(obj *v1alpha1.KeycloakUser, realm string) error
 	DeleteUser(id, realm string) error
-	AssignRealmRole(obj *v1alpha1.KeycloakUserRole, userId, realm string) error
-	RemoveRealmRole(obj *v1alpha1.KeycloakUserRole, userId, realm string) error
-	AssignClientRole(obj *v1alpha1.KeycloakUserRole, clientId, userId, realm string) error
-	RemoveClientRole(obj *v1alpha1.KeycloakUserRole, clientId, userId, realm string) error
+	AssignRealmRole(obj *v1alpha1.KeycloakUserRole, userID, realm string) error
+	RemoveRealmRole(obj *v1alpha1.KeycloakUserRole, userID, realm string) error
+	AssignClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error
+	RemoveClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error
 	ApplyOverrides(obj *v1alpha1.KeycloakRealm) error
 	Ping() error
 }
@@ -183,32 +183,32 @@ func (i *ClusterActionRunner) Ping() error {
 	return i.keycloakClient.Ping()
 }
 
-func (i *ClusterActionRunner) AssignRealmRole(obj *v1alpha1.KeycloakUserRole, userId, realm string) error {
+func (i *ClusterActionRunner) AssignRealmRole(obj *v1alpha1.KeycloakUserRole, userID, realm string) error {
 	if i.keycloakClient == nil {
 		return errors.New("cannot perform role assign when client is nil")
 	}
-	return i.keycloakClient.CreateUserRealmRole(obj, realm, userId)
+	return i.keycloakClient.CreateUserRealmRole(obj, realm, userID)
 }
 
-func (i *ClusterActionRunner) RemoveRealmRole(obj *v1alpha1.KeycloakUserRole, userId, realm string) error {
+func (i *ClusterActionRunner) RemoveRealmRole(obj *v1alpha1.KeycloakUserRole, userID, realm string) error {
 	if i.keycloakClient == nil {
 		return errors.New("cannot perform role assign when client is nil")
 	}
-	return i.keycloakClient.DeleteUserRealmRole(obj, realm, userId)
+	return i.keycloakClient.DeleteUserRealmRole(obj, realm, userID)
 }
 
-func (i *ClusterActionRunner) AssignClientRole(obj *v1alpha1.KeycloakUserRole, clientId, userId, realm string) error {
+func (i *ClusterActionRunner) AssignClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error {
 	if i.keycloakClient == nil {
 		return errors.New("cannot perform role assign when client is nil")
 	}
-	return i.keycloakClient.CreateUserClientRole(obj, realm, clientId, userId)
+	return i.keycloakClient.CreateUserClientRole(obj, realm, clientID, userID)
 }
 
-func (i *ClusterActionRunner) RemoveClientRole(obj *v1alpha1.KeycloakUserRole, clientId, userId, realm string) error {
+func (i *ClusterActionRunner) RemoveClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error {
 	if i.keycloakClient == nil {
 		return errors.New("cannot perform role assign when client is nil")
 	}
-	return i.keycloakClient.DeleteUserClientRole(obj, realm, clientId, userId)
+	return i.keycloakClient.DeleteUserClientRole(obj, realm, clientID, userID)
 }
 
 // Delete a realm using the keycloak api

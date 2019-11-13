@@ -156,7 +156,7 @@ func (r *ReconcileKeycloakUser) Reconcile(request reconcile.Request) (reconcile.
 
 			// Compute the current state of the realm
 			log.Info(fmt.Sprintf("got authenticated client for keycloak at %v", keycloak.Status.InternalURL))
-			userState := common.NewUserState(&keycloak)
+			userState := common.NewUserState(keycloak)
 
 			log.Info(fmt.Sprintf("read state for keycloak %v/%v, realm %v/%v",
 				keycloak.Namespace,
@@ -164,12 +164,11 @@ func (r *ReconcileKeycloakUser) Reconcile(request reconcile.Request) (reconcile.
 				instance.Namespace,
 				realm.Spec.Realm.Realm))
 
-			userState.Read(authenticated, r.client, instance, &realm)
+			err = userState.Read(authenticated, r.client, instance, realm)
 			if err != nil {
 				return r.ManageError(instance, err)
 			}
-
-			reconciler := NewKeycloakuserReconciler(&keycloak, &realm)
+			reconciler := NewKeycloakuserReconciler(keycloak, realm)
 			desiredState := reconciler.Reconcile(userState, instance)
 
 			actionRunner := common.NewClusterAndKeycloakActionRunner(r.context, r.client, r.scheme, instance, authenticated)
@@ -180,7 +179,7 @@ func (r *ReconcileKeycloakUser) Reconcile(request reconcile.Request) (reconcile.
 		}
 	}
 
-	return reconcile.Result{RequeueAfter: RequeueDelayErrorSeconds * time.Second}, r.manageSuccess(instance, instance.DeletionTimestamp != nil)
+	return reconcile.Result{Requeue: false}, r.manageSuccess(instance, instance.DeletionTimestamp != nil)
 }
 
 func (r *ReconcileKeycloakUser) manageSuccess(user *kc.KeycloakUser, deleted bool) error {

@@ -42,8 +42,8 @@ func getDummyUser() *v1alpha1.KeycloakUser {
 	}
 }
 
-func getDummyRealm() *v1alpha1.KeycloakRealm {
-	return &v1alpha1.KeycloakRealm{
+func getDummyRealm() v1alpha1.KeycloakRealm {
+	return v1alpha1.KeycloakRealm{
 		Spec: v1alpha1.KeycloakRealmSpec{
 			InstanceSelector: &v1.LabelSelector{
 				MatchLabels: map[string]string{
@@ -85,10 +85,10 @@ func getDummyRealm() *v1alpha1.KeycloakRealm {
 
 func TestKeycloakRealmReconciler_Reconcile(t *testing.T) {
 	// given
-	keycloak := &v1alpha1.Keycloak{}
+	keycloak := v1alpha1.Keycloak{}
 	realm := getDummyRealm()
 	reconciler := NewKeycloakuserReconciler(keycloak, realm)
-	state := getDummyState(keycloak)
+	state := getDummyState(&keycloak)
 	user := getDummyUser()
 
 	// when

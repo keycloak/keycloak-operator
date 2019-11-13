@@ -13,12 +13,12 @@ type Reconciler interface {
 	Reconcile(cr *v1alpha1.KeycloakUser) error
 }
 
-type KeycloakuserReconciler struct {
-	Realm    *v1alpha1.KeycloakRealm
-	Keycloak *v1alpha1.Keycloak
+type KeycloakuserReconciler struct { // nolint
+	Realm    v1alpha1.KeycloakRealm
+	Keycloak v1alpha1.Keycloak
 }
 
-func NewKeycloakuserReconciler(keycloak *v1alpha1.Keycloak, realm *v1alpha1.KeycloakRealm) *KeycloakuserReconciler {
+func NewKeycloakuserReconciler(keycloak v1alpha1.Keycloak, realm v1alpha1.KeycloakRealm) *KeycloakuserReconciler {
 	return &KeycloakuserReconciler{
 		Realm:    realm,
 		Keycloak: keycloak,
@@ -73,6 +73,9 @@ func (i *KeycloakuserReconciler) getKeycloakUserDesiredState(state *common.UserS
 	var actions []common.ClusterAction
 
 	if state.User == nil {
+		// Make sure all new users have credentials
+		common.EnsureCredential(&cr.Spec.User)
+
 		actions = append(actions, &common.CreateUserAction{
 			Ref:   cr,
 			Realm: i.Realm.Spec.Realm.Realm,
@@ -150,7 +153,7 @@ func (i *KeycloakuserReconciler) getUserSecretDesiredState(state *common.UserSta
 	// deleted
 	if state.Secret == nil {
 		return &common.GenericCreateAction{
-			Ref: model.RealmCredentialSecret(i.Realm, &cr.Spec.User, i.Keycloak),
+			Ref: model.RealmCredentialSecret(&i.Realm, &cr.Spec.User, &i.Keycloak),
 			Msg: fmt.Sprintf("create credential secret for user %v in realm %v/%v",
 				cr.Spec.User.UserName,
 				cr.Namespace,
@@ -211,18 +214,18 @@ func (i *KeycloakuserReconciler) syncRolesForClient(state *common.UserState, cr 
 	return append(assignRoles, removeRoles...)
 }
 
-func containsRole(list []*v1alpha1.KeycloakUserRole, ID string) bool {
+func containsRole(list []*v1alpha1.KeycloakUserRole, id string) bool {
 	for _, item := range list {
-		if item.ID == ID {
+		if item.ID == id {
 			return true
 		}
 	}
 	return false
 }
 
-func containsRoleID(list []string, ID string) bool {
+func containsRoleID(list []string, id string) bool {
 	for _, item := range list {
-		if item == ID {
+		if item == id {
 			return true
 		}
 	}

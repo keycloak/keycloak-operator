@@ -1,6 +1,6 @@
 = Keycloak Client Custom Resource
 
-Keycloak Operator allows application developers to represent Keycloak Clients as Custom Resources:
+The Keycloak Operator allows application developers to represent Keycloak Clients as Custom Resources:
 
 .`KeycloakClient` Custom Resource
 ```yaml
