@@ -9,6 +9,11 @@ ENV OPERATOR=/usr/local/bin/keycloak-operator \
     USER_UID=1001 \
     USER_NAME=keycloak-operator
 
+ENV SHA1_FILE=/BUILD_SHA1.txt
+ENV BUILD_DATE_FILE=/BUILD_DATE.txt
+
+RUN echo "$(date)" > $BUILD_DATE_FILE
+
 COPY tools /opt/jboss/tools
 RUN /opt/jboss/tools/build-operator.sh
 
