@@ -7,9 +7,9 @@ metadata:
 spec:
   user:
     username: "realm_user"
-    firstName: "Realm"
-    lastName: "User"
-    email: "realm_user@redhat.com"
+    firstName: "John"
+    lastName: "Doe"
+    email: "user@example.com"
     enabled: True
     emailVerified: False
   realmSelector:

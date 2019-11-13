@@ -1,0 +1,173 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: keycloakclients.keycloak.org
+spec:
+  group: keycloak.org
+  names:
+    kind: KeycloakClient
+    listKind: KeycloakClientList
+    plural: keycloakclients
+    singular: keycloakclient
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: KeycloakClient is the Schema for the keycloakclients API
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: KeycloakClientSpec defines the desired state of KeycloakClient
+          properties:
+            client:
+              properties:
+                access:
+                  additionalProperties:
+                    type: boolean
+                  type: object
+                adminUrl:
+                  type: string
+                attributes:
+                  additionalProperties:
+                    type: string
+                  type: object
+                baseUrl:
+                  type: string
+                bearerOnly:
+                  type: boolean
+                clientAuthenticatorType:
+                  type: string
+                clientId:
+                  type: string
+                consentRequired:
+                  type: boolean
+                defaultRoles:
+                  items:
+                    type: string
+                  type: array
+                description:
+                  type: string
+                directAccessGrantsEnabled:
+                  type: boolean
+                enabled:
+                  type: boolean
+                frontchannelLogout:
+                  type: boolean
+                fullScopeAllowed:
+                  type: boolean
+                id:
+                  type: string
+                implicitFlowEnabled:
+                  type: boolean
+                name:
+                  type: string
+                nodeReRegistrationTimeout:
+                  type: integer
+                notBefore:
+                  type: integer
+                protocol:
+                  type: string
+                protocolMappers:
+                  items:
+                    properties:
+                      config:
+                        additionalProperties:
+                          type: string
+                        type: object
+                      consentRequired:
+                        type: boolean
+                      consentText:
+                        type: string
+                      id:
+                        type: string
+                      name:
+                        type: string
+                      protocol:
+                        type: string
+                      protocolMapper:
+                        type: string
+                    required:
+                      - config
+                      - consentText
+                    type: object
+                  type: array
+                publicClient:
+                  type: boolean
+                redirectUris:
+                  items:
+                    type: string
+                  type: array
+                rootUrl:
+                  type: string
+                secret:
+                  type: string
+                serviceAccountsEnabled:
+                  type: boolean
+                standardFlowEnabled:
+                  type: boolean
+                surrogateAuthRequired:
+                  type: boolean
+                useTemplateConfig:
+                  type: boolean
+                useTemplateMappers:
+                  type: boolean
+                useTemplateScope:
+                  type: boolean
+                webOrigins:
+                  items:
+                    type: string
+                  type: array
+              required:
+                - clientId
+              type: object
+            realmSelector:
+              properties:
+                matchExact:
+                  description: matchExact is a string that represents realm name.
+                  type: string
+              type: object
+          required:
+            - client
+            - realmSelector
+          type: object
+        status:
+          description: KeycloakClientStatus defines the observed state of KeycloakClient
+          properties:
+            message:
+              description: Human-readable message indicating details about current
+                operator phase or error.
+              type: string
+            phase:
+              description: Current phase of the operator.
+              type: string
+            ready:
+              description: True if all resources are in a ready state and all work
+                is done.
+              type: boolean
+            secondaryResources:
+              additionalProperties:
+                items:
+                  type: string
+                type: array
+              description: 'A map of all the secondary resources types and names created
+                for this CR. e.g "Deployment": [ "DeploymentName1", "DeploymentName2"
+                ]'
+              type: object
+          type: object
+  version: v1alpha1
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true

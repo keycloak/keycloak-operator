@@ -57,6 +57,54 @@ metadata:
           "metadata": {
             "name": "example-keycloakbackup"
           }
+        },
+        {
+          "apiVersion": "keycloak.org/v1alpha1",
+          "kind": "KeycloakClient",
+          "metadata": {
+            "name": "client-secret",
+            "labels": {
+              "app": "sso"
+            }
+          },
+          "spec": {
+            "realmSelector": {
+              "matchLabels": {
+                "app": "sso"
+              }
+            },
+            "client": {
+              "clientId": "client-secret",
+              "secret": "client-secret",
+              "clientAuthenticatorType": "client-secret",
+              "protocol": "openid-connect"
+            }
+          }
+        },
+        {
+          "apiVersion": "keycloak.org/v1alpha1",
+          "kind": "KeycloakUser",
+          "metadata": {
+            "name": "example-realm-user",
+            "labels": {
+              "app": "sso"
+            }
+          },
+          "spec": {
+            "user": {
+              "username": "realm_user",
+              "firstName": "John",
+              "lastName": "Doe",
+              "email": "user@example.com",
+              "enabled": true,
+              "emailVerified": false
+            },
+            "realmSelector": {
+              "matchLabels": {
+                "app": "sso"
+              }
+            }
+          }
         }
       ]
   name: keycloak-operator.v7.0.1
@@ -80,6 +128,16 @@ spec:
         kind: KeycloakBackup
         name: keycloakbackups.keycloak.org
         version: v1alpha1
+      - description: "Represents a Keycloak Client"
+        displayName: "KeycloakClient"
+        kind: KeycloakClient
+        name: keycloakclients.keycloak.org
+        version: v1alpha1
+      - description: "Represents a Keycloak User"
+        displayName: "KeycloakUser"
+        kind: KeycloakUser
+        name: keycloakusers.keycloak.org
+        version: v1alpha1
   description: |
     A Kubernetes Operator based on the Operator SDK for installing and managing Keycloak.
 
@@ -90,6 +148,8 @@ spec:
 
     * Install Keycloak to a namespace
     * Import Keycloak Realms
+    * Import Keycloak Clients
+    * Import Keycloak Users
     * Create scheduled backups of the database
     * Install Extensions
   displayName: Keycloak Operator
@@ -250,6 +310,15 @@ spec:
       type: MultiNamespace
     - supported: false
       type: AllNamespaces
+  keywords:
+    - Keycloak
+    - Identity
+    - Access
+  links:
+    - name: Documentation
+      url: https://github.com/keycloak/keycloak-operator/tree/v7.0.1/documentation
+    - name: Keycloak
+      url: https://www.keycloak.org/
   maturity: alpha
   provider:
     name: Red Hat
