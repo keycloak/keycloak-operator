@@ -10,7 +10,7 @@ mkdir -p $KEYCLOAK_PATH
 microdnf update && microdnf install -y tar gzip git make && microdnf clean all && rm -rf /var/cache/yum/*
 
 # Install Go
-VERSION="1.12.1"
+VERSION="1.13.4"
 curl https://storage.googleapis.com/golang/go$VERSION.linux-amd64.tar.gz | tar -C /usr/local -xzf - \
   && rm -rf $GOROOT/{pkg/linux_amd64_race,test,doc,api}/* \
   $GOROOT/pkg/tool/linux_amd64/{vet,doc,cover,trace,nm,fix,test2json,objdump} \
@@ -25,5 +25,5 @@ curl https://storage.googleapis.com/golang/go$VERSION.linux-amd64.tar.gz | tar -
 git clone --depth 1 $GIT_REPO $KEYCLOAK_PATH/keycloak-operator
 
 # Build and copy the binary
-cd /go/src/github.com/keycloak/keycloak-operator && make code/compile
+cd /go/src/github.com/keycloak/keycloak-operator && echo "Build SHA1: $(git rev-parse HEAD)" | tee ${SHA1_FILE} && make code/compile
 cp ./tmp/_output/bin/keycloak-operator /usr/local/bin
