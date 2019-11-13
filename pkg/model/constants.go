@@ -12,7 +12,7 @@ const (
 	PostgresqlServiceName                = ApplicationName + "-postgresql"
 	PostgresqlImage                      = "postgres:9.5"
 	KeycloakImage                        = "quay.io/keycloak/keycloak:7.0.1"
-	KeycloakInitContainerImage           = "quay.io/keycloak/extensions-init-container:master"
+	KeycloakInitContainerImage           = "quay.io/keycloak/keycloak-init-container:master"
 	RHSSOImage                           = "registry.access.redhat.com/redhat-sso-7/sso73-openshift:1.0-15"
 	BackupImage                          = "quay.io/integreatly/backup-container:1.0.10"
 	KeycloakDiscoveryServiceName         = ApplicationName + "-discovery"
