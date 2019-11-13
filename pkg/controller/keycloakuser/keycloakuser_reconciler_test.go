@@ -11,7 +11,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func getDummyState(keycloak *v1alpha1.Keycloak) *common.UserState {
+func getDummyState(keycloak v1alpha1.Keycloak) *common.UserState {
 	return common.NewUserState(keycloak)
 }
 
@@ -88,7 +88,7 @@ func TestKeycloakRealmReconciler_Reconcile(t *testing.T) {
 	keycloak := v1alpha1.Keycloak{}
 	realm := getDummyRealm()
 	reconciler := NewKeycloakuserReconciler(keycloak, realm)
-	state := getDummyState(&keycloak)
+	state := getDummyState(keycloak)
 	user := getDummyUser()
 
 	// when
