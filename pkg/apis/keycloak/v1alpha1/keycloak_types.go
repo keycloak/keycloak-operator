@@ -10,12 +10,13 @@ import (
 // KeycloakSpec defines the desired state of Keycloak
 // +k8s:openapi-gen=true
 type KeycloakSpec struct {
-	AdminCredentialSecret string                   `json:"adminCredentialSecret,omitempty"`
-	Extensions            []string                 `json:"extensions,omitempty"`
-	Instances             int                      `json:"instances,omitempty"`
-	ExternalAccess        KeycloakExternalAccess   `json:"externalAccess,omitempty"`
-	ExternalDatabase      KeycloakExternalDatabase `json:"externalDatabase,omitempty"`
-	Profile               string                   `json:"profile,omitempty"`
+	AdminCredentialSecret string `json:"adminCredentialSecret,omitempty"`
+	// +listType=set
+	Extensions       []string                 `json:"extensions,omitempty"`
+	Instances        int                      `json:"instances,omitempty"`
+	ExternalAccess   KeycloakExternalAccess   `json:"externalAccess,omitempty"`
+	ExternalDatabase KeycloakExternalDatabase `json:"externalDatabase,omitempty"`
+	Profile          string                   `json:"profile,omitempty"`
 }
 
 type KeycloakExternalAccess struct {
@@ -59,6 +60,7 @@ var (
 // Keycloak is the Schema for the keycloaks API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:path=keycloaks,scope=Namespaced
 type Keycloak struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

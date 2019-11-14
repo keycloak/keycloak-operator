@@ -17,16 +17,14 @@ spec:
       description: KeycloakRealm is the Schema for the keycloakrealms API
       properties:
         apiVersion:
-          description:
-            "APIVersion defines the versioned schema of this representation
+          description: 'APIVersion defines the versioned schema of this representation
             of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources"
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
           type: string
         kind:
-          description:
-            "Kind is a string value representing the REST resource this
+          description: 'Kind is a string value representing the REST resource this
             object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds"
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
@@ -34,35 +32,29 @@ spec:
           description: KeycloakRealmSpec defines the desired state of KeycloakRealm
           properties:
             instanceSelector:
-              description:
-                A label selector is a label query over a set of resources.
+              description: A label selector is a label query over a set of resources.
                 The result of matchLabels and matchExpressions are ANDed. An empty
                 label selector matches all objects. A null label selector matches
                 no objects.
               properties:
                 matchExpressions:
-                  description:
-                    matchExpressions is a list of label selector requirements.
+                  description: matchExpressions is a list of label selector requirements.
                     The requirements are ANDed.
                   items:
-                    description:
-                      A label selector requirement is a selector that contains
+                    description: A label selector requirement is a selector that contains
                       values, a key, and an operator that relates the key and values.
                     properties:
                       key:
-                        description:
-                          key is the label key that the selector applies
+                        description: key is the label key that the selector applies
                           to.
                         type: string
                       operator:
-                        description:
-                          operator represents a key's relationship to a
+                        description: operator represents a key's relationship to a
                           set of values. Valid operators are In, NotIn, Exists and
                           DoesNotExist.
                         type: string
                       values:
-                        description:
-                          values is an array of string values. If the operator
+                        description: values is an array of string values. If the operator
                           is In or NotIn, the values array must be non-empty. If the
                           operator is Exists or DoesNotExist, the values array must
                           be empty. This array is replaced during a strategic merge
@@ -71,15 +63,14 @@ spec:
                           type: string
                         type: array
                     required:
-                      - key
-                      - operator
+                    - key
+                    - operator
                     type: object
                   type: array
                 matchLabels:
                   additionalProperties:
                     type: string
-                  description:
-                    matchLabels is a map of {key,value} pairs. A single
+                  description: matchLabels is a map of {key,value} pairs. A single
                     {key,value} in the matchLabels map is equivalent to an element
                     of matchExpressions, whose key field is "key", the operator is
                     "In", and the values array contains only "value". The requirements
@@ -185,7 +176,7 @@ spec:
                           type: string
                         type: array
                     required:
-                      - clientId
+                    - clientId
                     type: object
                   type: array
                 displayName:
@@ -291,10 +282,10 @@ spec:
                     type: object
                   type: array
               required:
-                - displayName
-                - enabled
-                - id
-                - realm
+              - displayName
+              - enabled
+              - id
+              - realm
               type: object
             realmOverrides:
               items:
@@ -306,7 +297,7 @@ spec:
                 type: object
               type: array
           required:
-            - realm
+          - realm
           type: object
         status:
           description: KeycloakRealmStatus defines the observed state of KeycloakRealm
@@ -315,16 +306,14 @@ spec:
               description: TODO
               type: string
             message:
-              description:
-                Human-readable message indicating details about current
+              description: Human-readable message indicating details about current
                 operator phase or error.
               type: string
             phase:
               description: Current phase of the operator.
               type: string
             ready:
-              description:
-                True if all resources are in a ready state and all work
+              description: True if all resources are in a ready state and all work
                 is done.
               type: boolean
             secondaryResources:
@@ -332,20 +321,19 @@ spec:
                 items:
                   type: string
                 type: array
-              description:
-                'A map of all the secondary resources types and names created
+              description: 'A map of all the secondary resources types and names created
                 for this CR. e.g "Deployment": [ "DeploymentName1", "DeploymentName2"
                 ]'
               type: object
           required:
-            - loginURL
-            - message
-            - phase
-            - ready
+          - loginURL
+          - message
+          - phase
+          - ready
           type: object
       type: object
   version: v1alpha1
   versions:
-    - name: v1alpha1
-      served: true
-      storage: true
+  - name: v1alpha1
+    served: true
+    storage: true
