@@ -38,6 +38,11 @@ func (i *UserState) Read(keycloakClient KeycloakInterface, userClient client.Cli
 		return nil
 	}
 
+	// Don't continue if the user could not be found
+	if i.User == nil {
+		return nil
+	}
+
 	err = i.readRealmRoles(keycloakClient, user, realm.Spec.Realm.Realm)
 	if err != nil {
 		return err
