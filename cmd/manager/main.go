@@ -7,8 +7,6 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/keycloak/keycloak-operator/version"
-
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	routev1 "github.com/openshift/api/route/v1"
 
@@ -47,11 +45,18 @@ var (
 )
 var log = logf.Log.WithName("cmd")
 
+// Retrieve the information during the build time
+var (
+	commitID     = "no Git Hash provided"
+	timestamp    = "0"
+	buildVersion = "0"
+)
+
 func printVersion() {
 	log.Info(fmt.Sprintf("Go Version: %s", runtime.Version()))
 	log.Info(fmt.Sprintf("Go OS/Arch: %s/%s", runtime.GOOS, runtime.GOARCH))
 	log.Info(fmt.Sprintf("Version of operator-sdk: %v", sdkVersion.Version))
-	log.Info(fmt.Sprintf("Operator version: %v", version.Version))
+	log.Info(fmt.Sprintf("Operator version: %v (git+sha: %s, built: %s)", buildVersion, commitID, timestamp))
 }
 
 func main() {
