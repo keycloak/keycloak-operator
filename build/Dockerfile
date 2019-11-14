@@ -11,6 +11,10 @@ ENV OPERATOR=/usr/local/bin/keycloak-operator \
 
 ENV SHA1_FILE=/BUILD_SHA1.txt
 ENV BUILD_DATE_FILE=/BUILD_DATE.txt
+# Because of https://github.com/containers/buildah/issues/1906
+# We need to increment this variable whenever we need a rebuild.
+# The fix should be implemented very soon
+ENV CACHE_BUST=1
 
 RUN echo "$(date)" > $BUILD_DATE_FILE
 
