@@ -3,7 +3,7 @@ kind: ClusterServiceVersion
 metadata:
   annotations:
     capabilities: Deep Insights
-    categories: security
+    categories: Security
     certified: 'False'
     containerImage: 'quay.io/keycloak/keycloak-operator:7.0.1'
     createdAt: 2019-11-08 00:00:00
@@ -325,6 +325,9 @@ spec:
       url: https://github.com/keycloak/keycloak-operator/tree/7.0.1/docs
     - name: Keycloak
       url: https://www.keycloak.org/
+  maintainers:
+    - email: keycloak-dev@lists.jboss.org
+      name: Keycloak DEV mailing list
   maturity: alpha
   provider:
     name: Red Hat
