@@ -12,7 +12,7 @@ ENV OPERATOR=/usr/local/bin/keycloak-operator \
 # Because of https://github.com/containers/buildah/issues/1906
 # We need to increment this variable whenever we need a rebuild.
 # The fix should be implemented very soon
-ENV CACHE_BUST=1
+ENV CACHE_BUST=20191114_215444Z
 
 COPY tools /opt/jboss/tools
 RUN /opt/jboss/tools/build-operator.sh
