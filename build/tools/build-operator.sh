@@ -25,5 +25,5 @@ curl https://storage.googleapis.com/golang/go$VERSION.linux-amd64.tar.gz | tar -
 git clone --depth 1 $GIT_REPO $KEYCLOAK_PATH/keycloak-operator
 
 # Build and copy the binary
-cd /go/src/github.com/keycloak/keycloak-operator && echo "Build SHA1: $(git rev-parse HEAD)" | tee ${SHA1_FILE} && make code/compile
+cd /go/src/github.com/keycloak/keycloak-operator && make code/compile
 cp ./tmp/_output/bin/keycloak-operator /usr/local/bin
