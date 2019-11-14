@@ -23,6 +23,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 			},
 		},
 		Spec: v13.StatefulSetSpec{
+			Replicas: SanitizeNumberOfReplicas(cr.Spec.Instances, true),
 			Selector: &v12.LabelSelector{
 				MatchLabels: map[string]string{
 					"app":       ApplicationName,
@@ -182,6 +183,7 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 
 	reconciled := currentState.DeepCopy()
 	reconciled.ResourceVersion = currentState.ResourceVersion
+	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
 	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes()
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
