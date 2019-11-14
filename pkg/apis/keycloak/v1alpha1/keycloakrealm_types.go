@@ -7,14 +7,15 @@ import (
 // KeycloakRealmSpec defines the desired state of KeycloakRealm
 // +k8s:openapi-gen=true
 type KeycloakRealmSpec struct {
-	InstanceSelector *metav1.LabelSelector                 `json:"instanceSelector,omitempty"`
-	Realm            *KeycloakAPIRealm                     `json:"realm"`
-	RealmOverrides   []*RedirectorIdentityProviderOverride `json:"realmOverrides,omitempty"`
+	InstanceSelector *metav1.LabelSelector `json:"instanceSelector,omitempty"`
+	Realm            *KeycloakAPIRealm     `json:"realm"`
+	// +listType=map
+	RealmOverrides []*RedirectorIdentityProviderOverride `json:"realmOverrides,omitempty"`
 }
 
 type KeycloakAPIRealm struct {
-	ID                string                      `json:"id,omitempty"`
-	Realm             string                      `json:"realm,omitempty"`
+	ID                string                      `json:"id"`
+	Realm             string                      `json:"realm"`
 	Enabled           bool                        `json:"enabled"`
 	DisplayName       string                      `json:"displayName"`
 	Users             []*KeycloakAPIUser          `json:"users,omitempty"`
@@ -30,29 +31,29 @@ type RedirectorIdentityProviderOverride struct {
 
 type KeycloakIdentityProvider struct {
 	Alias                     string            `json:"alias,omitempty"`
-	DisplayName               string            `json:"displayName"`
+	DisplayName               string            `json:"displayName,omitempty"`
 	InternalID                string            `json:"internalId,omitempty"`
 	ProviderID                string            `json:"providerId,omitempty"`
-	Enabled                   bool              `json:"enabled"`
-	TrustEmail                bool              `json:"trustEmail"`
-	StoreToken                bool              `json:"storeToken"`
-	AddReadTokenRoleOnCreate  bool              `json:"addReadTokenRoleOnCreate"`
-	FirstBrokerLoginFlowAlias string            `json:"firstBrokerLoginFlowAlias"`
-	PostBrokerLoginFlowAlias  string            `json:"postBrokerLoginFlowAlias"`
-	LinkOnly                  bool              `json:"linkOnly"`
-	Config                    map[string]string `json:"config"`
+	Enabled                   bool              `json:"enabled,omitempty"`
+	TrustEmail                bool              `json:"trustEmail,omitempty"`
+	StoreToken                bool              `json:"storeToken,omitempty"`
+	AddReadTokenRoleOnCreate  bool              `json:"addReadTokenRoleOnCreate,omitempty"`
+	FirstBrokerLoginFlowAlias string            `json:"firstBrokerLoginFlowAlias,omitempty"`
+	PostBrokerLoginFlowAlias  string            `json:"postBrokerLoginFlowAlias,omitempty"`
+	LinkOnly                  bool              `json:"linkOnly,omitempty"`
+	Config                    map[string]string `json:"config,omitempty"`
 }
 
 type KeycloakAPIUser struct {
 	ID                  string               `json:"id,omitempty"`
 	UserName            string               `json:"username,omitempty"`
-	FirstName           string               `json:"firstName"`
-	LastName            string               `json:"lastName"`
+	FirstName           string               `json:"firstName,omitempty"`
+	LastName            string               `json:"lastName,omitempty"`
 	Email               string               `json:"email,omitempty"`
-	EmailVerified       bool                 `json:"emailVerified"`
-	Enabled             bool                 `json:"enabled"`
+	EmailVerified       bool                 `json:"emailVerified,omitempty"`
+	Enabled             bool                 `json:"enabled,omitempty"`
 	RealmRoles          []string             `json:"realmRoles,omitempty"`
-	ClientRoles         map[string][]string  `json:"clientRoles"`
+	ClientRoles         map[string][]string  `json:"clientRoles,omitempty"`
 	RequiredActions     []string             `json:"requiredActions,omitempty"`
 	Groups              []string             `json:"groups,omitempty"`
 	FederatedIdentities []FederatedIdentity  `json:"federatedIdentities,omitempty"`
@@ -139,6 +140,7 @@ type KeycloakRealmStatus struct {
 // KeycloakRealm is the Schema for the keycloakrealms API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:path=keycloakrealms,scope=Namespaced
 type KeycloakRealm struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

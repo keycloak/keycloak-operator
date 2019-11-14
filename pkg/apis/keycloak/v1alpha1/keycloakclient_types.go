@@ -8,7 +8,7 @@ import (
 // +k8s:openapi-gen=true
 type KeycloakClientSpec struct {
 	// +kubebuilder:validation:Required
-	RealmSelector *metav1.LabelSelector `json:"realmSelector,omitempty"`
+	RealmSelector *metav1.LabelSelector `json:"realmSelector"`
 	// +kubebuilder:validation:Required
 	Client *KeycloakAPIClient `json:"client"`
 }
@@ -16,37 +16,37 @@ type KeycloakClientSpec struct {
 type KeycloakAPIClient struct {
 	ID string `json:"id,omitempty"`
 	// +kubebuilder:validation:Required
-	ClientID                  string                   `json:"clientId,omitempty"`
-	Name                      string                   `json:"name"`
-	SurrogateAuthRequired     bool                     `json:"surrogateAuthRequired"`
-	Enabled                   bool                     `json:"enabled"`
-	ClientAuthenticatorType   string                   `json:"clientAuthenticatorType"`
-	Secret                    string                   `json:"secret"`
-	BaseURL                   string                   `json:"baseUrl"`
-	AdminURL                  string                   `json:"adminUrl"`
-	RootURL                   string                   `json:"rootUrl"`
-	Description               string                   `json:"description"`
+	ClientID                  string                   `json:"clientId"`
+	Name                      string                   `json:"name,omitempty"`
+	SurrogateAuthRequired     bool                     `json:"surrogateAuthRequired,omitempty"`
+	Enabled                   bool                     `json:"enabled,omitempty"`
+	ClientAuthenticatorType   string                   `json:"clientAuthenticatorType,omitempty"`
+	Secret                    string                   `json:"secret,omitempty"`
+	BaseURL                   string                   `json:"baseUrl,omitempty"`
+	AdminURL                  string                   `json:"adminUrl,omitempty"`
+	RootURL                   string                   `json:"rootUrl,omitempty"`
+	Description               string                   `json:"description,omitempty"`
 	DefaultRoles              []string                 `json:"defaultRoles,omitempty"`
 	RedirectUris              []string                 `json:"redirectUris,omitempty"`
 	WebOrigins                []string                 `json:"webOrigins,omitempty"`
-	NotBefore                 int                      `json:"notBefore"`
-	BearerOnly                bool                     `json:"bearerOnly"`
-	ConsentRequired           bool                     `json:"consentRequired"`
-	StandardFlowEnabled       bool                     `json:"standardFlowEnabled"`
-	ImplicitFlowEnabled       bool                     `json:"implicitFlowEnabled"`
-	DirectAccessGrantsEnabled bool                     `json:"directAccessGrantsEnabled"`
-	ServiceAccountsEnabled    bool                     `json:"serviceAccountsEnabled"`
-	PublicClient              bool                     `json:"publicClient"`
-	FrontchannelLogout        bool                     `json:"frontchannelLogout"`
+	NotBefore                 int                      `json:"notBefore,omitempty"`
+	BearerOnly                bool                     `json:"bearerOnly,omitempty"`
+	ConsentRequired           bool                     `json:"consentRequired,omitempty"`
+	StandardFlowEnabled       bool                     `json:"standardFlowEnabled,omitempty"`
+	ImplicitFlowEnabled       bool                     `json:"implicitFlowEnabled,omitempty"`
+	DirectAccessGrantsEnabled bool                     `json:"directAccessGrantsEnabled,omitempty"`
+	ServiceAccountsEnabled    bool                     `json:"serviceAccountsEnabled,omitempty"`
+	PublicClient              bool                     `json:"publicClient,omitempty"`
+	FrontchannelLogout        bool                     `json:"frontchannelLogout,omitempty"`
 	Protocol                  string                   `json:"protocol,omitempty"`
 	Attributes                map[string]string        `json:"attributes,omitempty"`
-	FullScopeAllowed          bool                     `json:"fullScopeAllowed"`
-	NodeReRegistrationTimeout int                      `json:"nodeReRegistrationTimeout"`
+	FullScopeAllowed          bool                     `json:"fullScopeAllowed,omitempty"`
+	NodeReRegistrationTimeout int                      `json:"nodeReRegistrationTimeout,omitempty"`
 	ProtocolMappers           []KeycloakProtocolMapper `json:"protocolMappers,omitempty"`
-	UseTemplateConfig         bool                     `json:"useTemplateConfig"`
-	UseTemplateScope          bool                     `json:"useTemplateScope"`
-	UseTemplateMappers        bool                     `json:"useTemplateMappers"`
-	Access                    map[string]bool          `json:"access"`
+	UseTemplateConfig         bool                     `json:"useTemplateConfig,omitempty"`
+	UseTemplateScope          bool                     `json:"useTemplateScope,omitempty"`
+	UseTemplateMappers        bool                     `json:"useTemplateMappers,omitempty"`
+	Access                    map[string]bool          `json:"access,omitempty"`
 }
 
 type KeycloakProtocolMapper struct {
@@ -55,8 +55,8 @@ type KeycloakProtocolMapper struct {
 	Protocol        string            `json:"protocol,omitempty"`
 	ProtocolMapper  string            `json:"protocolMapper,omitempty"`
 	ConsentRequired bool              `json:"consentRequired,omitempty"`
-	ConsentText     string            `json:"consentText"`
-	Config          map[string]string `json:"config"`
+	ConsentText     string            `json:"consentText,omitempty"`
+	Config          map[string]string `json:"config,omitempty"`
 }
 
 // KeycloakClientStatus defines the observed state of KeycloakClient

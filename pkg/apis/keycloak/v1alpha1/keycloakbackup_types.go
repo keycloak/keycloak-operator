@@ -14,9 +14,9 @@ type KeycloakBackupSpec struct {
 // KeycloakAWSSpec defines the desired state of KeycloakBackupSpec
 // +k8s:openapi-gen=true
 type KeycloakAWSSpec struct {
-	EncryptionKeySecretName string `json:"encryptionKeySecretName"`
-	CredentialsSecretName   string `json:"credentialsSecretName"`
-	Schedule                string `json:"schedule"`
+	EncryptionKeySecretName string `json:"encryptionKeySecretName,omitempty"`
+	CredentialsSecretName   string `json:"credentialsSecretName,omitempty"`
+	Schedule                string `json:"schedule,omitempty"`
 }
 
 type BackupStatusPhase string

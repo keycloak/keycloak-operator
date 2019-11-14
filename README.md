@@ -10,12 +10,12 @@ A Kubernetes Operator based on the Operator SDK for creating and syncing resourc
 The documentation might be found in the  [docs](./docs/README.asciidoc) directory.
 
 ## Supported Custom Resources
-| *CustomResourceDefinition*                          | *Description*                                            |
-| --------------------------------------------------- | -------------------------------------------------------- |
-| [Keycloak](./deploy/crds/Keycloak.yaml)             | Manages, installs and configures Keycloak on the cluster |
-| [KeycloakRealm](./deploy/crds/KeycloakRealm.yaml)   | Represents a realm in a keycloak server                  |
-| [KeycloakClient](./deploy/crds/KeycloakClient.yaml) | Represents a client in a keycloak server                 |
-| [KeycloakBackup](./deploy/crds/KeycloakBackup.yaml) | Manage Keycloak database backups                         |
+| *CustomResourceDefinition*                                            | *Description*                                            |
+| --------------------------------------------------------------------- | -------------------------------------------------------- |
+| [Keycloak](./deploy/crds/keycloak.org_keycloaks_crd.yaml)             | Manages, installs and configures Keycloak on the cluster |
+| [KeycloakRealm](./deploy/crds/keycloak.org_keycloakrealms_crd.yaml)   | Represents a realm in a keycloak server                  |
+| [KeycloakClient](./deploy/crds/keycloak.org_Kkycloakclients_crd.yaml) | Represents a client in a keycloak server                 |
+| [KeycloakBackup](./deploy/crds/keycloak.org_Kkycloakbackups_crd.yaml) | Manage Keycloak database backups                         |
 
 ## Deploying to a Cluster
 *Note*: You will need a running Kubernetes or OpenShift cluster to use the Operator

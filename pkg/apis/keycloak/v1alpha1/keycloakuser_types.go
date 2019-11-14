@@ -32,6 +32,7 @@ type KeycloakUserStatus struct {
 // KeycloakUser is the Schema for the keycloakusers API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
+// +kubebuilder:resource:path=keycloakusers,scope=Namespaced
 type KeycloakUser struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
