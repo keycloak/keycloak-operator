@@ -156,3 +156,16 @@ test/goveralls: test/coverage/prepare
 	go get -u github.com/mattn/goveralls
 	@echo "Running goveralls"
 	@goveralls -v -coverprofile=cover-all.coverprofile -service=travis-ci
+
+.PHONY: docker/build
+docker/build:
+	@echo "Building Docker image"
+	docker build --no-cache -t ${NAMESPACE}/${PROJECT}:${VERSION} -f build/Dockerfile
+	@echo "Docker image ${NAMESPACE}/${PROJECT}"
+
+.PHONY: docker/release/prepare
+docker/release/prepare:
+	@echo "Prepare for a release of ${PROJECT}"
+	@sed -ie 's/CACHE_BUST=.*/CACHE_BUST=${TIMESTAMP}/' build/Dockerfile
+	@git add build/Dockerfile
+	@git commit -m "Prepare for release version: ${VERSION} (git+sha: ${GIT_COMMIT}, built: ${TIMESTAMP}"
