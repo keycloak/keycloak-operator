@@ -254,10 +254,10 @@ func (i *ClusterActionRunner) configureBrowserRedirector(provider, flow string, 
 		}
 	}
 
-	if authenticatorConfig == nil && flow != "" {
+	if authenticatorConfig == nil && provider != "" {
 		config := &v1alpha1.AuthenticatorConfig{
 			Alias:  authenticationConfigAlias,
-			Config: map[string]string{"defaultProvider": flow},
+			Config: map[string]string{"defaultProvider": provider},
 		}
 		return i.keycloakClient.CreateAuthenticatorConfig(config, realmName, redirectorExecutionID)
 	}
