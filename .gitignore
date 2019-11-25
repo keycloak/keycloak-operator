@@ -17,10 +17,6 @@ tmp
 # HTML file from test coverage
 *.html
 
-# Temporary Build Files
-build/_output
-build/_test
-
 # Temporary e2e Test Files
 deploy/empty-init.yaml
 
