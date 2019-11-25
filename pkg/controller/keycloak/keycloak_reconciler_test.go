@@ -120,7 +120,8 @@ func TestKeycloakReconciler_Test_Updating_RHSSO(t *testing.T) {
 			ExternalAccess: v1alpha1.KeycloakExternalAccess{
 				Enabled: true,
 			},
-			Profile: common.RHSSOProfile,
+			Profile:   common.RHSSOProfile,
+			Instances: 1,
 		},
 	}
 	currentState := &common.ClusterState{
