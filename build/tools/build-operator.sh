@@ -7,7 +7,6 @@ GIT_REPO="https://github.com/keycloak/keycloak-operator.git"
 KEYCLOAK_PATH="/go/src/github.com/keycloak"
 
 mkdir -p $KEYCLOAK_PATH
-microdnf update && microdnf install -y tar gzip git make && microdnf clean all && rm -rf /var/cache/yum/*
 
 # Install Go
 VERSION="1.13.4"
