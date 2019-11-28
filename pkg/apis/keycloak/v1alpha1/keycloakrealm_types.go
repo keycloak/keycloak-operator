@@ -7,69 +7,90 @@ import (
 // KeycloakRealmSpec defines the desired state of KeycloakRealm
 // +k8s:openapi-gen=true
 type KeycloakRealmSpec struct {
+	// Selector for looking up Keycloak Custom Resources.
+	// +kubebuilder:validation:Required
 	InstanceSelector *metav1.LabelSelector `json:"instanceSelector,omitempty"`
-	Realm            *KeycloakAPIRealm     `json:"realm"`
+	// Keycloak Realm REST object.
+	// +kubebuilder:validation:Required
+	Realm *KeycloakAPIRealm `json:"realm"`
+	// A list of overrides to the default Realm behavior.
 	// +listType=map
 	RealmOverrides []*RedirectorIdentityProviderOverride `json:"realmOverrides,omitempty"`
 }
 
 type KeycloakAPIRealm struct {
-	ID                string                      `json:"id"`
-	Realm             string                      `json:"realm"`
-	Enabled           bool                        `json:"enabled"`
-	DisplayName       string                      `json:"displayName"`
-	Users             []*KeycloakAPIUser          `json:"users,omitempty"`
-	Clients           []*KeycloakAPIClient        `json:"clients,omitempty"`
+	// +kubebuilder:validation:Required
+	// +optional
+	ID string `json:"id"`
+	// Realm name.
+	// +kubebuilder:validation:Required
+	Realm string `json:"realm"`
+	// Realm enabled flag.
+	// +optional
+	Enabled bool `json:"enabled"`
+	// Realm display name.
+	// +optional
+	DisplayName string `json:"displayName"`
+	// A set of Keycloak Users.
+	// +optional
+	Users []*KeycloakAPIUser `json:"users,omitempty"`
+	// A set of Keycloak Clients.
+	// +optional
+	Clients []*KeycloakAPIClient `json:"clients,omitempty"`
+	// A set of Identity Providers.
+	// +optional
 	IdentityProviders []*KeycloakIdentityProvider `json:"identityProviders,omitempty"`
-	EventsListeners   []string                    `json:"eventsListeners,omitempty"`
+	// A set of Event Listeners.
+	// +optional
+	EventsListeners []string `json:"eventsListeners,omitempty"`
 }
 
 type RedirectorIdentityProviderOverride struct {
+	// Identity Provider to be overridden.
+	// +optional
 	IdentityProvider string `json:"identityProvider,omitempty"`
-	ForFlow          string `json:"forFlow,omitempty"`
+	// Flow to be overridden.
+	// +optional
+	ForFlow string `json:"forFlow,omitempty"`
 }
 
 type KeycloakIdentityProvider struct {
-	Alias                     string            `json:"alias,omitempty"`
-	DisplayName               string            `json:"displayName,omitempty"`
-	InternalID                string            `json:"internalId,omitempty"`
-	ProviderID                string            `json:"providerId,omitempty"`
-	Enabled                   bool              `json:"enabled,omitempty"`
-	TrustEmail                bool              `json:"trustEmail,omitempty"`
-	StoreToken                bool              `json:"storeToken,omitempty"`
-	AddReadTokenRoleOnCreate  bool              `json:"addReadTokenRoleOnCreate,omitempty"`
-	FirstBrokerLoginFlowAlias string            `json:"firstBrokerLoginFlowAlias,omitempty"`
-	PostBrokerLoginFlowAlias  string            `json:"postBrokerLoginFlowAlias,omitempty"`
-	LinkOnly                  bool              `json:"linkOnly,omitempty"`
-	Config                    map[string]string `json:"config,omitempty"`
-}
-
-type KeycloakAPIUser struct {
-	ID                  string               `json:"id,omitempty"`
-	UserName            string               `json:"username,omitempty"`
-	FirstName           string               `json:"firstName,omitempty"`
-	LastName            string               `json:"lastName,omitempty"`
-	Email               string               `json:"email,omitempty"`
-	EmailVerified       bool                 `json:"emailVerified,omitempty"`
-	Enabled             bool                 `json:"enabled,omitempty"`
-	RealmRoles          []string             `json:"realmRoles,omitempty"`
-	ClientRoles         map[string][]string  `json:"clientRoles,omitempty"`
-	RequiredActions     []string             `json:"requiredActions,omitempty"`
-	Groups              []string             `json:"groups,omitempty"`
-	FederatedIdentities []FederatedIdentity  `json:"federatedIdentities,omitempty"`
-	Credentials         []KeycloakCredential `json:"credentials,omitempty"`
-}
-
-type FederatedIdentity struct {
-	IdentityProvider string `json:"identityProvider,omitempty"`
-	UserID           string `json:"userId,omitempty"`
-	UserName         string `json:"userName,omitempty"`
-}
-
-type KeycloakCredential struct {
-	Type      string `json:"type,omitempty"`
-	Value     string `json:"value,omitempty"`
-	Temporary bool   `json:"temporary,omitempty"`
+	// Identity Provider Alias.
+	// +optional
+	Alias string `json:"alias,omitempty"`
+	// Identity Provider Display Name.
+	// +optional
+	DisplayName string `json:"displayName,omitempty"`
+	// Identity Provider Internal ID.
+	// +optional
+	InternalID string `json:"internalId,omitempty"`
+	// Identity Provider ID.
+	// +optional
+	ProviderID string `json:"providerId,omitempty"`
+	// Identity Provider enabled flag.
+	// +optional
+	Enabled bool `json:"enabled,omitempty"`
+	// Identity Provider Trust Email.
+	// +optional
+	TrustEmail bool `json:"trustEmail,omitempty"`
+	// Identity Provider Store to Token.
+	// +optional
+	StoreToken bool `json:"storeToken,omitempty"`
+	// Adds Read Token role when creating this Identity Provider.
+	// +optional
+	AddReadTokenRoleOnCreate bool `json:"addReadTokenRoleOnCreate,omitempty"`
+	// Identity Provider First Broker Login Flow Alias.
+	// +optional
+	FirstBrokerLoginFlowAlias string `json:"firstBrokerLoginFlowAlias,omitempty"`
+	// Identity Provider Post Broker Login Flow Alias.
+	// +optional
+	PostBrokerLoginFlowAlias string `json:"postBrokerLoginFlowAlias,omitempty"`
+	// Identity Provider Link Only setting.
+	// +optional
+	LinkOnly bool `json:"linkOnly,omitempty"`
+	// Identity Provider config.
+	// +optional
+	Config map[string]string `json:"config,omitempty"`
 }
 
 type KeycloakUserRole struct {
@@ -82,41 +103,95 @@ type KeycloakUserRole struct {
 }
 
 type AuthenticatorConfig struct {
-	Alias  string            `json:"alias,omitempty"`
+	// Authenticator Config Alias.
+	// +optional
+	Alias string `json:"alias,omitempty"`
+	// Authenticator config.
+	// +optional
 	Config map[string]string `json:"config,omitempty"`
-	ID     string            `json:"id,omitempty"`
+	// Authenticator ID.
+	// +optional
+	ID string `json:"id,omitempty"`
 }
 
 type KeycloakAPIPasswordReset struct {
-	Type      string `json:"type"`
-	Value     string `json:"value"`
-	Temporary bool   `json:"temporary"`
+	// Password Reset Type.
+	// +optional
+	Type string `json:"type"`
+	// Password Reset Value.
+	// +optional
+	Value string `json:"value"`
+	// True if this Password Reset object is temporary.
+	// +optional
+	Temporary bool `json:"temporary"`
 }
 
 type AuthenticationExecutionInfo struct {
-	Alias                string   `json:"alias,omitempty"`
-	AuthenticationConfig string   `json:"authenticationConfig,omitempty"`
-	AuthenticationFlow   bool     `json:"authenticationFlow,omitempty"`
-	Configurable         bool     `json:"configurable,omitempty"`
-	DisplayName          string   `json:"displayName,omitempty"`
-	FlowID               string   `json:"flowId,omitempty"`
-	ID                   string   `json:"id,omitempty"`
-	Index                int32    `json:"index,omitempty"`
-	Level                int32    `json:"level,omitempty"`
-	ProviderID           string   `json:"providerId,omitempty"`
-	Requirement          string   `json:"requirement,omitempty"`
-	RequirementChoices   []string `json:"requirementChoices,omitempty"`
+	// Authentication Execution Info Alias.
+	// +optional
+	Alias string `json:"alias,omitempty"`
+	// Authentication Execution Info Config.
+	// +optional
+	AuthenticationConfig string `json:"authenticationConfig,omitempty"`
+	// True if Authentication Flow is enabled.
+	// +optional
+	AuthenticationFlow bool `json:"authenticationFlow,omitempty"`
+	// True if Authentication Execution Info is configurable.
+	// +optional
+	Configurable bool `json:"configurable,omitempty"`
+	// Authentication Execution Info Display Name.
+	// +optional
+	DisplayName string `json:"displayName,omitempty"`
+	// Authentication Execution Info Flow ID.
+	// +optional
+	FlowID string `json:"flowId,omitempty"`
+	// Authentication Execution Info ID.
+	// +optional
+	ID string `json:"id,omitempty"`
+	// Authentication Execution Info Index.
+	// +optional
+	Index int32 `json:"index,omitempty"`
+	// Authentication Execution Info Level.
+	// +optional
+	Level int32 `json:"level,omitempty"`
+	// Authentication Execution Info Provider ID.
+	// +optional
+	ProviderID string `json:"providerId,omitempty"`
+	// Authentication Execution Info Requirement.
+	// +optional
+	Requirement string `json:"requirement,omitempty"`
+	// Authentication Execution Info Requirement Choices.
+	// +optional
+	RequirementChoices []string `json:"requirementChoices,omitempty"`
 }
 
 type TokenResponse struct {
-	AccessToken      string `json:"access_token"`
-	ExpiresIn        int    `json:"expires_in"`
-	RefreshExpiresIn int    `json:"refresh_expires_in"`
-	RefreshToken     string `json:"refresh_token"`
-	TokenType        string `json:"token_type"`
-	NotBeforePolicy  int    `json:"not-before-policy"`
-	SessionState     string `json:"session_state"`
-	Error            string `json:"error"`
+	// Token Response Access Token.
+	// +optional
+	AccessToken string `json:"access_token"`
+	// Token Response Expired In setting.
+	// +optional
+	ExpiresIn int `json:"expires_in"`
+	// Token Response Refresh Expires In setting.
+	// +optional
+	RefreshExpiresIn int `json:"refresh_expires_in"`
+	// Token Response Refresh Token.
+	// +optional
+	RefreshToken string `json:"refresh_token"`
+	// Token Response Token Type.
+	// +optional
+	TokenType string `json:"token_type"`
+	// Token Response Not Before Policy setting.
+	// +optional
+	NotBeforePolicy int `json:"not-before-policy"`
+	// Token Response Session State.
+	// +optional
+	SessionState string `json:"session_state"`
+	// Token Response Error.
+	// +optional
+	Error string `json:"error"`
+	// Token Response Error Description.
+	// +optional
 	ErrorDescription string `json:"error_description"`
 }
 

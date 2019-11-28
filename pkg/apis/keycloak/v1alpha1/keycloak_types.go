@@ -4,26 +4,62 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // KeycloakSpec defines the desired state of Keycloak
 // +k8s:openapi-gen=true
 type KeycloakSpec struct {
-	AdminCredentialSecret string `json:"adminCredentialSecret,omitempty"`
+	// A list of extensions, where each one is a URL to a JAR files that will be deployed in Keycloak.
 	// +listType=set
-	Extensions       []string                 `json:"extensions,omitempty"`
-	Instances        int                      `json:"instances,omitempty"`
-	ExternalAccess   KeycloakExternalAccess   `json:"externalAccess,omitempty"`
+	// +optional
+	Extensions []string `json:"extensions,omitempty"`
+	// Number of Keycloak instances in HA mode. Default is 1.
+	// +optional
+	// +kubebuilder:default=1
+	Instances int `json:"instances,omitempty"`
+	// Controls external Ingress/Route settings.
+	// +optional
+	ExternalAccess KeycloakExternalAccess `json:"externalAccess,omitempty"`
+	// Controls external database settings.
+	// Using an external database requires providing a secret containing credentials
+	// as well as connection details. Here's an example of such secret:
+	//
+	//     apiVersion: v1
+	//     kind: Secret
+	//     metadata:
+	//         name: keycloak-db-secret
+	//         namespace: keycloak
+	//     stringData:
+	//         POSTGRES_DATABASE: <Database Name>
+	//         POSTGRES_EXTERNAL_ADDRESS: <External Database IP or URL (resolvable by K8s)>
+	//         POSTGRES_EXTERNAL_PORT: <External Database Port>
+	//         # Strongly recommended to use <'Keycloak CR Name'-postgresql>
+	//         POSTGRES_HOST: <Database Service Name>
+	//         POSTGRES_PASSWORD: <Database Password>
+	//         # Required for AWS Backup functionality
+	//         POSTGRES_SUPERUSER: true
+	//         POSTGRES_USERNAME: <Database Username>
+	//      type: Opaque
+	//
+	// Both POSTGRES_EXTERNAL_ADDRESS and POSTGRES_EXTERNAL_PORT are specifically required for creating
+	// connection to the external database. The secret name is created using the following convention:
+	//       <Custom Resource Name>-db-secret
+	//
+	// For more information, please refer to the Operator documentation.
+	// +optional
 	ExternalDatabase KeycloakExternalDatabase `json:"externalDatabase,omitempty"`
-	Profile          string                   `json:"profile,omitempty"`
+	// Profile used for controlling Operator behavior. Default is empty.
+	// +optional
+	Profile string `json:"profile,omitempty"`
 }
 
 type KeycloakExternalAccess struct {
+	// If set to true, the Operator will create an Ingress or a Route
+	// pointing to Keycloak.
 	Enabled bool `json:"enabled,omitempty"`
 }
 
 type KeycloakExternalDatabase struct {
+	// If set to true, the Operator will use an external database.
+	// pointing to Keycloak.
 	Enabled bool `json:"enabled,omitempty"`
 }
 

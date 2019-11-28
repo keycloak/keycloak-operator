@@ -6,6 +6,7 @@ Enabling external Postgresql database support requires creating `keycloak-db-sec
 .`keycloak-db-secret` Secret
 ```yaml
 apiVersion: v1
+kind: Secret
 data:
   POSTGRES_DATABASE: cm9vdA==
   POSTGRES_EXTERNAL_ADDRESS: MTcyLjE3LjAuMw==
@@ -14,7 +15,6 @@ data:
   POSTGRES_PASSWORD: ZXhhbXBsZS1rZXljbG9hay1lTWFQ
   POSTGRES_SUPERUSER: dHJ1ZQ==
   POSTGRES_USERNAME: ZXhhbXBsZS1rZXljbG9hay1WbGdU
-kind: Secret
 metadata:
   labels:
     app: keycloak
