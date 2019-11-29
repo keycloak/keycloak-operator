@@ -25,7 +25,7 @@ func KeycloakRoute(cr *kc.Keycloak) *v1.Route {
 				TargetPort: intstr.FromString(ApplicationName),
 			},
 			TLS: &v1.TLSConfig{
-				Termination: "passthrough",
+				Termination: "reencrypt",
 			},
 			To: v1.RouteTargetReference{
 				Kind: "Service",
