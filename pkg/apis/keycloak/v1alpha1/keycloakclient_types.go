@@ -7,56 +7,135 @@ import (
 // KeycloakClientSpec defines the desired state of KeycloakClient
 // +k8s:openapi-gen=true
 type KeycloakClientSpec struct {
+	// Selector for looking up KeycloakRealm Custom Resources.
 	// +kubebuilder:validation:Required
 	RealmSelector *metav1.LabelSelector `json:"realmSelector"`
+	// Keycloak Client REST object.
 	// +kubebuilder:validation:Required
 	Client *KeycloakAPIClient `json:"client"`
 }
 
 type KeycloakAPIClient struct {
+	// Client ID. If not specified, automatically generated.
+	// +optional
 	ID string `json:"id,omitempty"`
+	// Client ID.
 	// +kubebuilder:validation:Required
-	ClientID                  string                   `json:"clientId"`
-	Name                      string                   `json:"name,omitempty"`
-	SurrogateAuthRequired     bool                     `json:"surrogateAuthRequired,omitempty"`
-	Enabled                   bool                     `json:"enabled,omitempty"`
-	ClientAuthenticatorType   string                   `json:"clientAuthenticatorType,omitempty"`
-	Secret                    string                   `json:"secret,omitempty"`
-	BaseURL                   string                   `json:"baseUrl,omitempty"`
-	AdminURL                  string                   `json:"adminUrl,omitempty"`
-	RootURL                   string                   `json:"rootUrl,omitempty"`
-	Description               string                   `json:"description,omitempty"`
-	DefaultRoles              []string                 `json:"defaultRoles,omitempty"`
-	RedirectUris              []string                 `json:"redirectUris,omitempty"`
-	WebOrigins                []string                 `json:"webOrigins,omitempty"`
-	NotBefore                 int                      `json:"notBefore,omitempty"`
-	BearerOnly                bool                     `json:"bearerOnly,omitempty"`
-	ConsentRequired           bool                     `json:"consentRequired,omitempty"`
-	StandardFlowEnabled       bool                     `json:"standardFlowEnabled,omitempty"`
-	ImplicitFlowEnabled       bool                     `json:"implicitFlowEnabled,omitempty"`
-	DirectAccessGrantsEnabled bool                     `json:"directAccessGrantsEnabled,omitempty"`
-	ServiceAccountsEnabled    bool                     `json:"serviceAccountsEnabled,omitempty"`
-	PublicClient              bool                     `json:"publicClient,omitempty"`
-	FrontchannelLogout        bool                     `json:"frontchannelLogout,omitempty"`
-	Protocol                  string                   `json:"protocol,omitempty"`
-	Attributes                map[string]string        `json:"attributes,omitempty"`
-	FullScopeAllowed          bool                     `json:"fullScopeAllowed,omitempty"`
-	NodeReRegistrationTimeout int                      `json:"nodeReRegistrationTimeout,omitempty"`
-	ProtocolMappers           []KeycloakProtocolMapper `json:"protocolMappers,omitempty"`
-	UseTemplateConfig         bool                     `json:"useTemplateConfig,omitempty"`
-	UseTemplateScope          bool                     `json:"useTemplateScope,omitempty"`
-	UseTemplateMappers        bool                     `json:"useTemplateMappers,omitempty"`
-	Access                    map[string]bool          `json:"access,omitempty"`
+	ClientID string `json:"clientId"`
+	// Client name.
+	// +optional
+	Name string `json:"name,omitempty"`
+	// Surrogate Authentication Required option.
+	// +optional
+	SurrogateAuthRequired bool `json:"surrogateAuthRequired,omitempty"`
+	// Client enabled flag.
+	// +optional
+	Enabled bool `json:"enabled,omitempty"`
+	// What Client authentication type to use.
+	// +optional
+	ClientAuthenticatorType string `json:"clientAuthenticatorType,omitempty"`
+	// Client Secret. The Operator will automatically create a Secret based on this value.
+	// +optional
+	Secret string `json:"secret,omitempty"`
+	// Application base URL.
+	// +optional
+	BaseURL string `json:"baseUrl,omitempty"`
+	// Application Admin URL.
+	// +optional
+	AdminURL string `json:"adminUrl,omitempty"`
+	// Application root URL.
+	// +optional
+	RootURL string `json:"rootUrl,omitempty"`
+	// Client description.
+	// +optional
+	Description string `json:"description,omitempty"`
+	// Default Client roles.
+	// +optional
+	DefaultRoles []string `json:"defaultRoles,omitempty"`
+	// A list of valid Redirection URLs.
+	// +optional
+	RedirectUris []string `json:"redirectUris,omitempty"`
+	// A list of valid Web Origins.
+	// +optional
+	WebOrigins []string `json:"webOrigins,omitempty"`
+	// Not Before setting.
+	// +optional
+	NotBefore int `json:"notBefore,omitempty"`
+	// True if a client supports only Bearer Tokens.
+	// +optional
+	BearerOnly bool `json:"bearerOnly,omitempty"`
+	// True if Consent Screen is required.
+	// +optional
+	ConsentRequired bool `json:"consentRequired,omitempty"`
+	// True if Standard flow is enabled.
+	// +optional
+	StandardFlowEnabled bool `json:"standardFlowEnabled,omitempty"`
+	// True if Implicit flow is enabled.
+	// +optional
+	ImplicitFlowEnabled bool `json:"implicitFlowEnabled,omitempty"`
+	// True if Direct Grant is enabled.
+	// +optional
+	DirectAccessGrantsEnabled bool `json:"directAccessGrantsEnabled,omitempty"`
+	// True if Service Accounts are enabled.
+	// +optional
+	ServiceAccountsEnabled bool `json:"serviceAccountsEnabled,omitempty"`
+	// True if this is a public Client.
+	// +optional
+	PublicClient bool `json:"publicClient,omitempty"`
+	// True if this client supports Front Channel logout.
+	// +optional
+	FrontchannelLogout bool `json:"frontchannelLogout,omitempty"`
+	// Protocol used for this Client.
+	// +optional
+	Protocol string `json:"protocol,omitempty"`
+	// Client Attributes.
+	// +optional
+	Attributes map[string]string `json:"attributes,omitempty"`
+	// True if Full Scope is allowed.
+	// +optional
+	FullScopeAllowed bool `json:"fullScopeAllowed,omitempty"`
+	// Node registration timeout.
+	// +optional
+	NodeReRegistrationTimeout int `json:"nodeReRegistrationTimeout,omitempty"`
+	// Protocol Mappers.
+	// +optional
+	ProtocolMappers []KeycloakProtocolMapper `json:"protocolMappers,omitempty"`
+	// True to use a Template Config.
+	// +optional
+	UseTemplateConfig bool `json:"useTemplateConfig,omitempty"`
+	// True to use Template Scope.
+	// +optional
+	UseTemplateScope bool `json:"useTemplateScope,omitempty"`
+	// True to use Template Mappers.
+	// +optional
+	UseTemplateMappers bool `json:"useTemplateMappers,omitempty"`
+	// Access options.
+	// +optional
+	Access map[string]bool `json:"access,omitempty"`
 }
 
 type KeycloakProtocolMapper struct {
-	ID              string            `json:"id,omitempty"`
-	Name            string            `json:"name,omitempty"`
-	Protocol        string            `json:"protocol,omitempty"`
-	ProtocolMapper  string            `json:"protocolMapper,omitempty"`
-	ConsentRequired bool              `json:"consentRequired,omitempty"`
-	ConsentText     string            `json:"consentText,omitempty"`
-	Config          map[string]string `json:"config,omitempty"`
+	// Protocol Mapper ID.
+	// +optional
+	ID string `json:"id,omitempty"`
+	// Protocol Mapper Name.
+	// +optional
+	Name string `json:"name,omitempty"`
+	// Protocol to use.
+	// +optional
+	Protocol string `json:"protocol,omitempty"`
+	// Protocol Mapper to use
+	// +optional
+	ProtocolMapper string `json:"protocolMapper,omitempty"`
+	// True if Consent Screen is required.
+	// +optional
+	ConsentRequired bool `json:"consentRequired,omitempty"`
+	// Text to use for displaying Consent Screen.
+	// +optional
+	ConsentText string `json:"consentText,omitempty"`
+	// Config options.
+	// +optional
+	Config map[string]string `json:"config,omitempty"`
 }
 
 // KeycloakClientStatus defines the observed state of KeycloakClient

@@ -31,25 +31,49 @@ spec:
         spec:
           description: KeycloakSpec defines the desired state of Keycloak
           properties:
-            adminCredentialSecret:
-              type: string
             extensions:
+              description: A list of extensions, where each one is a URL to a JAR
+                files that will be deployed in Keycloak.
               items:
                 type: string
               type: array
             externalAccess:
+              description: Controls external Ingress/Route settings.
               properties:
                 enabled:
+                  description: If set to true, the Operator will create an Ingress
+                    or a Route pointing to Keycloak.
                   type: boolean
               type: object
             externalDatabase:
+              description: "Controls external database settings. Using an external
+                database requires providing a secret containing credentials as well
+                as connection details. Here's an example of such secret: \n     apiVersion:
+                v1     kind: Secret     metadata:         name: keycloak-db-secret
+                \        namespace: keycloak     stringData:         POSTGRES_DATABASE:
+                <Database Name>         POSTGRES_EXTERNAL_ADDRESS: <External Database
+                IP or URL (resolvable by K8s)>         POSTGRES_EXTERNAL_PORT: <External
+                Database Port>         # Strongly recommended to use <'Keycloak CR
+                Name'-postgresql>         POSTGRES_HOST: <Database Service Name>         POSTGRES_PASSWORD:
+                <Database Password>         # Required for AWS Backup functionality
+                \        POSTGRES_SUPERUSER: true         POSTGRES_USERNAME: <Database
+                Username>      type: Opaque \n Both POSTGRES_EXTERNAL_ADDRESS and
+                POSTGRES_EXTERNAL_PORT are specifically required for creating connection
+                to the external database. The secret name is created using the following
+                convention:       <Custom Resource Name>-db-secret \n For more information,
+                please refer to the Operator documentation."
               properties:
                 enabled:
+                  description: If set to true, the Operator will use an external database.
+                    pointing to Keycloak.
                   type: boolean
               type: object
             instances:
+              description: Number of Keycloak instances in HA mode. Default is 1.
               type: integer
             profile:
+              description: Profile used for controlling Operator behavior. Default
+                is empty.
               type: string
           type: object
         status:

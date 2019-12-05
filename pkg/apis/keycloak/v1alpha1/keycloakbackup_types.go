@@ -7,16 +7,62 @@ import (
 // KeycloakBackupSpec defines the desired state of KeycloakBackup
 // +k8s:openapi-gen=true
 type KeycloakBackupSpec struct {
-	Restore bool            `json:"restore,omitempty"`
-	AWS     KeycloakAWSSpec `json:"aws,omitempty"`
+	// Controls automatic restore behavior.
+	// Currently not implemented.
+	//
+	// In the future this will be used to trigger automatic restore for a given KeycloakBackup.
+	// Each backup will correspond to a single snapshot of the database (stored either in a
+	// Persistent Volume or AWS). If a user wants to restore it, all he/she needs to do is to
+	// change this flag to true.
+	// Potentially, it will be possible to restore a single backup multiple times.
+	// +optional
+	Restore bool `json:"restore,omitempty"`
+	// If provided, an automatic database backup will be created on AWS S3 instead of
+	// a local Persistent Volume. If this property is not provided - a local
+	// Persistent Volume backup will be chosen.
+	// +optional
+	AWS KeycloakAWSSpec `json:"aws,omitempty"`
 }
 
 // KeycloakAWSSpec defines the desired state of KeycloakBackupSpec
 // +k8s:openapi-gen=true
 type KeycloakAWSSpec struct {
+	// If provided, the database backup will be encrypted.
+	// Provides a secret name used for encrypting database data.
+	// The secret needs to be in the following form:
+	//
+	//     apiVersion: v1
+	//     kind: Secret
+	//     metadata:
+	//       name: <Secret name>
+	//     type: Opaque
+	//     stringData:
+	//       GPG_PUBLIC_KEY: <GPG Public Key>
+	//       GPG_TRUST_MODEL: <GPG Trust Model>
+	//       GPG_RECIPIENT: <GPG Recipient>
+	//
+	// For more information, please refer to the Operator documentation.
+	// +optional
 	EncryptionKeySecretName string `json:"encryptionKeySecretName,omitempty"`
-	CredentialsSecretName   string `json:"credentialsSecretName,omitempty"`
-	Schedule                string `json:"schedule,omitempty"`
+	// Provides a secret name used for connecting to AWS S3 Service.
+	// The secret needs to be in the following form:
+	//
+	//     apiVersion: v1
+	//     kind: Secret
+	//     metadata:
+	//       name: <Secret name>
+	//     type: Opaque
+	//     stringData:
+	//       AWS_S3_BUCKET_NAME: <S3 Bucket Name>
+	//       AWS_ACCESS_KEY_ID: <AWS Access Key ID>
+	//       AWS_SECRET_ACCESS_KEY: <AWS Secret Key>
+	//
+	// For more information, please refer to the Operator documentation.
+	// +kubebuilder:validation:Required
+	CredentialsSecretName string `json:"credentialsSecretName,omitempty"`
+	// If specified, it will be used as a schedule for creating a CronJob
+	// +optional
+	Schedule string `json:"schedule,omitempty"`
 }
 
 type BackupStatusPhase string
