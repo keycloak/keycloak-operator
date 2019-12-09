@@ -25,6 +25,7 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 	desired = desired.AddAction(i.GetKeycloakAdminSecretDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakPrometheusRuleDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakServiceMonitorDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.GetKeycloakPodMonitorDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakGrafanaDashboardDesiredState(clusterState, cr))
 
 	if !cr.Spec.ExternalDatabase.Enabled {
@@ -192,6 +193,30 @@ func (i *KeycloakReconciler) GetKeycloakServiceMonitorDesiredState(clusterState 
 	servicemonitor.ResourceVersion = clusterState.KeycloakServiceMonitor.ResourceVersion
 	return common.GenericUpdateAction{
 		Ref: servicemonitor,
+		Msg: "update keycloak service monitor",
+	}
+}
+
+func (i *KeycloakReconciler) GetKeycloakPodMonitorDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	stateManager := common.GetStateManager()
+	resourceWatchExists, keyExists := stateManager.GetState(common.GetStateFieldName(ControllerName, monitoringv1.PodMonitorsKind)).(bool)
+	// Only add or update the monitoring resources if the resource type exists on the cluster. These booleans are set in the common/autodetect logic
+	if !keyExists || !resourceWatchExists {
+		return nil
+	}
+
+	podmonitor := model.PodMonitor(cr)
+
+	if clusterState.KeycloakPodMonitor == nil {
+		return common.GenericCreateAction{
+			Ref: podmonitor,
+			Msg: "create keycloak service monitor",
+		}
+	}
+
+	podmonitor.ResourceVersion = clusterState.KeycloakPodMonitor.ResourceVersion
+	return common.GenericUpdateAction{
+		Ref: podmonitor,
 		Msg: "update keycloak service monitor",
 	}
 }

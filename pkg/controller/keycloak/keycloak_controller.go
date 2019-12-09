@@ -108,9 +108,14 @@ func add(mgr manager.Manager, r reconcile.Reconciler, autodetectChannel chan sch
 				common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &monitoringv1.PrometheusRule{}, &kc.Keycloak{}) // nolint
 			}
 
-			// Check if this channel event was for the ServiceMonitor resource type
+			// Check if this channel event was for the PodMonitor resource type
 			if gvk.String() == monitoringv1.SchemeGroupVersion.WithKind(monitoringv1.ServiceMonitorsKind).String() {
 				common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &monitoringv1.ServiceMonitor{}, &kc.Keycloak{}) // nolint
+			}
+
+			// Check if this channel event was for the PodMonitor resource type
+			if gvk.String() == monitoringv1.SchemeGroupVersion.WithKind(monitoringv1.PodMonitorsKind).String() {
+				common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &monitoringv1.PodMonitor{}, &kc.Keycloak{}) // nolint
 			}
 
 			// Check if this channel event was for the GrafanaDashboard resource type
