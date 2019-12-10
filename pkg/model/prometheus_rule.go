@@ -87,7 +87,7 @@ func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 					Annotations: map[string]string{
 						"message": `Keycloak instance in namespace {{ $labels.namespace }} has not been available for the last 5 minutes.`,
 					},
-					Expr: intstr.FromString(`(1 - absent(kube_pod_status_ready{namespace="` + cr.Namespace + `", condition="true"} * on (pod) group_left (label_deploymentConfig) kube_pod_labels{label_deploymentConfig="` + "sso" + `"})) == 0`),
+					Expr: intstr.FromString(`(1 - absent(kube_pod_status_ready{namespace="` + cr.Namespace + `", condition="true"} * on (pod) group_left (label_component) kube_pod_labels{label_component="` + KeycloakDeploymentComponent + `"})) == 0`),
 					For:  "5m",
 					Labels: map[string]string{
 						"severity": "critical",
@@ -117,7 +117,7 @@ func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 					Annotations: map[string]string{
 						"message": `RH SSO database in namespace {{ $labels.namespace }} is not available for the last 5 minutes.`,
 					},
-					Expr: intstr.FromString(`(1 - absent(kube_pod_status_ready{namespace="` + cr.Namespace + `", condition="true"} * on (pod) group_left (label_deploymentConfig) kube_pod_labels{label_deploymentConfig="` + "sso-postgresql" + `"})) == 0 `),
+					Expr: intstr.FromString(`(1 - absent(kube_pod_status_ready{namespace="` + cr.Namespace + `", condition="true"} * on (pod) group_left (label_component) kube_pod_labels{label_component="` + PostgresqlDeploymentComponent + `"})) == 0 `),
 					For:  "5m",
 					Labels: map[string]string{
 						"severity": "critical",
