@@ -51,7 +51,7 @@ type KeycloakSpec struct {
 	Profile string `json:"profile,omitempty"`
 	// Image is the full docker tag of the keycloak image to use
 	Container KeycloakContainer `json:"container,omitempty"`
-	// InitContainer has informtion about the image tag to use
+	// InitContainer has information about the image tag to use
 	InitContainer KeycloakContainer `json:"initContainer,omitempty"`
 }
 
