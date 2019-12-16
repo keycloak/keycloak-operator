@@ -11,6 +11,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+// KeycloakImageFullTag returns the desired Keycloak image
+func KeycloakImageFullTag(cr *v1alpha1.Keycloak) string {
+	if cr.Spec.Container.Image != "" {
+		return cr.Spec.Container.Image
+	}
+	return KeycloakImage
+}
+
 func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 	return &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
@@ -44,7 +52,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 					Containers: []v1.Container{
 						{
 							Name:  KeycloakDeploymentName,
-							Image: KeycloakImage,
+							Image: KeycloakImageFullTag(cr),
 							Ports: []v1.ContainerPort{
 								{
 									ContainerPort: KeycloakServicePort,

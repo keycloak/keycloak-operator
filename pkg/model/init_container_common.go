@@ -7,11 +7,18 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
+func KeycloakInitContainerImageFullTag(cr *v1alpha1.Keycloak) string {
+	if cr.Spec.InitContainer.Image != "" {
+		return cr.Spec.InitContainer.Image
+	}
+	return KeycloakInitContainerImage
+}
+
 func KeycloakExtensionsInitContainers(cr *v1alpha1.Keycloak) []v1.Container {
 	return []v1.Container{
 		{
 			Name:  "extensions-init",
-			Image: KeycloakInitContainerImage,
+			Image: KeycloakInitContainerImageFullTag(cr),
 			Env: []v1.EnvVar{
 				{
 					Name:  KeycloakExtensionEnvVar,

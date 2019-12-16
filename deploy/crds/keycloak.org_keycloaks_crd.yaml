@@ -75,6 +75,20 @@ spec:
               description: Profile used for controlling Operator behavior. Default
                 is empty.
               type: string
+            container:
+              type: object
+              description: Container spec
+              properties:
+                image:
+                  type: string
+                  description: The full Docker image tag (repo/image:tag) to use
+            initContainer:
+              type: object
+              description: Initcontainer details
+              properties:
+                image:
+                  type: string
+                  description: The full Docker image tag (repo/image:tag) for the initcontainer
           type: object
         status:
           description: KeycloakStatus defines the observed state of Keycloak
