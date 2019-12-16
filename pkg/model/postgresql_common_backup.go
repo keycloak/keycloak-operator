@@ -5,11 +5,18 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
+func KeycloakBackupImageName(cr *v1alpha1.KeycloakBackup) string {
+	if cr.Spec.Container.Image != "" {
+		return cr.Spec.Container.Image
+	}
+	return BackupImage
+}
+
 func postgresqlAwsBackupCommonContainers(cr *v1alpha1.KeycloakBackup) []v1.Container {
 	return []v1.Container{
 		{
 			Name:    cr.Name,
-			Image:   BackupImage,
+			Image:   KeycloakBackupImageName(cr),
 			Command: []string{"/opt/intly/tools/entrypoint.sh", "-c", "postgres", "-n", cr.Namespace, "-b", "s3", "-e", ""},
 			Env: []v1.EnvVar{
 				{

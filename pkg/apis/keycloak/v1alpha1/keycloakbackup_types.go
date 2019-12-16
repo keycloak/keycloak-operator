@@ -22,6 +22,8 @@ type KeycloakBackupSpec struct {
 	// Persistent Volume backup will be chosen.
 	// +optional
 	AWS KeycloakAWSSpec `json:"aws,omitempty"`
+	// If provided, overrides container information
+	Container KeycloakContainer `json:"container,omitempty"`
 }
 
 // KeycloakAWSSpec defines the desired state of KeycloakBackupSpec

@@ -69,6 +69,13 @@ spec:
                 flag to true. Potentially, it will be possible to restore a single
                 backup multiple times."
               type: boolean
+            container:
+              type: object
+              description: Additional container configuration
+              properties:
+                image:
+                  description: The full Docker tag of the backup image to use
+                  type: string
           type: object
         status:
           description: KeycloakBackupStatus defines the observed state of KeycloakBackup
