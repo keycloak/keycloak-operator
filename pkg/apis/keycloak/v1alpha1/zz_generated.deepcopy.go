@@ -323,7 +323,7 @@ func (in *KeycloakBackup) DeepCopyObject() runtime.Object {
 func (in *KeycloakBackupList) DeepCopyInto(out *KeycloakBackupList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]KeycloakBackup, len(*in))
@@ -432,7 +432,7 @@ func (in *KeycloakClient) DeepCopyObject() runtime.Object {
 func (in *KeycloakClientList) DeepCopyInto(out *KeycloakClientList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]KeycloakClient, len(*in))
@@ -593,7 +593,7 @@ func (in *KeycloakIdentityProvider) DeepCopy() *KeycloakIdentityProvider {
 func (in *KeycloakList) DeepCopyInto(out *KeycloakList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]Keycloak, len(*in))
@@ -677,7 +677,7 @@ func (in *KeycloakRealm) DeepCopyObject() runtime.Object {
 func (in *KeycloakRealmList) DeepCopyInto(out *KeycloakRealmList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]KeycloakRealm, len(*in))
@@ -860,7 +860,7 @@ func (in *KeycloakUser) DeepCopyObject() runtime.Object {
 func (in *KeycloakUserList) DeepCopyInto(out *KeycloakUserList) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
-	out.ListMeta = in.ListMeta
+	in.ListMeta.DeepCopyInto(&out.ListMeta)
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
 		*out = make([]KeycloakUser, len(*in))

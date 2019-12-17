@@ -4,10 +4,8 @@ require (
 	cloud.google.com/go v0.46.3 // indirect
 	contrib.go.opencensus.io/exporter/ocagent v0.4.12 // indirect
 	github.com/Azure/go-autorest v11.7.0+incompatible // indirect
-	github.com/PuerkitoBio/purell v1.1.1 // indirect
-	github.com/coreos/prometheus-operator v0.29.0
-	github.com/go-openapi/spec v0.19.0
-	github.com/go-openapi/swag v0.19.0 // indirect
+	github.com/coreos/prometheus-operator v0.34.0
+	github.com/go-openapi/spec v0.19.2
 	github.com/gogo/protobuf v1.3.0 // indirect
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/google/uuid v1.1.1 // indirect
@@ -15,13 +13,11 @@ require (
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/integr8ly/grafana-operator v1.4.0
 	github.com/json-iterator/go v1.1.7
-	github.com/mailru/easyjson v0.0.0-20190403194419-1ea4449da983 // indirect
 	github.com/onsi/ginkgo v1.10.1 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
 	github.com/openshift/api v3.9.1-0.20190424152011-77b8897ec79a+incompatible
 	github.com/operator-framework/operator-sdk v0.12.1-0.20191112211508-82fc57de5e5b
 	github.com/pkg/errors v0.8.1
-	github.com/prometheus/client_golang v1.1.0 // indirect
 	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4 // indirect
 	github.com/prometheus/common v0.7.0 // indirect
 	github.com/prometheus/procfs v0.0.5 // indirect
@@ -41,7 +37,7 @@ require (
 	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	k8s.io/api v0.0.0
 	k8s.io/apimachinery v0.0.0
-	k8s.io/client-go v11.0.1-0.20190409021438-1a26190bd76a+incompatible
+	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20190918143330-0270cf2f1c1d
 	sigs.k8s.io/controller-runtime v0.3.0
 )

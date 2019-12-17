@@ -82,6 +82,12 @@ func (b *Background) detectMonitoringResources() {
 		b.SubscriptionChannel <- monitoringv1.SchemeGroupVersion.WithKind(monitoringv1.ServiceMonitorsKind)
 	}
 
+	// detect the PodMonitor resource type exist on the cluster
+	resourceExists, _ = k8sutil.ResourceExists(b.dc, monitoringv1.SchemeGroupVersion.String(), monitoringv1.PodMonitorsKind)
+	if resourceExists {
+		b.SubscriptionChannel <- monitoringv1.SchemeGroupVersion.WithKind(monitoringv1.PodMonitorsKind)
+	}
+
 	// detect the GrafanaDashboard resource type resourceExists on the cluster
 	resourceExists, _ = k8sutil.ResourceExists(b.dc, i8ly.SchemeGroupVersion.String(), i8ly.GrafanaDashboardKind)
 	if resourceExists {
