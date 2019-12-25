@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	apis "github.com/keycloak/keycloak-operator/pkg/apis"
@@ -10,6 +11,7 @@ import (
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
 	"github.com/operator-framework/operator-sdk/pkg/test/e2eutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 type testWithDeployedOperator func(*testing.T, *framework.Framework, *framework.TestCtx, string) error
@@ -51,6 +53,22 @@ func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework
 	err = WaitForStatefulSetReplicasReady(t, f.KubeClient, model.ApplicationName, namespace)
 	if err != nil {
 		return err
+	}
+
+	keycloakCRName := types.NamespacedName{
+		Namespace: keycloakCR.Namespace,
+		Name:      keycloakCR.Name,
+	}
+	err = Get(f, keycloakCRName, keycloakCR, ctx)
+	if err != nil {
+		return err
+	}
+	expectInternalURL := fmt.Sprintf("https://%s.%s.svc:%d",
+		model.ApplicationName, keycloakCR.ObjectMeta.Namespace,
+		model.KeycloakServicePort)
+	if keycloakCR.Status.InternalURL != expectInternalURL {
+		return fmt.Errorf("expected .Status.InternalURL %q but was %q",
+			expectInternalURL, keycloakCR.Status.InternalURL)
 	}
 
 	//TODO: OpenShift platform may additionally test the route.
