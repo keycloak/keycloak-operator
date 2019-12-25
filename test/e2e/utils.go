@@ -10,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
+	dynclient "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // Stolen from https://github.com/kubernetes/kubernetes/blob/master/test/e2e/framework/util.go
@@ -49,4 +50,8 @@ func WaitForPersistentVolumeClaimCreated(t *testing.T, c kubernetes.Interface, p
 
 func Create(f *framework.Framework, obj runtime.Object, ctx *framework.TestCtx) error {
 	return f.Client.Create(context.TODO(), obj, &framework.CleanupOptions{TestContext: ctx, Timeout: cleanupTimeout, RetryInterval: cleanupRetryInterval})
+}
+
+func Get(f *framework.Framework, key dynclient.ObjectKey, obj runtime.Object, ctx *framework.TestCtx) error {
+	return f.Client.Get(context.TODO(), key, obj)
 }
