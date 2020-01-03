@@ -6,7 +6,7 @@ import (
 	"time"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
-	i8ly "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
+	grafanav1alpha1 "github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
 	routev1 "github.com/openshift/api/route/v1"
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"k8s.io/client-go/discovery"
@@ -89,8 +89,8 @@ func (b *Background) detectMonitoringResources() {
 	}
 
 	// detect the GrafanaDashboard resource type resourceExists on the cluster
-	resourceExists, _ = k8sutil.ResourceExists(b.dc, i8ly.SchemeGroupVersion.String(), i8ly.GrafanaDashboardKind)
+	resourceExists, _ = k8sutil.ResourceExists(b.dc, grafanav1alpha1.SchemeGroupVersion.String(), grafanav1alpha1.GrafanaDashboardKind)
 	if resourceExists {
-		b.SubscriptionChannel <- i8ly.SchemeGroupVersion.WithKind(i8ly.GrafanaDashboardKind)
+		b.SubscriptionChannel <- grafanav1alpha1.SchemeGroupVersion.WithKind(grafanav1alpha1.GrafanaDashboardKind)
 	}
 }

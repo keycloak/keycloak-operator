@@ -20,7 +20,7 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/controller"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
-	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
+	grafanav1alpha1 "github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
 
 	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"
@@ -125,7 +125,7 @@ func main() {
 	}
 
 	// Setup Scheme for all grafana resources
-	if err := integreatlyv1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
+	if err := grafanav1alpha1.AddToScheme(mgr.GetScheme()); err != nil {
 		log.Error(err, "")
 		os.Exit(1)
 	}

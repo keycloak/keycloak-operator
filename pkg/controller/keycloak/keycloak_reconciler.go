@@ -2,7 +2,7 @@ package keycloak
 
 import (
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
-	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
+	grafanav1alpha1 "github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"github.com/keycloak/keycloak-operator/pkg/model"
@@ -223,7 +223,7 @@ func (i *KeycloakReconciler) GetKeycloakPodMonitorDesiredState(clusterState *com
 
 func (i *KeycloakReconciler) GetKeycloakGrafanaDashboardDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
 	stateManager := common.GetStateManager()
-	resourceWatchExists, keyExists := stateManager.GetState(common.GetStateFieldName(ControllerName, integreatlyv1alpha1.GrafanaDashboardKind)).(bool)
+	resourceWatchExists, keyExists := stateManager.GetState(common.GetStateFieldName(ControllerName, grafanav1alpha1.GrafanaDashboardKind)).(bool)
 	// Only add or update the monitoring resources if the resource type exists on the cluster. These booleans are set in the common/autodetect logic
 	if !keyExists || !resourceWatchExists {
 		return nil

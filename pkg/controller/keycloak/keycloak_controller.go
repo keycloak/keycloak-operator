@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
-	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
+	grafanav1alpha1 "github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
 	routev1 "github.com/openshift/api/route/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -119,8 +119,8 @@ func add(mgr manager.Manager, r reconcile.Reconciler, autodetectChannel chan sch
 			}
 
 			// Check if this channel event was for the GrafanaDashboard resource type
-			if gvk.String() == integreatlyv1alpha1.SchemeGroupVersion.WithKind(integreatlyv1alpha1.GrafanaDashboardKind).String() {
-				common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &integreatlyv1alpha1.GrafanaDashboard{}, &kc.Keycloak{}) // nolint
+			if gvk.String() == grafanav1alpha1.SchemeGroupVersion.WithKind(grafanav1alpha1.GrafanaDashboardKind).String() {
+				common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &grafanav1alpha1.GrafanaDashboard{}, &kc.Keycloak{}) // nolint
 			}
 
 			// Check if this channel event was for the Route resource type
