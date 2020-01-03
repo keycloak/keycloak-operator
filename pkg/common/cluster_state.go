@@ -7,7 +7,7 @@ import (
 	"k8s.io/api/extensions/v1beta1"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
-	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
+	grafanav1alpha1 "github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/model"
 	v12 "k8s.io/api/apps/v1"
@@ -39,7 +39,7 @@ type ClusterState struct {
 	KeycloakServiceMonitor          *monitoringv1.ServiceMonitor
 	KeycloakPodMonitor              *monitoringv1.PodMonitor
 	KeycloakPrometheusRule          *monitoringv1.PrometheusRule
-	KeycloakGrafanaDashboard        *integreatlyv1alpha1.GrafanaDashboard
+	KeycloakGrafanaDashboard        *grafanav1alpha1.GrafanaDashboard
 	DatabaseSecret                  *v1.Secret
 	PostgresqlPersistentVolumeClaim *v1.PersistentVolumeClaim
 	PostgresqlService               *v1.Service

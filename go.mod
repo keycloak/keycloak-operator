@@ -7,27 +7,22 @@ require (
 	github.com/coreos/prometheus-operator v0.34.0
 	github.com/go-openapi/spec v0.19.2
 	github.com/gogo/protobuf v1.3.0 // indirect
-	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/google/uuid v1.1.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.11.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
-	github.com/integr8ly/grafana-operator v1.4.0
+	github.com/integr8ly/grafana-operator/v3 v3.0.2-0.20200103111057-03d7fa884db4
 	github.com/json-iterator/go v1.1.7
 	github.com/onsi/ginkgo v1.10.1 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
 	github.com/openshift/api v3.9.1-0.20190424152011-77b8897ec79a+incompatible
 	github.com/operator-framework/operator-sdk v0.12.1-0.20191112211508-82fc57de5e5b
 	github.com/pkg/errors v0.8.1
-	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4 // indirect
-	github.com/prometheus/common v0.7.0 // indirect
-	github.com/prometheus/procfs v0.0.5 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.4.0
 	go.opencensus.io v0.22.1 // indirect
 	golang.org/x/crypto v0.0.0-20190926114937-fa1a29108794 // indirect
 	golang.org/x/net v0.0.0-20190926025831-c00fd9afed17 // indirect
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	golang.org/x/sys v0.0.0-20190924154521-2837fb4f24fe // indirect
 	golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0 // indirect
 	google.golang.org/api v0.10.0 // indirect

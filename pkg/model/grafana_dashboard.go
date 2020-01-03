@@ -1,14 +1,14 @@
 package model
 
 import (
-	integreatlyv1alpha1 "github.com/integr8ly/grafana-operator/pkg/apis/integreatly/v1alpha1"
+	grafanav1alpha1 "github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func GrafanaDashboard(cr *v1alpha1.Keycloak) *integreatlyv1alpha1.GrafanaDashboard {
-	return &integreatlyv1alpha1.GrafanaDashboard{
+func GrafanaDashboard(cr *v1alpha1.Keycloak) *grafanav1alpha1.GrafanaDashboard {
+	return &grafanav1alpha1.GrafanaDashboard{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      ApplicationName,
 			Namespace: cr.Namespace,
@@ -16,10 +16,10 @@ func GrafanaDashboard(cr *v1alpha1.Keycloak) *integreatlyv1alpha1.GrafanaDashboa
 				"monitoring-key": MonitoringKey,
 			},
 		},
-		Spec: integreatlyv1alpha1.GrafanaDashboardSpec{
+		Spec: grafanav1alpha1.GrafanaDashboardSpec{
 			Json: GrafanaDashboardJSON,
 			Name: "keycloak.json",
-			Plugins: []integreatlyv1alpha1.GrafanaPlugin{
+			Plugins: []grafanav1alpha1.GrafanaPlugin{
 				{
 					Name:    "grafana-piechart-panel",
 					Version: "1.3.9",
@@ -29,11 +29,11 @@ func GrafanaDashboard(cr *v1alpha1.Keycloak) *integreatlyv1alpha1.GrafanaDashboa
 	}
 }
 
-func GrafanaDashboardReconciled(cr *v1alpha1.Keycloak, currentState *integreatlyv1alpha1.GrafanaDashboard) *integreatlyv1alpha1.GrafanaDashboard {
+func GrafanaDashboardReconciled(cr *v1alpha1.Keycloak, currentState *grafanav1alpha1.GrafanaDashboard) *grafanav1alpha1.GrafanaDashboard {
 	reconciled := currentState.DeepCopy()
 	reconciled.Spec.Json = GrafanaDashboardJSON
 	reconciled.Spec.Name = "keycloak.json"
-	reconciled.Spec.Plugins = []integreatlyv1alpha1.GrafanaPlugin{
+	reconciled.Spec.Plugins = []grafanav1alpha1.GrafanaPlugin{
 		{
 			Name:    "grafana-piechart-panel",
 			Version: "1.3.9",
