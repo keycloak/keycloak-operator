@@ -32,10 +32,7 @@ spec:
           description: KeycloakUserSpec defines the desired state of KeycloakUser
           properties:
             realmSelector:
-              description: A label selector is a label query over a set of resources.
-                The result of matchLabels and matchExpressions are ANDed. An empty
-                label selector matches all objects. A null label selector matches
-                no objects.
+              description: Selector for looking up KeycloakRealm Custom Resources.
               properties:
                 matchExpressions:
                   description: matchExpressions is a list of label selector requirements.
@@ -78,60 +75,80 @@ spec:
                   type: object
               type: object
             user:
+              description: Keycloak User REST object.
               properties:
                 clientRoles:
                   additionalProperties:
                     items:
                       type: string
                     type: array
+                  description: A set of Client Roles.
                   type: object
                 credentials:
+                  description: A set of Credentials.
                   items:
                     properties:
                       temporary:
+                        description: True if this credential object is temporary.
                         type: boolean
                       type:
+                        description: Credential Type.
                         type: string
                       value:
+                        description: Credential Value.
                         type: string
                     type: object
                   type: array
                 email:
+                  description: Email.
                   type: string
                 emailVerified:
+                  description: True if email has already been verified.
                   type: boolean
                 enabled:
+                  description: User enabled flag.
                   type: boolean
                 federatedIdentities:
+                  description: A set of Federated Identities.
                   items:
                     properties:
                       identityProvider:
+                        description: Federated Identity Provider.
                         type: string
                       userId:
+                        description: Federated Identity User ID.
                         type: string
                       userName:
+                        description: Federated Identity User Name.
                         type: string
                     type: object
                   type: array
                 firstName:
+                  description: First Name.
                   type: string
                 groups:
+                  description: A set of Groups.
                   items:
                     type: string
                   type: array
                 id:
+                  description: User ID.
                   type: string
                 lastName:
+                  description: Last Name.
                   type: string
                 realmRoles:
+                  description: A set of Realm Roles.
                   items:
                     type: string
                   type: array
                 requiredActions:
+                  description: A set of Required Actions.
                   items:
                     type: string
                   type: array
                 username:
+                  description: User Name.
                   type: string
               type: object
           required:
@@ -141,8 +158,11 @@ spec:
           description: KeycloakUserStatus defines the observed state of KeycloakUser
           properties:
             message:
+              description: Human-readable message indicating details about current
+                operator phase or error.
               type: string
             phase:
+              description: Current phase of the operator.
               type: string
           required:
           - message

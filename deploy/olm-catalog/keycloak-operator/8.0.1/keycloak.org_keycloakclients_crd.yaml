@@ -32,97 +32,138 @@ spec:
           description: KeycloakClientSpec defines the desired state of KeycloakClient
           properties:
             client:
+              description: Keycloak Client REST object.
               properties:
                 access:
                   additionalProperties:
                     type: boolean
+                  description: Access options.
                   type: object
                 adminUrl:
+                  description: Application Admin URL.
                   type: string
                 attributes:
                   additionalProperties:
                     type: string
+                  description: Client Attributes.
                   type: object
                 baseUrl:
+                  description: Application base URL.
                   type: string
                 bearerOnly:
+                  description: True if a client supports only Bearer Tokens.
                   type: boolean
                 clientAuthenticatorType:
+                  description: What Client authentication type to use.
                   type: string
                 clientId:
+                  description: Client ID.
                   type: string
                 consentRequired:
+                  description: True if Consent Screen is required.
                   type: boolean
                 defaultRoles:
+                  description: Default Client roles.
                   items:
                     type: string
                   type: array
                 description:
+                  description: Client description.
                   type: string
                 directAccessGrantsEnabled:
+                  description: True if Direct Grant is enabled.
                   type: boolean
                 enabled:
+                  description: Client enabled flag.
                   type: boolean
                 frontchannelLogout:
+                  description: True if this client supports Front Channel logout.
                   type: boolean
                 fullScopeAllowed:
+                  description: True if Full Scope is allowed.
                   type: boolean
                 id:
+                  description: Client ID. If not specified, automatically generated.
                   type: string
                 implicitFlowEnabled:
+                  description: True if Implicit flow is enabled.
                   type: boolean
                 name:
+                  description: Client name.
                   type: string
                 nodeReRegistrationTimeout:
+                  description: Node registration timeout.
                   type: integer
                 notBefore:
+                  description: Not Before setting.
                   type: integer
                 protocol:
+                  description: Protocol used for this Client.
                   type: string
                 protocolMappers:
+                  description: Protocol Mappers.
                   items:
                     properties:
                       config:
                         additionalProperties:
                           type: string
+                        description: Config options.
                         type: object
                       consentRequired:
+                        description: True if Consent Screen is required.
                         type: boolean
                       consentText:
+                        description: Text to use for displaying Consent Screen.
                         type: string
                       id:
+                        description: Protocol Mapper ID.
                         type: string
                       name:
+                        description: Protocol Mapper Name.
                         type: string
                       protocol:
+                        description: Protocol to use.
                         type: string
                       protocolMapper:
+                        description: Protocol Mapper to use
                         type: string
                     type: object
                   type: array
                 publicClient:
+                  description: True if this is a public Client.
                   type: boolean
                 redirectUris:
+                  description: A list of valid Redirection URLs.
                   items:
                     type: string
                   type: array
                 rootUrl:
+                  description: Application root URL.
                   type: string
                 secret:
+                  description: Client Secret. The Operator will automatically create
+                    a Secret based on this value.
                   type: string
                 serviceAccountsEnabled:
+                  description: True if Service Accounts are enabled.
                   type: boolean
                 standardFlowEnabled:
+                  description: True if Standard flow is enabled.
                   type: boolean
                 surrogateAuthRequired:
+                  description: Surrogate Authentication Required option.
                   type: boolean
                 useTemplateConfig:
+                  description: True to use a Template Config.
                   type: boolean
                 useTemplateMappers:
+                  description: True to use Template Mappers.
                   type: boolean
                 useTemplateScope:
+                  description: True to use Template Scope.
                   type: boolean
                 webOrigins:
+                  description: A list of valid Web Origins.
                   items:
                     type: string
                   type: array
@@ -130,10 +171,7 @@ spec:
               - clientId
               type: object
             realmSelector:
-              description: A label selector is a label query over a set of resources.
-                The result of matchLabels and matchExpressions are ANDed. An empty
-                label selector matches all objects. A null label selector matches
-                no objects.
+              description: Selector for looking up KeycloakRealm Custom Resources.
               properties:
                 matchExpressions:
                   description: matchExpressions is a list of label selector requirements.
