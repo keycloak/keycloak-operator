@@ -21,10 +21,10 @@ require (
 	github.com/spf13/pflag v1.0.3
 	github.com/stretchr/testify v1.4.0
 	go.opencensus.io v0.22.1 // indirect
-	golang.org/x/crypto v0.0.0-20190926114937-fa1a29108794 // indirect
 	golang.org/x/net v0.0.0-20190926025831-c00fd9afed17 // indirect
 	golang.org/x/sys v0.0.0-20190924154521-2837fb4f24fe // indirect
 	golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0 // indirect
+	golang.org/x/tools v0.0.0-20200114052453-d31a08c2edf2 // indirect
 	google.golang.org/api v0.10.0 // indirect
 	google.golang.org/appengine v1.6.3 // indirect
 	google.golang.org/genproto v0.0.0-20190925194540-b8fbc687dcfb // indirect

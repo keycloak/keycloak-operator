@@ -94,6 +94,16 @@ rules:
     verbs:
       - update
   - apiGroups:
+      - policy
+    resources:
+      - poddisruptionbudgets
+    verbs:
+      - get
+      - list
+      - create
+      - update
+      - watch
+  - apiGroups:
       - keycloak.org
     resources:
       - keycloaks
