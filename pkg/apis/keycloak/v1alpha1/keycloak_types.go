@@ -49,6 +49,9 @@ type KeycloakSpec struct {
 	// Profile used for controlling Operator behavior. Default is empty.
 	// +optional
 	Profile string `json:"profile,omitempty"`
+	// Specify PodDisruptionBudget configuration
+	// +optional
+	PodDisruptionBudget PodDisruptionBudgetConfig `json:"podDisruptionBudget,omitempty"`
 }
 
 type KeycloakExternalAccess struct {
@@ -60,6 +63,11 @@ type KeycloakExternalAccess struct {
 type KeycloakExternalDatabase struct {
 	// If set to true, the Operator will use an external database.
 	// pointing to Keycloak.
+	Enabled bool `json:"enabled,omitempty"`
+}
+
+type PodDisruptionBudgetConfig struct {
+	// If set to true, the operator will create a PodDistruptionBudget for the Keycloak deployment and set its `maxUnavailable` value to 1
 	Enabled bool `json:"enabled,omitempty"`
 }
 

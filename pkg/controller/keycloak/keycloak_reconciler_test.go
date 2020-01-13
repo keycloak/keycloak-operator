@@ -39,17 +39,19 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 
 	// then
 	// Expectation:
-	//    0) Prometheus Rule
-	//    1) Service Monitor
-	//    2) Grafana Dashboard
-	//    3) Database secret
-	//    4) Postgresql Persistent Volume Claim
-	//    5) Postgresql Deployment
-	//    6) Postgresql Service
-	//    7) Keycloak Service
-	//    8) Keycloak Discovery Service
-	//    9) Keycloak StatefulSets
-	//   10) Keycloak Route
+	//    0) Keycloak Admin Secret
+	//    1) Prometheus Rule
+	//    2) Service Monitor
+	//    3) Grafana Dashboard
+	//    4) Database secret
+	//    5) Postgresql Persistent Volume Claim
+	//    6) Postgresql Deployment
+	//    7) Postgresql Service
+	//    8) Keycloak Service
+	//    9) Keycloak Discovery Service
+	//    10) Keycloak StatefulSets
+	//    11) Keycloak Route
+	assert.Equal(t, len(desiredState), 12)
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[0])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[1])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
@@ -195,17 +197,19 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 
 	// then
 	// Expectation:
-	//    0) Prometheus Rule
-	//    1) Service Monitor
-	//    2) Grafana Dashboard
-	//    3) Database secret
-	//    4) Postgresql Persistent Volume Claim
-	//    5) Postgresql Deployment
-	//    6) Postgresql Service
-	//    7) Keycloak Service
-	//    8) Keycloak Discovery Service
-	//    9) Keycloak StatefulSets
-	//   10) Keycloak Route
+	//    0) Keycloak Admin Secret
+	//    1) Prometheus Rule
+	//    2) Service Monitor
+	//    3) Grafana Dashboard
+	//    4) Database secret
+	//    5) Postgresql Persistent Volume Claim
+	//    6) Postgresql Deployment
+	//    7) Postgresql Service
+	//    8) Keycloak Service
+	//    9) Keycloak Discovery Service
+	//    10) Keycloak StatefulSets
+	//    11) Keycloak Route
+	assert.Equal(t, len(desiredState), 12)
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[0])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[1])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[2])
@@ -340,4 +344,40 @@ func TestKeycloakReconciler_Test_Recreate_Does_Not_Update_Existing_Credentials(t
 	// then
 	assert.Equal(t, username, secret.Data[model.AdminUsernameProperty])
 	assert.Equal(t, password, secret.Data[model.AdminPasswordProperty])
+}
+
+func TestKeycloakReconciler_Test_Should_Create_PDB(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.PodDisruptionBudget.Enabled = true
+
+	currentState := common.NewClusterState()
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	assert.Equal(t, len(desiredState), 9)
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[8])
+	assert.IsType(t, model.PodDisruptionBudget(cr), desiredState[8].(common.GenericCreateAction).Ref)
+}
+
+func TestKeycloakReconciler_Test_Should_Update_PDB(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.PodDisruptionBudget.Enabled = true
+
+	currentState := &common.ClusterState{
+		PodDisruptionBudget: model.PodDisruptionBudget(cr),
+	}
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	assert.Equal(t, len(desiredState), 9)
+	assert.IsType(t, common.GenericUpdateAction{}, desiredState[8])
+	assert.IsType(t, model.PodDisruptionBudget(cr), desiredState[8].(common.GenericUpdateAction).Ref)
 }

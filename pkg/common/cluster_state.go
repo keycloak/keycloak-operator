@@ -3,6 +3,8 @@ package common
 import (
 	"context"
 
+	v1beta12 "k8s.io/api/policy/v1beta1"
+
 	v13 "github.com/openshift/api/route/v1"
 	"k8s.io/api/extensions/v1beta1"
 
@@ -51,6 +53,7 @@ type ClusterState struct {
 	KeycloakIngress                 *v1beta1.Ingress
 	KeycloakRoute                   *v13.Route
 	PostgresqlServiceEndpoints      *v1.Endpoints
+	PodDisruptionBudget             *v1beta12.PodDisruptionBudget
 }
 
 func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error { //nolint
@@ -118,6 +121,11 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 	}
 
 	err = i.readKeycloakOrRHSSODeploymentCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readPodDisruptionCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
 	}
@@ -416,6 +424,24 @@ func (i *ClusterState) readKeycloakIngressCurrentState(context context.Context, 
 	} else {
 		i.KeycloakIngress = keycloakIngress.DeepCopy()
 		cr.UpdateStatusSecondaryResources(i.KeycloakIngress.Kind, i.KeycloakIngress.Name)
+	}
+	return nil
+}
+
+func (i *ClusterState) readPodDisruptionCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	pdb := model.PodDisruptionBudget(cr)
+	pdbSelector := model.PodDisruptionBudgetSelector(cr)
+
+	err := controllerClient.Get(context, pdbSelector, pdb)
+	if err != nil {
+		if !apiErrors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.PodDisruptionBudget = pdb.DeepCopy()
+		if cr.Spec.PodDisruptionBudget.Enabled {
+			cr.UpdateStatusSecondaryResources(i.PodDisruptionBudget.Kind, i.PodDisruptionBudget.Name)
+		}
 	}
 	return nil
 }

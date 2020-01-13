@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	v1beta12 "k8s.io/api/policy/v1beta1"
+
 	"github.com/keycloak/keycloak-operator/pkg/model"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -97,6 +99,10 @@ func add(mgr manager.Manager, r reconcile.Reconciler, autodetectChannel chan sch
 	}
 
 	if err := common.WatchSecondaryResource(c, ControllerName, common.PersistentVolumeClaimKind, &corev1.PersistentVolumeClaim{}, &kc.Keycloak{}); err != nil {
+		return err
+	}
+
+	if err := common.WatchSecondaryResource(c, ControllerName, common.PodDisruptionBudgetKind, &v1beta12.PodDisruptionBudget{}, &kc.Keycloak{}); err != nil {
 		return err
 	}
 

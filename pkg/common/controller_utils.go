@@ -26,6 +26,7 @@ const (
 	IngressKind               = "Ingress"
 	DeploymentKind            = "Deployment"
 	PersistentVolumeClaimKind = "PersistentVolumeClaim"
+	PodDisruptionBudgetKind   = "PodDisruptionBudget"
 )
 
 func WatchSecondaryResource(c controller.Controller, controllerName string, resourceKind string, objectTypetoWatch runtime.Object, cr runtime.Object) error {
