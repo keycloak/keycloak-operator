@@ -26,10 +26,13 @@ func getDummyRealm() *v1alpha1.KeycloakRealm {
 				},
 			},
 			Realm: &v1alpha1.KeycloakAPIRealm{
-				ID:          "dummy",
-				Realm:       "dummy",
-				Enabled:     true,
-				DisplayName: "dummy",
+				ID:                        "dummy",
+				Realm:                     "dummy",
+				Enabled:                   true,
+				DisplayName:               "dummy",
+				EventsEnabled:             &[]bool{true}[0],
+				AdminEventsEnabled:        &[]bool{true}[0],
+				AdminEventsDetailsEnabled: &[]bool{true}[0],
 				Users: []*v1alpha1.KeycloakAPIUser{
 					{
 						ID:        "dummy",
@@ -80,6 +83,10 @@ func TestKeycloakRealmReconciler_Reconcile(t *testing.T) {
 	assert.IsType(t, &common.CreateRealmAction{}, desiredState[1])
 	assert.IsType(t, &common.GenericCreateAction{}, desiredState[2])
 	assert.IsType(t, &common.ConfigureRealmAction{}, desiredState[3])
+
+	assert.True(t, *realm.Spec.Realm.EventsEnabled)
+	assert.True(t, *realm.Spec.Realm.AdminEventsEnabled)
+	assert.True(t, *realm.Spec.Realm.AdminEventsDetailsEnabled)
 
 	state.Realm = realm
 

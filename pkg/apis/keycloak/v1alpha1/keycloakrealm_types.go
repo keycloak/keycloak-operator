@@ -43,6 +43,18 @@ type KeycloakAPIRealm struct {
 	// A set of Event Listeners.
 	// +optional
 	EventsListeners []string `json:"eventsListeners,omitempty"`
+	// Enable events recording
+	// TODO: change to values and use kubebuilder default annotation once supported
+	// +optional
+	EventsEnabled *bool `json:"eventsEnabled,omitempty"`
+	// Enable events recording
+	// TODO: change to values and use kubebuilder default annotation once supported
+	// +optional
+	AdminEventsEnabled *bool `json:"adminEventsEnabled,omitempty"`
+	// Enable admin events details
+	// TODO: change to values and use kubebuilder default annotation once supported
+	// +optional
+	AdminEventsDetailsEnabled *bool `json:"adminEventsDetailsEnabled,omitempty"`
 }
 
 type RedirectorIdentityProviderOverride struct {
