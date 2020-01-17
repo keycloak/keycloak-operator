@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -40,7 +41,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 				},
 				Spec: v1.PodSpec{
 					InitContainers: KeycloakExtensionsInitContainers(cr),
-					Volumes:        KeycloakVolumes(),
+					Volumes:        KeycloakVolumes(cr),
 					Containers: []v1.Container{
 						{
 							Name:  KeycloakDeploymentName,
@@ -144,7 +145,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 									},
 								},
 							},
-							VolumeMounts: KeycloakVolumeMounts(KeycloakExtensionPath),
+							VolumeMounts: KeycloakVolumeMounts(cr, KeycloakExtensionPath),
 							LivenessProbe: &v1.Probe{
 								InitialDelaySeconds: 60,
 								TimeoutSeconds:      1,
@@ -188,7 +189,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	reconciled := currentState.DeepCopy()
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
-	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes()
+	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr)
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:  KeycloakDeploymentName,
@@ -207,7 +208,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 					Protocol:      "TCP",
 				},
 			},
-			VolumeMounts: KeycloakVolumeMounts(KeycloakExtensionPath),
+			VolumeMounts: KeycloakVolumeMounts(cr, KeycloakExtensionPath),
 			LivenessProbe: &v1.Probe{
 				InitialDelaySeconds: 60,
 				TimeoutSeconds:      1,
@@ -321,38 +322,98 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	return reconciled
 }
 
-func KeycloakVolumeMounts(extensionsPath string) []v1.VolumeMount {
-	return []v1.VolumeMount{
-		{
-			Name:      ServingCertSecretName,
-			MountPath: "/etc/x509/https",
-		},
-		{
-			Name:      "keycloak-extensions",
-			ReadOnly:  false,
-			MountPath: extensionsPath,
-		},
+func KeycloakVolumeMounts(cr *v1alpha1.Keycloak, extensionsPath string) []v1.VolumeMount {
+	var mounts []v1.VolumeMount
+
+	// Certificates
+	mounts = append(mounts, v1.VolumeMount{
+		Name:      ServingCertSecretName,
+		MountPath: "/etc/x509/https",
+	})
+
+	// Extensions
+	mounts = append(mounts, v1.VolumeMount{
+		Name:      "keycloak-extensions",
+		ReadOnly:  false,
+		MountPath: extensionsPath,
+	})
+
+	// Secrets
+	for _, secret := range cr.Spec.Secrets {
+		mountName := fmt.Sprintf("secret-%s", secret)
+		mounts = append(mounts, v1.VolumeMount{
+			Name:      mountName,
+			MountPath: SecretsMountDir + secret,
+		})
 	}
+
+	// Config maps
+	for _, configmap := range cr.Spec.ConfigMaps {
+		mountName := fmt.Sprintf("configmap-%s", configmap)
+		mounts = append(mounts, v1.VolumeMount{
+			Name:      mountName,
+			MountPath: ConfigMapsMountDir + configmap,
+		})
+	}
+
+	return mounts
 }
 
-func KeycloakVolumes() []v1.Volume {
-	return []v1.Volume{
-		{
-			Name: ServingCertSecretName,
+func KeycloakVolumes(cr *v1alpha1.Keycloak) []v1.Volume {
+	var volumes []v1.Volume
+	var volumeOptional = true
+
+	// Certificates
+	volumes = append(volumes, v1.Volume{
+		Name: ServingCertSecretName,
+		VolumeSource: v1.VolumeSource{
+			Secret: &v1.SecretVolumeSource{
+				SecretName: ServingCertSecretName,
+				Optional:   &[]bool{true}[0],
+			},
+		},
+	})
+
+	// Extensions
+	volumes = append(volumes, v1.Volume{
+		Name: "keycloak-extensions",
+		VolumeSource: v1.VolumeSource{
+			EmptyDir: &v1.EmptyDirVolumeSource{},
+		},
+	})
+
+	// Extra volumes for Secrets
+	for _, secret := range cr.Spec.Secrets {
+		volumeName := fmt.Sprintf("secret-%s", secret)
+		volumes = append(volumes, v1.Volume{
+			Name: volumeName,
 			VolumeSource: v1.VolumeSource{
 				Secret: &v1.SecretVolumeSource{
-					SecretName: ServingCertSecretName,
-					Optional:   &[]bool{true}[0],
+					SecretName: secret,
+					Optional:   &volumeOptional,
 				},
 			},
-		},
-		{
-			Name: "keycloak-extensions",
-			VolumeSource: v1.VolumeSource{
-				EmptyDir: &v1.EmptyDirVolumeSource{},
-			},
-		},
+		})
 	}
+
+	// Extra volumes for Config maps
+	for _, configmap := range cr.Spec.ConfigMaps {
+		volumeName := fmt.Sprintf("configmap-%s", configmap)
+		volumes = append(volumes, v1.Volume{
+			Name: volumeName,
+			VolumeSource: v1.VolumeSource{
+				ConfigMap: &v1.ConfigMapVolumeSource{
+					Optional: &volumeOptional,
+					LocalObjectReference: v1.LocalObjectReference{
+						Name: configmap,
+					},
+				},
+			},
+		})
+
+	}
+
+	return volumes
 }
 
 // We allow the patch version of an image for keycloak to be increased outside of the operator on the cluster

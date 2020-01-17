@@ -49,6 +49,12 @@ type KeycloakSpec struct {
 	// Profile used for controlling Operator behavior. Default is empty.
 	// +optional
 	Profile string `json:"profile,omitempty"`
+	// Secrets to be mounted as volumes in the keycloak pod.
+	// +optional
+	Secrets []string `json:"secrets,omitempty"`
+	// Config maps to be mounted as volumes in the keycloak pod.
+	// +optional
+	ConfigMaps []string `json:"configMaps,omitempty"`
 }
 
 type KeycloakExternalAccess struct {

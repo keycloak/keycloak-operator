@@ -784,6 +784,16 @@ func (in *KeycloakSpec) DeepCopyInto(out *KeycloakSpec) {
 	}
 	out.ExternalAccess = in.ExternalAccess
 	out.ExternalDatabase = in.ExternalDatabase
+	if in.Secrets != nil {
+		in, out := &in.Secrets, &out.Secrets
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.ConfigMaps != nil {
+		in, out := &in.ConfigMaps, &out.ConfigMaps
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

@@ -44,4 +44,6 @@ const (
 	ClientSecretName                      = ApplicationName + "-client-secret"
 	ClientSecretClientIDProperty          = "CLIENT_ID"
 	ClientSecretClientSecretProperty      = "CLIENT_SECRET"
+	SecretsMountDir                       = "/etc/keycloak-secrets/"
+	ConfigMapsMountDir                    = "/etc/keycloak-configmaps/"
 )
