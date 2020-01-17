@@ -323,7 +323,9 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 }
 
 func KeycloakVolumeMounts(cr *v1alpha1.Keycloak, extensionsPath string) []v1.VolumeMount {
-	var mounts []v1.VolumeMount
+	// var mounts []v1.VolumeMount
+	len := DefaultVolumesArraySize + len(cr.Spec.Secrets) + len(cr.Spec.ConfigMaps)
+	mounts := make([]v1.VolumeMount, 0, len)
 
 	// Certificates
 	mounts = append(mounts, v1.VolumeMount{
@@ -360,7 +362,8 @@ func KeycloakVolumeMounts(cr *v1alpha1.Keycloak, extensionsPath string) []v1.Vol
 }
 
 func KeycloakVolumes(cr *v1alpha1.Keycloak) []v1.Volume {
-	var volumes []v1.Volume
+	len := DefaultVolumesArraySize + len(cr.Spec.Secrets) + len(cr.Spec.ConfigMaps)
+	volumes := make([]v1.Volume, 0, len)
 	var volumeOptional = true
 
 	// Certificates
@@ -410,7 +413,6 @@ func KeycloakVolumes(cr *v1alpha1.Keycloak) []v1.Volume {
 				},
 			},
 		})
-
 	}
 
 	return volumes

@@ -2,9 +2,14 @@
 
 === KeycloakClient Custom Resource Definition (CRD)
 
-Clients are entities that can request authentication of a user. Clients come in two forms. The first type of client is an application that wants to participate in single-sign-on. These clients just want Keycloak to provide security for them. The other type of client is one that is requesting an access token so that it can invoke other services on behalf of the authenticated user. 
+Clients are entities that can request authentication of a user.
+Clients come in two forms.
+The first type of client is an application that wants to participate in single-sign-on.
+These clients just want Keycloak to provide security for them.
+The other type of client is one that is requesting an access token so that it can invoke other services on behalf of the authenticated user.
 
-The Keycloak Operator allows application developers to represent Keycloak Clients as Custom Resources. Learn how to create your own KeycloakClient CRD here
+The Keycloak Operator allows application developers to represent Keycloak Clients as Custom Resources.
+Learn how to create your own KeycloakClient CRD here
 
 * link:keycloak-client.asciidoc[KeycloakClient Custom Resource]
 
@@ -16,9 +21,12 @@ Additional information about Keycloak Client can be found here
 
 === KeycloakUser Custom Resource Definition (CRD)
 
-Users are entities that are able to log into your system. They can have attributes associated with themselves like email, username, address, phone number, and birth day. They can be assigned group membership and have specific roles assigned to them.
+Users are entities that are able to log into your system.
+They can have attributes associated with themselves like email, username, address, phone number, and birth day.
+They can be assigned group membership and have specific roles assigned to them.
 
-The Keycloak Operator allows application developers to configure Keycloak Users as Custom Resources. Learn how to create your own KeycloakUser CRD here
+The Keycloak Operator allows application developers to configure Keycloak Users as Custom Resources.
+Learn how to create your own KeycloakUser CRD here
 
 * link:keycloak-user.asciidoc[KeycloakUser Custom Resource]
 
@@ -40,6 +48,13 @@ Learn how to create your own KeycloakBackup CRD here
 
 === Using external database
 
-The Keycloak Operator allows application developers to utilize an external Postgres database. Learn how to connect an external Postgres database to your KeycloakClient here
+The Keycloak Operator allows application developers to utilize an external Postgres database.
+Learn how to connect an external Postgres database to your KeycloakClient here
 
 * link:external-database.asciidoc[Using external database]
+
+=== Mounting secrets or config maps
+
+The Keycloak Operator allows to mount secrets or config maps into the Keycloak pod.
+
+* link:extra-volumes.asciidoc[Mounting secrets or config maps]

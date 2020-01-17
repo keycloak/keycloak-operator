@@ -44,6 +44,7 @@ const (
 	ClientSecretName                      = ApplicationName + "-client-secret"
 	ClientSecretClientIDProperty          = "CLIENT_ID"
 	ClientSecretClientSecretProperty      = "CLIENT_SECRET"
-	SecretsMountDir                       = "/etc/keycloak-secrets/"
-	ConfigMapsMountDir                    = "/etc/keycloak-configmaps/"
+	SecretsMountDir                       = "/etc/keycloak-secrets/"    // nolint
+	ConfigMapsMountDir                    = "/etc/keycloak-configmaps/" // nolint
+	DefaultVolumesArraySize               = 2
 )

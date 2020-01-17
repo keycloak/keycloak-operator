@@ -79,9 +79,17 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 
 	// 4 volumes are expected: Certs, Extensions, test configmap and test secret
 	assert.Len(t, model.KeycloakDeployment(cr).Spec.Template.Spec.Volumes, 4)
+	assert.Equal(t, model.KeycloakDeployment(cr).Spec.Template.Spec.Volumes[0].Name, model.ServingCertSecretName)
+	assert.Equal(t, model.KeycloakDeployment(cr).Spec.Template.Spec.Volumes[1].Name, "keycloak-extensions")
+	assert.Equal(t, model.KeycloakDeployment(cr).Spec.Template.Spec.Volumes[2].Name, "secret-test")
+	assert.Equal(t, model.KeycloakDeployment(cr).Spec.Template.Spec.Volumes[3].Name, "configmap-test")
 
 	// 4 volume mounts are expected: Certs, Extensions, test configmap and test secret
 	assert.Len(t, model.KeycloakDeployment(cr).Spec.Template.Spec.Containers[0].VolumeMounts, 4)
+	assert.Equal(t, model.KeycloakDeployment(cr).Spec.Template.Spec.Containers[0].VolumeMounts[0].Name, model.ServingCertSecretName)
+	assert.Equal(t, model.KeycloakDeployment(cr).Spec.Template.Spec.Containers[0].VolumeMounts[1].Name, "keycloak-extensions")
+	assert.Equal(t, model.KeycloakDeployment(cr).Spec.Template.Spec.Containers[0].VolumeMounts[2].Name, "secret-test")
+	assert.Equal(t, model.KeycloakDeployment(cr).Spec.Template.Spec.Containers[0].VolumeMounts[3].Name, "configmap-test")
 }
 
 func TestKeycloakReconciler_Test_Creating_RHSSO(t *testing.T) {

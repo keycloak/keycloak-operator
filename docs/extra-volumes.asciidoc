@@ -1,0 +1,20 @@
+= Mounting secrets or configmaps
+
+Secrets and Config Maps can be mounted into the Keycloak pod by listing them in the CR, e.g.
+
+```yaml
+apiVersion: keycloak.org/v1alpha1
+kind: Keycloak
+metadata:
+  name: example-keycloak
+  labels:
+    app: sso
+spec:
+  instances: 1
+  secrets:
+    - a-secret
+  configMaps:
+    - a-configmap
+```
+
+Secrets will be mounted under `/etc/keycloak-secrets/secret-<secret name>` and config maps under `/etc/keycloak-configmaps/configmap-<config map name>`.
