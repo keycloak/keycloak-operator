@@ -22,6 +22,8 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	cr.Spec.ExternalAccess = v1alpha1.KeycloakExternalAccess{
 		Enabled: true,
 	}
+	cr.Spec.Secrets = []string{"test"}
+	cr.Spec.ConfigMaps = []string{"test"}
 
 	currentState := common.NewClusterState()
 
@@ -74,6 +76,12 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	assert.IsType(t, model.KeycloakDiscoveryService(cr), desiredState[9].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakDeployment(cr), desiredState[10].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakRoute(cr), desiredState[11].(common.GenericCreateAction).Ref)
+
+	// 4 volumes are expected: Certs, Extensions, test configmap and test secret
+	assert.Len(t, model.KeycloakDeployment(cr).Spec.Template.Spec.Volumes, 4)
+
+	// 4 volume mounts are expected: Certs, Extensions, test configmap and test secret
+	assert.Len(t, model.KeycloakDeployment(cr).Spec.Template.Spec.Containers[0].VolumeMounts, 4)
 }
 
 func TestKeycloakReconciler_Test_Creating_RHSSO(t *testing.T) {
