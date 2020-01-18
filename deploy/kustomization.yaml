@@ -1,0 +1,10 @@
+---
+resources:
+  - cluster_roles/cluster_role.yaml
+  - cluster_roles/cluster_role_binding.yaml
+  - crds/keycloak.org_keycloakbackups_crd.yaml
+  - crds/keycloak.org_keycloakclients_crd.yaml
+  - crds/keycloak.org_keycloakrealms_crd.yaml
+  - crds/keycloak.org_keycloaks_crd.yaml
+  - crds/keycloak.org_keycloakusers_crd.yaml
+  - operator.yaml
