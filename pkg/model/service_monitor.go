@@ -11,7 +11,7 @@ import (
 func ServiceMonitor(cr *v1alpha1.Keycloak) *monitoringv1.ServiceMonitor {
 	return &monitoringv1.ServiceMonitor{
 		ObjectMeta: v12.ObjectMeta{
-			Name:      ApplicationName,
+			Name:      ServiceMonitorName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
 				"monitoring-key": MonitoringKey,
@@ -37,7 +37,7 @@ func ServiceMonitor(cr *v1alpha1.Keycloak) *monitoringv1.ServiceMonitor {
 
 func ServiceMonitorSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 	return client.ObjectKey{
-		Name:      ApplicationName,
+		Name:      ServiceMonitorName,
 		Namespace: cr.Namespace,
 	}
 }
