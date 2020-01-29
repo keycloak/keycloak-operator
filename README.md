@@ -57,7 +57,7 @@ Keycloak Operator supports the following version of key components:
 
 ## Contributing
 
-Before contributing to Gatekeeper please read our [contributing guidelines](CONTRIBUTING.md).
+Before contributing to Keycloak Operator please read our [contributing guidelines](CONTRIBUTING.md).
 
 ## Other Keycloak Projects
 
