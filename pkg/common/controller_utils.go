@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/keycloak/keycloak-operator/pkg/model"
-
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -89,24 +87,4 @@ func GetMatchingRealms(ctx context.Context, c client.Client, labelSelector *v1.L
 	}
 
 	return list, nil
-}
-
-func EnsureCredential(user *v1alpha1.KeycloakAPIUser) {
-	if len(user.Credentials) == 0 {
-		user.Credentials = []v1alpha1.KeycloakCredential{
-			{
-				Type:      "password",
-				Value:     model.RandStringRunes(10),
-				Temporary: false,
-			},
-		}
-	}
-}
-
-// Auto generate a password if the user didn't specify one
-// It will be written to the secret
-func EnsureCredentials(users []*v1alpha1.KeycloakAPIUser) {
-	for _, user := range users {
-		EnsureCredential(user)
-	}
 }

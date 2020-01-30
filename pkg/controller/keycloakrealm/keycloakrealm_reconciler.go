@@ -83,11 +83,6 @@ func (i *KeycloakRealmReconciler) getDesiredRealmState(state *common.RealmState,
 		}
 	}
 
-	// Ensure that all users have credentials, if not provided then
-	// automatically create a password. The user can later find the
-	// credentials in the output secret
-	common.EnsureCredentials(cr.Spec.Realm.Users)
-
 	if state.Realm == nil {
 		return &common.CreateRealmAction{
 			Ref: cr,
