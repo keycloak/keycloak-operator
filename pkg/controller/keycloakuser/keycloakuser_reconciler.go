@@ -73,9 +73,6 @@ func (i *KeycloakuserReconciler) getKeycloakUserDesiredState(state *common.UserS
 	var actions []common.ClusterAction
 
 	if state.User == nil {
-		// Make sure all new users have credentials
-		common.EnsureCredential(&cr.Spec.User)
-
 		actions = append(actions, &common.CreateUserAction{
 			Ref:   cr,
 			Realm: i.Realm.Spec.Realm.Realm,

@@ -133,7 +133,6 @@ func TestKeycloakRealmReconciler_ReconcileCredentials(t *testing.T) {
 	assert.IsType(t, &common.PingAction{}, desiredState[0])
 	assert.IsType(t, &common.CreateRealmAction{}, desiredState[1])
 	assert.IsType(t, &common.GenericCreateAction{}, desiredState[2])
-	assert.Len(t, realm.Spec.Realm.Users[0].Credentials, 1)
 }
 
 func TestKeycloakRealmReconciler_Update(t *testing.T) {
