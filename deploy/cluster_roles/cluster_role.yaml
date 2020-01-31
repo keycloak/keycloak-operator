@@ -69,6 +69,7 @@ rules:
     resources:
       - servicemonitors
       - prometheusrules
+      - podmonitors
     verbs:
       - list
       - get
