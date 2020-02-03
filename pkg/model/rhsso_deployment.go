@@ -139,6 +139,10 @@ func RHSSODeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 										},
 									},
 								},
+								{
+									Name:  "X509_CA_BUNDLE",
+									Value: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
+								},
 							},
 							VolumeMounts: KeycloakVolumeMounts(RhssoExtensionPath),
 							LivenessProbe: &v1.Probe{
@@ -304,6 +308,10 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 							Key: AdminPasswordProperty,
 						},
 					},
+				},
+				{
+					Name:  "X509_CA_BUNDLE",
+					Value: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
 				},
 			},
 		},

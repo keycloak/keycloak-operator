@@ -143,6 +143,10 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 										},
 									},
 								},
+								{
+									Name:  "X509_CA_BUNDLE",
+									Value: "/var/run/secrets/kubernetes.io/serviceaccount/*.crt",
+								},
 							},
 							VolumeMounts: KeycloakVolumeMounts(KeycloakExtensionPath),
 							LivenessProbe: &v1.Probe{
@@ -313,6 +317,10 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 							Key: AdminPasswordProperty,
 						},
 					},
+				},
+				{
+					Name:  "X509_CA_BUNDLE",
+					Value: "/var/run/secrets/kubernetes.io/serviceaccount/*.crt",
 				},
 			},
 		},
