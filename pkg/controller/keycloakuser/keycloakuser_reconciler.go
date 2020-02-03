@@ -91,9 +91,43 @@ func (i *KeycloakuserReconciler) getKeycloakUserDesiredState(state *common.UserS
 		// Sync the requested roles
 		actions = append(actions, i.getUserRealmRolesDesiredState(state, cr)...)
 		actions = append(actions, i.getUserClientRolesDesiredState(state, cr)...)
+
+		// Sync the federated identities
+		actions = append(actions, i.getFederatedIdentitiesDesiredState(state, cr)...)
 	}
 
 	return actions
+}
+
+func (i *KeycloakuserReconciler) getFederatedIdentitiesDesiredState(state *common.UserState, cr *v1alpha1.KeycloakUser) []common.ClusterAction {
+	var assignIdentities []common.ClusterAction
+	var removeIdentities []common.ClusterAction
+
+	for _, identity := range cr.Spec.User.FederatedIdentities {
+		// Identity requested but not assigned?
+		if !containsIdentity(state.FederatedIdentities, identity) {
+			assignIdentities = append(assignIdentities, &common.AssignFederatedIdentity{
+				UserID: state.User.ID,
+				Ref:    identity,
+				Realm:  i.Realm.Spec.Realm.Realm,
+				Msg:    fmt.Sprintf("assigning federated identity %v to user %v", identity.IdentityProvider, state.User.UserName),
+			})
+		}
+	}
+
+	for _, identity := range state.FederatedIdentities {
+		// Identity assigned but not requested?
+		if !containsIdentity(cr.Spec.User.FederatedIdentities, identity) {
+			removeIdentities = append(removeIdentities, &common.RemoveFederatedIdentity{
+				UserID: state.User.ID,
+				Ref:    identity,
+				Realm:  i.Realm.Spec.Realm.Realm,
+				Msg:    fmt.Sprintf("removing federated identity %v from user %v", identity.IdentityProvider, state.User.UserName),
+			})
+		}
+	}
+
+	return append(assignIdentities, removeIdentities...)
 }
 
 func (i *KeycloakuserReconciler) getUserRealmRolesDesiredState(state *common.UserState, cr *v1alpha1.KeycloakUser) []common.ClusterAction {
@@ -223,6 +257,17 @@ func containsRole(list []*v1alpha1.KeycloakUserRole, id string) bool {
 func containsRoleID(list []string, id string) bool {
 	for _, item := range list {
 		if item == id {
+			return true
+		}
+	}
+	return false
+}
+
+func containsIdentity(list []v1alpha1.FederatedIdentity, identity v1alpha1.FederatedIdentity) bool {
+	for _, item := range list {
+		if item.UserID == identity.UserID &&
+			item.IdentityProvider == identity.IdentityProvider &&
+			item.UserName == identity.UserName {
 			return true
 		}
 	}

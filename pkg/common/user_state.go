@@ -16,6 +16,7 @@ type UserState struct {
 	RealmRoles           []*v1alpha1.KeycloakUserRole
 	AvailableClientRoles map[string][]*v1alpha1.KeycloakUserRole
 	AvailableRealmRoles  []*v1alpha1.KeycloakUserRole
+	FederatedIdentities  []v1alpha1.FederatedIdentity
 	Clients              []*v1alpha1.KeycloakAPIClient
 	Secret               *v1.Secret
 	Keycloak             v1alpha1.Keycloak
@@ -49,6 +50,11 @@ func (i *UserState) Read(keycloakClient KeycloakInterface, userClient client.Cli
 	}
 
 	err = i.readClientRoles(keycloakClient, user, realm.Spec.Realm.Realm)
+	if err != nil {
+		return err
+	}
+
+	err = i.readFederatedIdentities(keycloakClient, realm.Spec.Realm.Realm)
 	if err != nil {
 		return err
 	}
@@ -106,6 +112,16 @@ func (i *UserState) readClientRoles(client KeycloakInterface, user *v1alpha1.Key
 		}
 		i.AvailableClientRoles[c.ClientID] = availableRoles
 	}
+	return nil
+}
+
+func (i *UserState) readFederatedIdentities(client KeycloakInterface, realm string) error {
+	identities, err := client.GetUserFederatedIdentities(i.User.ID, realm)
+	if err != nil {
+		return err
+	}
+
+	i.FederatedIdentities = identities
 	return nil
 }
 
