@@ -37,6 +37,13 @@ func getDummyUser() *v1alpha1.KeycloakUser {
 						Value: "12345",
 					},
 				},
+				FederatedIdentities: []v1alpha1.FederatedIdentity{
+					{
+						IdentityProvider: "openshift-v4",
+						UserID:           "test",
+						UserName:         "test",
+					},
+				},
 			},
 		},
 	}
@@ -116,4 +123,32 @@ func TestKeycloakRealmReconciler_Reconcile(t *testing.T) {
 	assert.IsType(t, &common.PingAction{}, desiredState[0])
 	assert.IsType(t, &common.UpdateUserAction{}, desiredState[1])
 	assert.IsType(t, &common.AssignRealmRoleAction{}, desiredState[2])
+	assert.IsType(t, &common.AssignFederatedIdentity{}, desiredState[3])
+
+	// Check that removing identities and roles works as expected
+	state.FederatedIdentities = []v1alpha1.FederatedIdentity{
+		{
+			IdentityProvider: "openshift-v4",
+			UserID:           "test",
+			UserName:         "test",
+		},
+	}
+
+	state.RealmRoles = []*v1alpha1.KeycloakUserRole{
+		{
+			ID:          "dummy_role",
+			Name:        "dummy_role",
+			Description: "dummy_role",
+			Composite:   false,
+			ClientRole:  false,
+			ContainerID: "dummy_role",
+		},
+	}
+	user.Spec.User.FederatedIdentities = nil
+	user.Spec.User.RealmRoles = nil
+	desiredState = reconciler.Reconcile(state, user)
+	assert.IsType(t, &common.PingAction{}, desiredState[0])
+	assert.IsType(t, &common.UpdateUserAction{}, desiredState[1])
+	assert.IsType(t, &common.RemoveRealmRoleAction{}, desiredState[2])
+	assert.IsType(t, &common.RemoveFederatedIdentity{}, desiredState[3])
 }
