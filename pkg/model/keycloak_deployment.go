@@ -110,6 +110,10 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 				},
 			},
 		},
+		{
+			Name:  "X509_CA_BUNDLE",
+			Value: "/var/run/secrets/kubernetes.io/serviceaccount/*.crt",
+		},
 	}
 
 	if cr.Spec.ExternalDatabase.Enabled {
@@ -178,7 +182,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 							VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
 							LivenessProbe:  livenessProbe(),
 							ReadinessProbe: readinessProbe(),
-							Env:          getKeycloakEnv(cr, dbSecret),
+							Env:            getKeycloakEnv(cr, dbSecret),
 						},
 					},
 				},
@@ -222,7 +226,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 			VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
 			LivenessProbe:  livenessProbe(),
 			ReadinessProbe: readinessProbe(),
-			Env: getKeycloakEnv(cr, dbSecret),
+			Env:            getKeycloakEnv(cr, dbSecret),
 		},
 	}
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)

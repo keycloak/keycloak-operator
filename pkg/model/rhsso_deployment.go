@@ -88,6 +88,10 @@ func getRHSSOEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 				},
 			},
 		},
+		{
+			Name:  "X509_CA_BUNDLE",
+			Value: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
+		},
 	}
 
 	if cr.Spec.ExternalDatabase.Enabled {
@@ -160,7 +164,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSe
 							VolumeMounts:   KeycloakVolumeMounts(RhssoExtensionPath),
 							LivenessProbe:  livenessProbe(),
 							ReadinessProbe: readinessProbe(),
-							Env:          getRHSSOEnv(cr, dbSecret),
+							Env:            getRHSSOEnv(cr, dbSecret),
 						},
 					},
 				},
@@ -208,7 +212,7 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 			VolumeMounts:   KeycloakVolumeMounts(RhssoExtensionPath),
 			LivenessProbe:  livenessProbe(),
 			ReadinessProbe: readinessProbe(),
-			Env: getRHSSOEnv(cr, dbSecret),
+			Env:            getRHSSOEnv(cr, dbSecret),
 		},
 	}
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
