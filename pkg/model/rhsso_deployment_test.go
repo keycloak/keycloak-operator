@@ -3,93 +3,109 @@ package model
 import (
 	"testing"
 
+	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/api/core/v1"
 )
 
-func TestUtil_Test_GetReconciledRHSSOImage_With_No_Image(t *testing.T) {
+func TestUtil_Test_GetRHSSOImage_Without_Override_Image_Set(t *testing.T) {
 	// given
-	currentImage := ""
+	cr := &v1alpha1.Keycloak{}
 
 	// when
-	reconciledImage := GetReconciledRHSSOImage(currentImage)
+	returnedImage := GetRHSSOImage(cr)
 
 	// then
-	assert.Equal(t, reconciledImage, RHSSOImage)
+	assert.Equal(t, returnedImage, RHSSOImage)
 }
 
-func TestUtil_Test_GetReconciledRHSSOImage_With_Random_Image(t *testing.T) {
+func TestUtil_Test_GetRHSSOImage_With_Wrong_Override_Image_Key(t *testing.T) {
 	// given
-	currentImage := "not/real/image:1.1.2"
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			ImageOverrides: v1alpha1.KeycloakRelatedImages{
+				Keycloak: "sso-openshift:1.0",
+			},
+		},
+	}
 
 	// when
-	reconciledImage := GetReconciledRHSSOImage(currentImage)
+	returnedImage := GetRHSSOImage(cr)
 
 	// then
-	assert.Equal(t, reconciledImage, RHSSOImage)
+	assert.Equal(t, returnedImage, RHSSOImage)
 }
 
-func TestUtil_Test_GetReconciledRHSSOImage_With_No_Change(t *testing.T) {
+func TestUtil_Test_GetRHSSOImage_With_Override_Image_Set(t *testing.T) {
 	// given
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			ImageOverrides: v1alpha1.KeycloakRelatedImages{
+				RHSSO: "sso-openshift:1.0",
+			},
+		},
+	}
+
+	// when
+	returnedImage := GetRHSSOImage(cr)
+
+	// then
+	assert.Equal(t, returnedImage, "sso-openshift:1.0")
+}
+
+func Test_RHSSODeployment_With_Overrided_Image(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			ImageOverrides: v1alpha1.KeycloakRelatedImages{
+				RHSSO: "sso-openshift:1.0",
+			},
+		},
+	}
+	dbSecret := &v1.Secret{}
 	currentImage := RHSSOImage
 
 	// when
-	reconciledImage := GetReconciledRHSSOImage(currentImage)
+	for _, ele := range RHSSODeployment(cr, dbSecret).Spec.Template.Spec.Containers {
+		if ele.Name == KeycloakDeploymentName {
+			currentImage = ele.Image
+		}
+	}
 
 	// then
-	assert.Equal(t, reconciledImage, RHSSOImage)
+	assert.Equal(t, currentImage, "sso-openshift:1.0")
 }
 
-func TestUtil_Test_GetReconciledRHSSOImage_With_Lower_Version(t *testing.T) {
+func Test_RHSSODeploymentReconciled_With_Overrided_Image(t *testing.T) {
 	// given
-	currentImage := "registry.access.redhat.com/redhat-sso-6/sso62-openshift:1.0-1"
+	cr := &v1alpha1.Keycloak{}
+	cr2 := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			ImageOverrides: v1alpha1.KeycloakRelatedImages{
+				RHSSO: "sso-openshift:1.0",
+			},
+		},
+	}
+	dbSecret := &v1.Secret{}
+	currentImage := RHSSOImage
+	reconciledImage := RHSSOImage
 
 	// when
-	reconciledImage := GetReconciledRHSSOImage(currentImage)
+	currentState := RHSSODeployment(cr, dbSecret)
+	for _, ele := range currentState.Spec.Template.Spec.Containers {
+		if ele.Name == KeycloakDeploymentName {
+			currentImage = ele.Image
+		}
+	}
+
+	reconciledState := RHSSODeploymentReconciled(cr2, currentState, dbSecret)
+	for _, ele := range reconciledState.Spec.Template.Spec.Containers {
+		if ele.Name == KeycloakDeploymentName {
+			reconciledImage = ele.Image
+		}
+	}
 
 	// then
-	assert.Equal(t, reconciledImage, RHSSOImage)
-}
-
-func TestUtil_Test_GetReconciledRHSSOImage_With_Higher_Major_Version(t *testing.T) {
-	// given
-	currentImage := "registry.access.redhat.com/redhat-sso-8/sso83-openshift:1.0-15"
-
-	// when
-	reconciledImage := GetReconciledRHSSOImage(currentImage)
-
-	// then
-	assert.Equal(t, reconciledImage, RHSSOImage)
-}
-
-func TestUtil_Test_GetReconciledRHSSOImage_With_Higher_Minor_Version(t *testing.T) {
-	// given
-	currentImage := "registry.access.redhat.com/redhat-sso-7/sso74-openshift:1.0-15"
-
-	// when
-	reconciledImage := GetReconciledRHSSOImage(currentImage)
-
-	// then
-	assert.Equal(t, reconciledImage, RHSSOImage)
-}
-
-func TestUtil_Test_GetReconciledRHSSOImage_With_Higher_Patch_Version(t *testing.T) {
-	// given
-	currentImage := RHSSOImage[:len(RHSSOImage)-1] + "11"
-
-	// when
-	reconciledImage := GetReconciledRHSSOImage(currentImage)
-
-	// then
-	assert.Equal(t, reconciledImage, currentImage)
-}
-
-func TestUtil_Test_GetReconciledRHSSOImage_With_Higher_CVE_Patch_Version(t *testing.T) {
-	// given
-	currentImage := RHSSOImage + ".1"
-
-	// when
-	reconciledImage := GetReconciledRHSSOImage(currentImage)
-
-	// then
-	assert.Equal(t, reconciledImage, currentImage)
+	assert.Equal(t, currentImage, RHSSOImage)
+	assert.Equal(t, reconciledImage, "sso-openshift:1.0")
 }

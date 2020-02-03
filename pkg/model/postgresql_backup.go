@@ -8,7 +8,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func PostgresqlBackup(cr *v1alpha1.KeycloakBackup) *v13.Job {
+func PostgresqlBackup(cr *v1alpha1.KeycloakBackup, keycloak *v1alpha1.Keycloak) *v13.Job {
 	return &v13.Job{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      cr.Name,
@@ -34,7 +34,7 @@ func PostgresqlBackup(cr *v1alpha1.KeycloakBackup) *v13.Job {
 					Containers: []v1.Container{
 						{
 							Name:    cr.Name,
-							Image:   PostgresqlImage,
+							Image:   GetPostgresqlImage(keycloak),
 							Command: []string{"/bin/sh", "-c"},
 							Args:    []string{"pg_dumpall --clean --if-exists --oids | tee /backup/backup.sql"},
 							Env: []v1.EnvVar{
@@ -103,7 +103,7 @@ func PostgresqlBackupSelector(cr *v1alpha1.KeycloakBackup) client.ObjectKey {
 	}
 }
 
-func PostgresqlBackupReconciled(cr *v1alpha1.KeycloakBackup, currentState *v13.Job) *v13.Job {
+func PostgresqlBackupReconciled(cr *v1alpha1.KeycloakBackup, keycloak *v1alpha1.Keycloak, currentState *v13.Job) *v13.Job {
 	reconciled := currentState.DeepCopy()
 	reconciled.Spec.Template.Spec.Volumes = []v1.Volume{
 		{
@@ -118,7 +118,7 @@ func PostgresqlBackupReconciled(cr *v1alpha1.KeycloakBackup, currentState *v13.J
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:    cr.Name,
-			Image:   PostgresqlImage,
+			Image:   GetPostgresqlImage(keycloak),
 			Command: []string{"/bin/sh", "-c"},
 			Args:    []string{"pg_dumpall --clean --if-exists --oids | tee /backup/backup.sql"},
 			Env: []v1.EnvVar{

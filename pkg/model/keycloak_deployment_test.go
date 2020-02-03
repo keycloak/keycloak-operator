@@ -3,82 +3,109 @@ package model
 import (
 	"testing"
 
+	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/api/core/v1"
 )
 
-func TestUtil_Test_GetReconciledKeycloakImage_With_No_Image(t *testing.T) {
+func TestUtil_Test_GetKeycloakImage_Without_Override_Image_Set(t *testing.T) {
 	// given
-	currentImage := ""
+	cr := &v1alpha1.Keycloak{}
 
 	// when
-	reconciledImage := GetReconciledKeycloakImage(currentImage)
+	returnedImage := GetKeycloakImage(cr)
 
 	// then
-	assert.Equal(t, reconciledImage, KeycloakImage)
+	assert.Equal(t, returnedImage, KeycloakImage)
 }
 
-func TestUtil_Test_GetReconciledKeycloakImage_With_Random_Image(t *testing.T) {
+func TestUtil_Test_GetKeycloakImage_With_Wrong_Override_Image_Key(t *testing.T) {
 	// given
-	currentImage := "not/real/image:1.1.1"
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			ImageOverrides: v1alpha1.KeycloakRelatedImages{
+				RHSSO: "quay.io/keycloak/keycloak:1.0.0",
+			},
+		},
+	}
 
 	// when
-	reconciledImage := GetReconciledKeycloakImage(currentImage)
+	returnedImage := GetKeycloakImage(cr)
 
 	// then
-	assert.Equal(t, reconciledImage, KeycloakImage)
+	assert.Equal(t, returnedImage, KeycloakImage)
 }
 
-func TestUtil_Test_GetReconciledKeycloakImage_With_No_Change(t *testing.T) {
+func TestUtil_Test_GetKeycloakImage_With_Override_Image_Set(t *testing.T) {
 	// given
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			ImageOverrides: v1alpha1.KeycloakRelatedImages{
+				Keycloak: "quay.io/keycloak/keycloak:1.0.0",
+			},
+		},
+	}
+
+	// when
+	returnedImage := GetKeycloakImage(cr)
+
+	// then
+	assert.Equal(t, returnedImage, "quay.io/keycloak/keycloak:1.0.0")
+}
+
+func Test_KeycloakDeployment_With_Overrided_Image(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			ImageOverrides: v1alpha1.KeycloakRelatedImages{
+				Keycloak: "quay.io/keycloak/keycloak:1.0.0",
+			},
+		},
+	}
+	dbSecret := &v1.Secret{}
 	currentImage := KeycloakImage
 
 	// when
-	reconciledImage := GetReconciledKeycloakImage(currentImage)
+	for _, ele := range KeycloakDeployment(cr, dbSecret).Spec.Template.Spec.Containers {
+		if ele.Name == KeycloakDeploymentName {
+			currentImage = ele.Image
+		}
+	}
 
 	// then
-	assert.Equal(t, reconciledImage, KeycloakImage)
+	assert.Equal(t, currentImage, "quay.io/keycloak/keycloak:1.0.0")
 }
 
-func TestUtil_Test_GetReconciledKeycloakImage_With_Lower_Version(t *testing.T) {
+func Test_KeycloakDeploymentReconciled_With_Overrided_Image(t *testing.T) {
 	// given
-	currentImage := "quay.io/keycloak/keycloak:6.0.0"
+	cr := &v1alpha1.Keycloak{}
+	cr2 := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			ImageOverrides: v1alpha1.KeycloakRelatedImages{
+				Keycloak: "quay.io/keycloak/keycloak:1.0.0",
+			},
+		},
+	}
+	dbSecret := &v1.Secret{}
+	currentImage := KeycloakImage
+	reconciledImage := KeycloakImage
 
 	// when
-	reconciledImage := GetReconciledKeycloakImage(currentImage)
+	currentState := KeycloakDeployment(cr, dbSecret)
+	for _, ele := range currentState.Spec.Template.Spec.Containers {
+		if ele.Name == KeycloakDeploymentName {
+			currentImage = ele.Image
+		}
+	}
+
+	reconciledState := KeycloakDeploymentReconciled(cr2, currentState, dbSecret)
+	for _, ele := range reconciledState.Spec.Template.Spec.Containers {
+		if ele.Name == KeycloakDeploymentName {
+			reconciledImage = ele.Image
+		}
+	}
 
 	// then
-	assert.Equal(t, reconciledImage, KeycloakImage)
-}
-
-func TestUtil_Test_GetReconciledKeycloakImage_With_Higher_Major_Version(t *testing.T) {
-	// given
-	currentImage := "quay.io/keycloak/keycloak:100.0.1"
-
-	// when
-	reconciledImage := GetReconciledKeycloakImage(currentImage)
-
-	// then
-	assert.Equal(t, reconciledImage, KeycloakImage)
-}
-
-func TestUtil_Test_GetReconciledKeycloakImage_With_Higher_Minor_Version(t *testing.T) {
-	// given
-	currentImage := "quay.io/keycloak/keycloak:100.100.1"
-
-	// when
-	reconciledImage := GetReconciledKeycloakImage(currentImage)
-
-	// then
-	assert.Equal(t, reconciledImage, KeycloakImage)
-}
-
-func TestUtil_Test_GetReconciledKeycloakImage_With_Higher_Patch_Version(t *testing.T) {
-	// given
-	currentImage := KeycloakImage[:len(KeycloakImage)-1] + "100"
-
-	// when
-	reconciledImage := GetReconciledKeycloakImage(currentImage)
-
-	// then
-	assert.Equal(t, reconciledImage, currentImage)
+	assert.Equal(t, currentImage, KeycloakImage)
+	assert.Equal(t, reconciledImage, "quay.io/keycloak/keycloak:1.0.0")
 }

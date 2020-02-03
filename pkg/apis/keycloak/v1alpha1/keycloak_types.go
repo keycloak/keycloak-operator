@@ -52,6 +52,9 @@ type KeycloakSpec struct {
 	// Specify PodDisruptionBudget configuration
 	// +optional
 	PodDisruptionBudget PodDisruptionBudgetConfig `json:"podDisruptionBudget,omitempty"`
+	// Specify images used to override default Keycloak, KeycloakInitContainer, Postgresql and Backup images.
+	// +optional
+	ImageOverrides KeycloakRelatedImages `json:"imageOverrides,omitempty"`
 }
 
 type KeycloakExternalAccess struct {
@@ -69,6 +72,24 @@ type KeycloakExternalDatabase struct {
 type PodDisruptionBudgetConfig struct {
 	// If set to true, the operator will create a PodDistruptionBudget for the Keycloak deployment and set its `maxUnavailable` value to 1
 	Enabled bool `json:"enabled,omitempty"`
+}
+
+type KeycloakRelatedImages struct {
+	// If set, operator will use it instead of the default Keycloak image
+	// +optional
+	Keycloak string `json:"keycloak,omitempty"`
+	// If set, operator will use it instead of the default RHSSO image
+	// +optional
+	RHSSO string `json:"rhsso,omitempty"`
+	// If set, operator will use it instead of the default KeycloakInitContainer image
+	// +optional
+	InitContainer string `json:"initContainer,omitempty"`
+	// If set, operator will use it instead of the default Postgresql image
+	// +optional
+	Postgresql string `json:"postgresql,omitempty"`
+	// If set, operator will use it instead of the default Backup image
+	// +optional
+	Backup string `json:"backup,omitempty"`
 }
 
 // KeycloakStatus defines the observed state of Keycloak

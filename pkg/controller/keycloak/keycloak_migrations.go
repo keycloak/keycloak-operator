@@ -24,9 +24,17 @@ func NewDefaultMigrator() *DefaultMigrator {
 func (i *DefaultMigrator) Migrate(cr *v1alpha1.Keycloak, currentState *common.ClusterState, desiredState common.DesiredClusterState) (common.DesiredClusterState, error) {
 	if needsMigration(cr, currentState) {
 		desiredImage := model.KeycloakImage
+		if cr.Spec.ImageOverrides.Keycloak != "" {
+			desiredImage = cr.Spec.ImageOverrides.Keycloak
+		}
+
 		if cr.Spec.Profile == common.RHSSOProfile {
 			desiredImage = model.RHSSOImage
+			if cr.Spec.ImageOverrides.RHSSO != "" {
+				desiredImage = cr.Spec.ImageOverrides.RHSSO
+			}
 		}
+
 		log.Info(fmt.Sprintf("Performing migration from '%s' to '%s'", currentState.KeycloakDeployment.Spec.Template.Spec.Containers[0].Image, desiredImage))
 		deployment := findDeployment(desiredState)
 		if deployment != nil {
@@ -42,12 +50,20 @@ func needsMigration(cr *v1alpha1.Keycloak, currentState *common.ClusterState) bo
 	if currentState.KeycloakDeployment == nil {
 		return false
 	}
-	deployedImage := currentState.KeycloakDeployment.Spec.Template.Spec.Containers[0].Image
-	currentImage := model.KeycloakImage
-	if cr.Spec.Profile == common.RHSSOProfile {
-		currentImage = model.RHSSOImage
+
+	currentImage := currentState.KeycloakDeployment.Spec.Template.Spec.Containers[0].Image
+	desiredImage := model.KeycloakImage
+	if cr.Spec.ImageOverrides.Keycloak != "" {
+		desiredImage = cr.Spec.ImageOverrides.Keycloak
 	}
-	return deployedImage != currentImage
+
+	if cr.Spec.Profile == common.RHSSOProfile {
+		desiredImage = model.RHSSOImage
+		if cr.Spec.ImageOverrides.RHSSO != "" {
+			desiredImage = cr.Spec.ImageOverrides.RHSSO
+		}
+	}
+	return desiredImage != currentImage
 }
 
 func findDeployment(desiredState common.DesiredClusterState) *v13.StatefulSet {

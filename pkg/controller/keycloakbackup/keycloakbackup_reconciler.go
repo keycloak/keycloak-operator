@@ -11,10 +11,13 @@ type Reconciler interface {
 }
 
 type KeycloakBackupReconciler struct { // nolint
+	Keycloak kc.Keycloak
 }
 
-func NewKeycloakBackupReconciler() *KeycloakBackupReconciler {
-	return &KeycloakBackupReconciler{}
+func NewKeycloakBackupReconciler(keycloak kc.Keycloak) *KeycloakBackupReconciler {
+	return &KeycloakBackupReconciler{
+		Keycloak: keycloak,
+	}
 }
 
 func (i *KeycloakBackupReconciler) Reconcile(currentState *common.BackupState, cr *kc.KeycloakBackup) common.DesiredClusterState {
@@ -37,13 +40,13 @@ func (i *KeycloakBackupReconciler) Reconcile(currentState *common.BackupState, c
 func (i *KeycloakBackupReconciler) GetAwsPeriodicBackupDesiredState(currentState *common.BackupState, cr *kc.KeycloakBackup) common.ClusterAction {
 	if currentState.AwsPeriodicJob == nil {
 		return common.GenericCreateAction{
-			Ref: model.PostgresqlAWSPeriodicBackup(cr),
+			Ref: model.PostgresqlAWSPeriodicBackup(cr, &i.Keycloak),
 			Msg: "Create AWS Periodic Backup job",
 		}
 	}
 
 	return common.GenericUpdateAction{
-		Ref: model.PostgresqlAWSPeriodicBackupReconciled(cr, currentState.AwsPeriodicJob),
+		Ref: model.PostgresqlAWSPeriodicBackupReconciled(cr, currentState.AwsPeriodicJob, &i.Keycloak),
 		Msg: "Update AWS Periodic Backup job",
 	}
 }
@@ -51,13 +54,13 @@ func (i *KeycloakBackupReconciler) GetAwsPeriodicBackupDesiredState(currentState
 func (i *KeycloakBackupReconciler) GetAwsBackupDesiredState(currentState *common.BackupState, cr *kc.KeycloakBackup) common.ClusterAction {
 	if currentState.AwsJob == nil {
 		return common.GenericCreateAction{
-			Ref: model.PostgresqlAWSBackup(cr),
+			Ref: model.PostgresqlAWSBackup(cr, &i.Keycloak),
 			Msg: "Create AWS Backup job",
 		}
 	}
 
 	return common.GenericUpdateAction{
-		Ref: model.PostgresqlAWSBackupReconciled(cr, currentState.AwsJob),
+		Ref: model.PostgresqlAWSBackupReconciled(cr, currentState.AwsJob, &i.Keycloak),
 		Msg: "Update AWS Backup job",
 	}
 }
@@ -65,13 +68,13 @@ func (i *KeycloakBackupReconciler) GetAwsBackupDesiredState(currentState *common
 func (i *KeycloakBackupReconciler) GetLocalBackupDesiredState(currentState *common.BackupState, cr *kc.KeycloakBackup) common.ClusterAction {
 	if currentState.LocalPersistentVolumeJob == nil {
 		return common.GenericCreateAction{
-			Ref: model.PostgresqlBackup(cr),
+			Ref: model.PostgresqlBackup(cr, &i.Keycloak),
 			Msg: "Create Local Backup job",
 		}
 	}
 
 	return common.GenericUpdateAction{
-		Ref: model.PostgresqlBackupReconciled(cr, currentState.LocalPersistentVolumeJob),
+		Ref: model.PostgresqlBackupReconciled(cr, &i.Keycloak, currentState.LocalPersistentVolumeJob),
 		Msg: "Update Local Backup job",
 	}
 }

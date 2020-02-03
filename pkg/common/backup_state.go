@@ -17,6 +17,7 @@ type BackupState struct {
 	LocalPersistentVolumeClaim *v1.PersistentVolumeClaim
 	AwsJob                     *v12.Job
 	AwsPeriodicJob             *v1beta1.CronJob
+	Keycloak                   kc.Keycloak
 }
 
 func NewBackupState() *BackupState {
@@ -52,7 +53,7 @@ func (i *BackupState) Read(context context.Context, cr *kc.KeycloakBackup, contr
 }
 
 func (i *BackupState) readLocalBackupJob(context context.Context, cr *kc.KeycloakBackup, controllerClient client.Client) error {
-	localBackupJob := model.PostgresqlBackup(cr)
+	localBackupJob := model.PostgresqlBackup(cr, &i.Keycloak)
 	localBackupJobSelector := model.PostgresqlBackupSelector(cr)
 
 	err := controllerClient.Get(context, localBackupJobSelector, localBackupJob)
@@ -84,7 +85,7 @@ func (i *BackupState) readLocalBackupPersistentVolumeClaim(context context.Conte
 }
 
 func (i *BackupState) readAwsBackupJob(context context.Context, cr *kc.KeycloakBackup, controllerClient client.Client) error {
-	awsBackupJob := model.PostgresqlAWSBackup(cr)
+	awsBackupJob := model.PostgresqlAWSBackup(cr, &i.Keycloak)
 	awsBackupJobSelector := model.PostgresqlAWSBackupSelector(cr)
 
 	err := controllerClient.Get(context, awsBackupJobSelector, awsBackupJob)
@@ -100,7 +101,7 @@ func (i *BackupState) readAwsBackupJob(context context.Context, cr *kc.KeycloakB
 }
 
 func (i *BackupState) readAwsPeriodicBackupJob(context context.Context, cr *kc.KeycloakBackup, controllerClient client.Client) error {
-	awsPeriodicBackupJob := model.PostgresqlAWSPeriodicBackup(cr)
+	awsPeriodicBackupJob := model.PostgresqlAWSPeriodicBackup(cr, &i.Keycloak)
 	awsPeriodicBackupJobSelector := model.PostgresqlAWSPeriodicBackupSelector(cr)
 
 	err := controllerClient.Get(context, awsPeriodicBackupJobSelector, awsPeriodicBackupJob)

@@ -11,7 +11,7 @@ func KeycloakExtensionsInitContainers(cr *v1alpha1.Keycloak) []v1.Container {
 	return []v1.Container{
 		{
 			Name:  "extensions-init",
-			Image: KeycloakInitContainerImage,
+			Image: GetKeycloakInitContainerImage(cr),
 			Env: []v1.EnvVar{
 				{
 					Name:  KeycloakExtensionEnvVar,
@@ -30,4 +30,13 @@ func KeycloakExtensionsInitContainers(cr *v1alpha1.Keycloak) []v1.Container {
 			ImagePullPolicy:          "Always",
 		},
 	}
+}
+
+// GetKeycloakInitContainerImage checks overrides property to decide the KeycloakInitContainer image
+func GetKeycloakInitContainerImage(cr *v1alpha1.Keycloak) string {
+	if cr.Spec.ImageOverrides.InitContainer != "" {
+		return cr.Spec.ImageOverrides.InitContainer
+	}
+
+	return KeycloakInitContainerImage
 }

@@ -8,7 +8,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func PostgresqlAWSBackup(cr *v1alpha1.KeycloakBackup) *v13.Job {
+func PostgresqlAWSBackup(cr *v1alpha1.KeycloakBackup, keycloak *v1alpha1.Keycloak) *v13.Job {
 	return &v13.Job{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      cr.Name,
@@ -21,7 +21,7 @@ func PostgresqlAWSBackup(cr *v1alpha1.KeycloakBackup) *v13.Job {
 		Spec: v13.JobSpec{
 			Template: v1.PodTemplateSpec{
 				Spec: v1.PodSpec{
-					Containers:         postgresqlAwsBackupCommonContainers(cr),
+					Containers:         postgresqlAwsBackupCommonContainers(cr, keycloak),
 					RestartPolicy:      v1.RestartPolicyNever,
 					ServiceAccountName: PostgresqlBackupServiceAccountName,
 				},
@@ -37,9 +37,9 @@ func PostgresqlAWSBackupSelector(cr *v1alpha1.KeycloakBackup) client.ObjectKey {
 	}
 }
 
-func PostgresqlAWSBackupReconciled(cr *v1alpha1.KeycloakBackup, currentState *v13.Job) *v13.Job {
+func PostgresqlAWSBackupReconciled(cr *v1alpha1.KeycloakBackup, currentState *v13.Job, keycloak *v1alpha1.Keycloak) *v13.Job {
 	reconciled := currentState.DeepCopy()
-	reconciled.Spec.Template.Spec.Containers = postgresqlAwsBackupCommonContainers(cr)
+	reconciled.Spec.Template.Spec.Containers = postgresqlAwsBackupCommonContainers(cr, keycloak)
 	reconciled.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyNever
 	reconciled.Spec.Template.Spec.ServiceAccountName = PostgresqlBackupServiceAccountName
 	return reconciled

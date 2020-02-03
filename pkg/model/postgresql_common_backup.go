@@ -5,11 +5,11 @@ import (
 	v1 "k8s.io/api/core/v1"
 )
 
-func postgresqlAwsBackupCommonContainers(cr *v1alpha1.KeycloakBackup) []v1.Container {
+func postgresqlAwsBackupCommonContainers(cr *v1alpha1.KeycloakBackup, keycloak *v1alpha1.Keycloak) []v1.Container {
 	return []v1.Container{
 		{
 			Name:    cr.Name,
-			Image:   BackupImage,
+			Image:   GetBackupImage(keycloak),
 			Command: []string{"/opt/intly/tools/entrypoint.sh", "-c", "postgres", "-n", cr.Namespace, "-b", "s3", "-e", ""},
 			Env: []v1.EnvVar{
 				{
@@ -39,4 +39,13 @@ func postgresqlAwsBackupCommonContainers(cr *v1alpha1.KeycloakBackup) []v1.Conta
 			},
 		},
 	}
+}
+
+// GetBackupImage checks overrides property to decide the Backup image
+func GetBackupImage(keycloak *v1alpha1.Keycloak) string {
+	if keycloak.Spec.ImageOverrides.Backup != "" {
+		return keycloak.Spec.ImageOverrides.Backup
+	}
+
+	return BackupImage
 }

@@ -9,7 +9,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func PostgresqlAWSPeriodicBackup(cr *v1alpha1.KeycloakBackup) *v1beta1.CronJob {
+func PostgresqlAWSPeriodicBackup(cr *v1alpha1.KeycloakBackup, keycloak *v1alpha1.Keycloak) *v1beta1.CronJob {
 	return &v1beta1.CronJob{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      cr.Name,
@@ -33,7 +33,7 @@ func PostgresqlAWSPeriodicBackup(cr *v1alpha1.KeycloakBackup) *v1beta1.CronJob {
 				Spec: v13.JobSpec{
 					Template: v1.PodTemplateSpec{
 						Spec: v1.PodSpec{
-							Containers:         postgresqlAwsBackupCommonContainers(cr),
+							Containers:         postgresqlAwsBackupCommonContainers(cr, keycloak),
 							RestartPolicy:      v1.RestartPolicyNever,
 							ServiceAccountName: PostgresqlBackupServiceAccountName,
 						},
@@ -51,10 +51,10 @@ func PostgresqlAWSPeriodicBackupSelector(cr *v1alpha1.KeycloakBackup) client.Obj
 	}
 }
 
-func PostgresqlAWSPeriodicBackupReconciled(cr *v1alpha1.KeycloakBackup, currentState *v1beta1.CronJob) *v1beta1.CronJob {
+func PostgresqlAWSPeriodicBackupReconciled(cr *v1alpha1.KeycloakBackup, currentState *v1beta1.CronJob, keycloak *v1alpha1.Keycloak) *v1beta1.CronJob {
 	reconciled := currentState.DeepCopy()
 	reconciled.Spec.Schedule = cr.Spec.AWS.Schedule
-	reconciled.Spec.JobTemplate.Spec.Template.Spec.Containers = postgresqlAwsBackupCommonContainers(cr)
+	reconciled.Spec.JobTemplate.Spec.Template.Spec.Containers = postgresqlAwsBackupCommonContainers(cr, keycloak)
 	reconciled.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyNever
 	reconciled.Spec.JobTemplate.Spec.Template.Spec.ServiceAccountName = PostgresqlBackupServiceAccountName
 	return reconciled

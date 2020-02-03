@@ -2,6 +2,7 @@ package keycloakbackup
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -108,19 +109,34 @@ func (r *ReconcileKeycloakBackup) Reconcile(request reconcile.Request) (reconcil
 		return reconcile.Result{}, err
 	}
 
-	currentState := common.NewBackupState()
-	err = currentState.Read(r.context, instance, r.client)
+	// If no selector is set we can't figure out which Keycloak instance this backup should
+	// be added for. Skip reconcile until a selector has been set.
+	if instance.Spec.InstanceSelector == nil {
+		log.Info(fmt.Sprintf("backup %v/%v has no instance selector and will be ignored", instance.Namespace, instance.Name))
+		return reconcile.Result{Requeue: false}, nil
+	}
+
+	keycloaks, err := common.GetMatchingKeycloaks(r.context, r.client, instance.Spec.InstanceSelector)
 	if err != nil {
 		return r.ManageError(instance, err)
 	}
 
-	reconciler := NewKeycloakBackupReconciler()
-	desiredState := reconciler.Reconcile(currentState, instance)
+	log.Info(fmt.Sprintf("found %v matching keycloak(s) for backup %v/%v", len(keycloaks.Items), instance.Namespace, instance.Name))
 
-	actionRunner := common.NewClusterActionRunner(r.context, r.client, r.scheme, instance)
-	err = actionRunner.RunAll(desiredState)
-	if err != nil {
-		return r.ManageError(instance, err)
+	currentState := common.NewBackupState()
+	for _, keycloak := range keycloaks.Items {
+		currentState.Keycloak = keycloak
+		err = currentState.Read(r.context, instance, r.client)
+		if err != nil {
+			return r.ManageError(instance, err)
+		}
+		reconciler := NewKeycloakBackupReconciler(keycloak)
+		desiredState := reconciler.Reconcile(currentState, instance)
+		actionRunner := common.NewClusterActionRunner(r.context, r.client, r.scheme, instance)
+		err = actionRunner.RunAll(desiredState)
+		if err != nil {
+			return r.ManageError(instance, err)
+		}
 	}
 
 	return r.ManageSuccess(instance, currentState)
