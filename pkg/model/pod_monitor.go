@@ -12,7 +12,7 @@ import (
 func PodMonitor(cr *v1alpha1.Keycloak) *monitoringv1.PodMonitor {
 	return &monitoringv1.PodMonitor{
 		ObjectMeta: v12.ObjectMeta{
-			Name:      ApplicationName,
+			Name:      ApplicationName + "-pod",
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
 				"monitoring-key": MonitoringKey,
