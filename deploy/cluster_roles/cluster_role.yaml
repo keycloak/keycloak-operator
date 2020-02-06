@@ -68,7 +68,7 @@ rules:
       - monitoring.coreos.com
     resources:
       - servicemonitors
-      - prometheusrules
+      - podmonitors
       - prometheusrules
     verbs:
       - list
