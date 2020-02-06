@@ -116,6 +116,8 @@ rules:
       - keycloakbackups
       - keycloakbackups/status
       - keycloakbackups/finalizers
+      - keycloakclients
+      - keycloakusers
     verbs:
       - get
       - list
