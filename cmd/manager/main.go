@@ -4,8 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"math/rand"
 	"os"
 	"runtime"
+	"time"
 
 	"github.com/keycloak/keycloak-operator/version"
 
@@ -75,6 +77,9 @@ func main() {
 	logf.SetLogger(zap.Logger())
 
 	printVersion()
+
+	// Seed the randomizer
+	rand.Seed(time.Now().UnixNano())
 
 	namespace, err := k8sutil.GetWatchNamespace()
 	if err != nil {
