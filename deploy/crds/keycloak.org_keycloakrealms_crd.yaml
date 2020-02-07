@@ -114,6 +114,11 @@ spec:
                         items:
                           type: string
                         type: array
+                      defaultScopes:
+                        description: Default Client scopes. optional
+                        items:
+                          type: string
+                        type: array
                       description:
                         description: Client description.
                         type: string
