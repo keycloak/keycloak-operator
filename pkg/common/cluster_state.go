@@ -189,7 +189,7 @@ func (i *ClusterState) readPostgresqlPersistentVolumeClaimCurrentState(context c
 }
 
 func (i *ClusterState) readPostgresqlServiceCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
-	postgresqlService := model.PostgresqlService(cr)
+	postgresqlService := model.PostgresqlService(cr, nil, false)
 	postgresqlServiceSelector := model.PostgresqlServiceSelector(cr)
 
 	err := controllerClient.Get(context, postgresqlServiceSelector, postgresqlService)
@@ -387,10 +387,10 @@ func (i *ClusterState) readProbesCurrentState(context context.Context, cr *kc.Ke
 func (i *ClusterState) readKeycloakOrRHSSODeploymentCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
 	isRHSSO := cr.Spec.Profile == RHSSOProfile
 
-	deployment := model.KeycloakDeployment(cr)
+	deployment := model.KeycloakDeployment(cr, nil)
 	selector := model.KeycloakDeploymentSelector(cr)
 	if isRHSSO {
-		deployment = model.RHSSODeployment(cr)
+		deployment = model.RHSSODeployment(cr, nil)
 		selector = model.RHSSODeploymentSelector(cr)
 	}
 

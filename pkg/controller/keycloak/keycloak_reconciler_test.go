@@ -73,11 +73,11 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	assert.IsType(t, model.DatabaseSecret(cr), desiredState[4].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.PostgresqlPersistentVolumeClaim(cr), desiredState[5].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.PostgresqlDeployment(cr), desiredState[6].(common.GenericCreateAction).Ref)
-	assert.IsType(t, model.PostgresqlService(cr), desiredState[7].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.PostgresqlService(cr, model.DatabaseSecret(cr), false), desiredState[7].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakService(cr), desiredState[8].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakDiscoveryService(cr), desiredState[9].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakProbes(cr), desiredState[10].(common.GenericCreateAction).Ref)
-	assert.IsType(t, model.KeycloakDeployment(cr), desiredState[11].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakDeployment(cr, model.DatabaseSecret(cr)), desiredState[11].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakRoute(cr), desiredState[12].(common.GenericCreateAction).Ref)
 }
 
@@ -105,7 +105,7 @@ func TestKeycloakReconciler_Test_Creating_RHSSO(t *testing.T) {
 		if reflect.TypeOf(v) != reflect.TypeOf(common.GenericCreateAction{}) {
 			allCreateActions = false
 		}
-		if reflect.TypeOf(v.(common.GenericCreateAction).Ref) == reflect.TypeOf(model.RHSSODeployment(cr)) {
+		if reflect.TypeOf(v.(common.GenericCreateAction).Ref) == reflect.TypeOf(model.RHSSODeployment(cr, model.DatabaseSecret(cr))) {
 			deployment = v.(common.GenericCreateAction).Ref.(*v13.StatefulSet)
 		}
 		if reflect.TypeOf(v.(common.GenericCreateAction).Ref) == reflect.TypeOf(model.KeycloakIngress(cr)) {
@@ -115,7 +115,7 @@ func TestKeycloakReconciler_Test_Creating_RHSSO(t *testing.T) {
 	assert.True(t, allCreateActions)
 	assert.NotNil(t, deployment)
 	assert.NotNil(t, ingress)
-	assert.Equal(t, model.RHSSODeployment(cr), deployment)
+	assert.Equal(t, model.RHSSODeployment(cr, nil), deployment)
 }
 
 func TestKeycloakReconciler_Test_Updating_RHSSO(t *testing.T) {
@@ -135,11 +135,11 @@ func TestKeycloakReconciler_Test_Updating_RHSSO(t *testing.T) {
 		KeycloakGrafanaDashboard:        model.GrafanaDashboard(cr),
 		DatabaseSecret:                  model.DatabaseSecret(cr),
 		PostgresqlPersistentVolumeClaim: model.PostgresqlPersistentVolumeClaim(cr),
-		PostgresqlService:               model.PostgresqlService(cr),
+		PostgresqlService:               model.PostgresqlService(cr, model.DatabaseSecret(cr), false),
 		PostgresqlDeployment:            model.PostgresqlDeployment(cr),
 		KeycloakService:                 model.KeycloakService(cr),
 		KeycloakDiscoveryService:        model.KeycloakDiscoveryService(cr),
-		KeycloakDeployment:              model.RHSSODeployment(cr),
+		KeycloakDeployment:              model.RHSSODeployment(cr, model.DatabaseSecret(cr)),
 		KeycloakAdminSecret:             model.KeycloakAdminSecret(cr),
 		KeycloakIngress:                 model.KeycloakIngress(cr),
 		KeycloakProbes:                  model.KeycloakProbes(cr),
@@ -156,13 +156,13 @@ func TestKeycloakReconciler_Test_Updating_RHSSO(t *testing.T) {
 		if reflect.TypeOf(v) != reflect.TypeOf(common.GenericUpdateAction{}) {
 			allUpdateActions = false
 		}
-		if reflect.TypeOf(v.(common.GenericUpdateAction).Ref) == reflect.TypeOf(model.RHSSODeployment(cr)) {
+		if reflect.TypeOf(v.(common.GenericUpdateAction).Ref) == reflect.TypeOf(model.RHSSODeployment(cr, model.DatabaseSecret(cr))) {
 			deployment = v.(common.GenericUpdateAction).Ref.(*v13.StatefulSet)
 		}
 	}
 	assert.True(t, allUpdateActions)
 	assert.NotNil(t, deployment)
-	assert.Equal(t, model.RHSSODeployment(cr), deployment)
+	assert.Equal(t, model.RHSSODeployment(cr, model.DatabaseSecret(cr)), deployment)
 }
 
 func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
@@ -178,11 +178,11 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 		KeycloakGrafanaDashboard:        model.GrafanaDashboard(cr),
 		DatabaseSecret:                  model.DatabaseSecret(cr),
 		PostgresqlPersistentVolumeClaim: model.PostgresqlPersistentVolumeClaim(cr),
-		PostgresqlService:               model.PostgresqlService(cr),
+		PostgresqlService:               model.PostgresqlService(cr, model.DatabaseSecret(cr), false),
 		PostgresqlDeployment:            model.PostgresqlDeployment(cr),
 		KeycloakService:                 model.KeycloakService(cr),
 		KeycloakDiscoveryService:        model.KeycloakDiscoveryService(cr),
-		KeycloakDeployment:              model.KeycloakDeployment(cr),
+		KeycloakDeployment:              model.KeycloakDeployment(cr, model.DatabaseSecret(cr)),
 		KeycloakAdminSecret:             model.KeycloakAdminSecret(cr),
 		KeycloakRoute:                   model.KeycloakRoute(cr),
 		KeycloakProbes:                  model.KeycloakProbes(cr),
@@ -234,10 +234,10 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	assert.IsType(t, model.DatabaseSecret(cr), desiredState[4].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.PostgresqlPersistentVolumeClaim(cr), desiredState[5].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.PostgresqlDeployment(cr), desiredState[6].(common.GenericUpdateAction).Ref)
-	assert.IsType(t, model.PostgresqlService(cr), desiredState[7].(common.GenericUpdateAction).Ref)
+	assert.IsType(t, model.PostgresqlService(cr, model.DatabaseSecret(cr), false), desiredState[7].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.KeycloakService(cr), desiredState[8].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.KeycloakDiscoveryService(cr), desiredState[9].(common.GenericUpdateAction).Ref)
-	assert.IsType(t, model.KeycloakDeployment(cr), desiredState[10].(common.GenericUpdateAction).Ref)
+	assert.IsType(t, model.KeycloakDeployment(cr, model.DatabaseSecret(cr)), desiredState[10].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.KeycloakRoute(cr), desiredState[11].(common.GenericUpdateAction).Ref)
 }
 
@@ -272,6 +272,7 @@ func TestKeycloakReconciler_Test_Creating_All_With_External_Database(t *testing.
 	cr.Spec.ExternalDatabase.Enabled = true
 
 	currentState := common.NewClusterState()
+	currentState.DatabaseSecret = model.DatabaseSecret(cr)
 
 	// when
 	reconciler := NewKeycloakReconciler()
@@ -285,11 +286,11 @@ func TestKeycloakReconciler_Test_Creating_All_With_External_Database(t *testing.
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[4])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[5])
 	assert.IsType(t, model.DatabaseSecret(cr), desiredState[0].(common.GenericCreateAction).Ref)
-	assert.IsType(t, model.PostgresqlService(cr), desiredState[1].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.PostgresqlService(cr, model.DatabaseSecret(cr), false), desiredState[1].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakService(cr), desiredState[2].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakDiscoveryService(cr), desiredState[3].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakProbes(cr), desiredState[4].(common.GenericCreateAction).Ref)
-	assert.IsType(t, model.KeycloakDeployment(cr), desiredState[5].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakDeployment(cr, model.DatabaseSecret(cr)), desiredState[5].(common.GenericCreateAction).Ref)
 }
 
 func TestKeycloakReconciler_Test_Updating_External_Database(t *testing.T) {
@@ -321,6 +322,41 @@ func TestKeycloakReconciler_Test_Updating_External_Database(t *testing.T) {
 	}
 	assert.NotNil(t, endpoints)
 	assert.Equal(t, model.PostgresqlServiceEndpointsReconciled(cr, currentState.PostgresqlServiceEndpoints, currentState.DatabaseSecret), endpoints)
+}
+
+func TestKeycloakReconciler_Test_Updating_External_Database_URI(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.ExternalDatabase.Enabled = true
+
+	currentState := common.NewClusterState()
+	currentState.PostgresqlServiceEndpoints = model.PostgresqlServiceEndpoints(cr)
+	currentState.DatabaseSecret = model.DatabaseSecret(cr)
+	// This conversion is done my K8s. In the tests, we need to fake it.
+	currentState.DatabaseSecret.Data = map[string][]byte{
+		model.DatabaseSecretExternalAddressProperty: []byte("host.example.database.location"),
+		model.DatabaseSecretExternalPortProperty:    []byte("5432"),
+	}
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	var service *v1.Service
+	for _, v := range desiredState {
+		if reflect.TypeOf(v) == reflect.TypeOf(common.GenericCreateAction{}) {
+			if reflect.TypeOf(v.(common.GenericCreateAction).Ref) == reflect.TypeOf(model.PostgresqlService(cr, currentState.DatabaseSecret, true)) {
+				s := v.(common.GenericCreateAction).Ref.(*v1.Service)
+				if s.Name == model.PostgresqlServiceName {
+					service = s
+				}
+			}
+		}
+	}
+	assert.NotNil(t, service)
+	assert.Equal(t, service.Spec.Type, v1.ServiceTypeExternalName)
+	assert.Equal(t, service.Spec.ExternalName, string(currentState.DatabaseSecret.Data[model.DatabaseSecretExternalAddressProperty]))
 }
 
 func TestKeycloakReconciler_Test_Recreate_Credentials_When_Missig(t *testing.T) {
@@ -387,4 +423,10 @@ func TestKeycloakReconciler_Test_Should_Update_PDB(t *testing.T) {
 	assert.Equal(t, len(desiredState), 10)
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[9])
 	assert.IsType(t, model.PodDisruptionBudget(cr), desiredState[9].(common.GenericUpdateAction).Ref)
+}
+
+func TestIsIP(t *testing.T) {
+	assert.True(t, model.IsIP([]byte("54.154.171.84")))
+	assert.False(t, model.IsIP([]byte("this.is.a.hostname")))
+	assert.False(t, model.IsIP([]byte("http://www.database.url")))
 }
