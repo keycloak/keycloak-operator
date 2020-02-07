@@ -61,3 +61,8 @@ func TestUtil_Test_GetImageRepoAndVersion_With_No_Image(t *testing.T) {
 	assert.Equal(t, imageMinor, "")
 	assert.Equal(t, imagePatch, "")
 }
+
+func TestUtil_Test_GetServiceEnvVar(t *testing.T) {
+	assert.Equal(t, GetServiceEnvVar("SERVICE_HOST"), "KEYCLOAK_POSTGRESQL_SERVICE_HOST")
+	assert.Equal(t, GetServiceEnvVar("SERVICE_PORT"), "KEYCLOAK_POSTGRESQL_SERVICE_PORT")
+}
