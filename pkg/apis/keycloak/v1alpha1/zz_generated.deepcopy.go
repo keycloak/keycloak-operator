@@ -105,6 +105,11 @@ func (in *KeycloakAPIClient) DeepCopyInto(out *KeycloakAPIClient) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.DefaultClientScopes != nil {
+		in, out := &in.DefaultClientScopes, &out.DefaultClientScopes
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.RedirectUris != nil {
 		in, out := &in.RedirectUris, &out.RedirectUris
 		*out = make([]string, len(*in))

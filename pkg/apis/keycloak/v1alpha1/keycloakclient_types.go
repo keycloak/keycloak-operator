@@ -52,6 +52,9 @@ type KeycloakAPIClient struct {
 	// Default Client roles.
 	// +optional
 	DefaultRoles []string `json:"defaultRoles,omitempty"`
+	// Default Client scopes.
+	// optional
+	DefaultClientScopes []string `json:"defaultClientScopes,omitempty"`
 	// A list of valid Redirection URLs.
 	// +optional
 	RedirectUris []string `json:"redirectUris,omitempty"`
