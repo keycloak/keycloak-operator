@@ -49,9 +49,10 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	//    7) Postgresql Service
 	//    8) Keycloak Service
 	//    9) Keycloak Discovery Service
-	//    10) Keycloak StatefulSets
-	//    11) Keycloak Route
-	assert.Equal(t, len(desiredState), 12)
+	//    10) Keycloak Probe ConfigMap
+	//    11) Keycloak StatefulSets
+	//    12) Keycloak Route
+	assert.Equal(t, len(desiredState), 13)
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[0])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[1])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
@@ -64,6 +65,7 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[9])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[10])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[11])
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[12])
 	assert.IsType(t, model.KeycloakAdminSecret(cr), desiredState[0].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.PrometheusRule(cr), desiredState[1].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.ServiceMonitor(cr), desiredState[2].(common.GenericCreateAction).Ref)
@@ -74,8 +76,9 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	assert.IsType(t, model.PostgresqlService(cr), desiredState[7].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakService(cr), desiredState[8].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakDiscoveryService(cr), desiredState[9].(common.GenericCreateAction).Ref)
-	assert.IsType(t, model.KeycloakDeployment(cr), desiredState[10].(common.GenericCreateAction).Ref)
-	assert.IsType(t, model.KeycloakRoute(cr), desiredState[11].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakProbes(cr), desiredState[10].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakDeployment(cr), desiredState[11].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakRoute(cr), desiredState[12].(common.GenericCreateAction).Ref)
 }
 
 func TestKeycloakReconciler_Test_Creating_RHSSO(t *testing.T) {
@@ -139,6 +142,7 @@ func TestKeycloakReconciler_Test_Updating_RHSSO(t *testing.T) {
 		KeycloakDeployment:              model.RHSSODeployment(cr),
 		KeycloakAdminSecret:             model.KeycloakAdminSecret(cr),
 		KeycloakIngress:                 model.KeycloakIngress(cr),
+		KeycloakProbes:                  model.KeycloakProbes(cr),
 	}
 
 	// when
@@ -181,6 +185,7 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 		KeycloakDeployment:              model.KeycloakDeployment(cr),
 		KeycloakAdminSecret:             model.KeycloakAdminSecret(cr),
 		KeycloakRoute:                   model.KeycloakRoute(cr),
+		KeycloakProbes:                  model.KeycloakProbes(cr),
 	}
 
 	//Set monitoring resources exist to true
@@ -278,11 +283,13 @@ func TestKeycloakReconciler_Test_Creating_All_With_External_Database(t *testing.
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[3])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[4])
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[5])
 	assert.IsType(t, model.DatabaseSecret(cr), desiredState[0].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.PostgresqlService(cr), desiredState[1].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakService(cr), desiredState[2].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakDiscoveryService(cr), desiredState[3].(common.GenericCreateAction).Ref)
-	assert.IsType(t, model.KeycloakDeployment(cr), desiredState[4].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakProbes(cr), desiredState[4].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakDeployment(cr), desiredState[5].(common.GenericCreateAction).Ref)
 }
 
 func TestKeycloakReconciler_Test_Updating_External_Database(t *testing.T) {
@@ -358,9 +365,9 @@ func TestKeycloakReconciler_Test_Should_Create_PDB(t *testing.T) {
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
-	assert.Equal(t, len(desiredState), 9)
-	assert.IsType(t, common.GenericCreateAction{}, desiredState[8])
-	assert.IsType(t, model.PodDisruptionBudget(cr), desiredState[8].(common.GenericCreateAction).Ref)
+	assert.Equal(t, len(desiredState), 10)
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[9])
+	assert.IsType(t, model.PodDisruptionBudget(cr), desiredState[9].(common.GenericCreateAction).Ref)
 }
 
 func TestKeycloakReconciler_Test_Should_Update_PDB(t *testing.T) {
@@ -377,7 +384,7 @@ func TestKeycloakReconciler_Test_Should_Update_PDB(t *testing.T) {
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
-	assert.Equal(t, len(desiredState), 9)
-	assert.IsType(t, common.GenericUpdateAction{}, desiredState[8])
-	assert.IsType(t, model.PodDisruptionBudget(cr), desiredState[8].(common.GenericUpdateAction).Ref)
+	assert.Equal(t, len(desiredState), 10)
+	assert.IsType(t, common.GenericUpdateAction{}, desiredState[9])
+	assert.IsType(t, model.PodDisruptionBudget(cr), desiredState[9].(common.GenericUpdateAction).Ref)
 }
