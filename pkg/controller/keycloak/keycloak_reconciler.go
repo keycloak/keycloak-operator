@@ -39,6 +39,7 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 
 	desired = desired.AddAction(i.getKeycloakServiceDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDiscoveryServiceDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.GetKeycloakProbesDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDeploymentOrRHSSODesiredState(clusterState, cr))
 	i.reconcileExternalAccess(&desired, clusterState, cr)
 	desired = desired.AddAction(i.getPodDisruptionBudgetDesiredState(clusterState, cr))
@@ -75,6 +76,18 @@ func (i *KeycloakReconciler) GetKeycloakAdminSecretDesiredState(clusterState *co
 		Ref: model.KeycloakAdminSecretReconciled(cr, clusterState.KeycloakAdminSecret),
 		Msg: "Update Keycloak admin secret",
 	}
+}
+
+func (i *KeycloakReconciler) GetKeycloakProbesDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	keycloakProbesConfigMap := model.KeycloakProbes(cr)
+
+	if clusterState.KeycloakProbes == nil {
+		return common.GenericCreateAction{
+			Ref: keycloakProbesConfigMap,
+			Msg: "Create Keycloak probes configmap",
+		}
+	}
+	return nil
 }
 
 func (i *KeycloakReconciler) getPostgresqlPersistentVolumeClaimDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {

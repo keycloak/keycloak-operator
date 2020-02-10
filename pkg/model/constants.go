@@ -8,6 +8,7 @@ const (
 	PostgresqlPersistentVolumeName       = ApplicationName + "-postgresql-claim"
 	PostgresqlBackupPersistentVolumeName = ApplicationName + "-backup"
 	PostgresqlDeploymentName             = ApplicationName + "-postgresql"
+	KeycloakProbesName                   = ApplicationName + "-probes"
 	PostgresqlDeploymentComponent        = "database"
 	PostgresqlServiceName                = ApplicationName + "-postgresql"
 	PostgresqlImage                      = "postgres:11.5"
@@ -35,6 +36,8 @@ const (
 	AdminUsernameProperty                 = "ADMIN_USERNAME"        // nolint
 	AdminPasswordProperty                 = "ADMIN_PASSWORD"        // nolint
 	ServingCertSecretName                 = "sso-x509-https-secret" // nolint
+	LivenessProbeProperty                 = "liveness_probe.sh"
+	ReadinessProbeProperty                = "readiness_probe.sh"
 	RouteLoadBalancingStrategy            = "source"
 	PostgresqlBackupServiceAccountName    = "keycloak-operator"
 	KeycloakExtensionEnvVar               = "KEYCLOAK_EXTENSIONS"
