@@ -95,9 +95,16 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 										},
 									},
 								},
-								{
-									Name:  "DB_DATABASE",
-									Value: PostgresqlDatabase,
+                {
+									Name: "DB_DATABASE",
+									ValueFrom: &v1.EnvVarSource{
+										SecretKeyRef: &v1.SecretKeySelector{
+											LocalObjectReference: v1.LocalObjectReference{
+												Name: DatabaseSecretName,
+											},
+											Key: DatabaseSecretDatabaseProperty,
+										},
+									},
 								},
 								// Discovery settings
 								{
