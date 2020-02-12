@@ -44,6 +44,25 @@ spec:
                   description: If set to true, the Operator will create an Ingress
                     or a Route pointing to Keycloak.
                   type: boolean
+                path:
+                  type: string
+                  description: Ingress path
+                hostname:
+                  type: string
+                  description: The hostname of the ingress / route
+                annotations:
+                  type: object
+                  description: Additional annotations for the ingress / route
+                labels:
+                  type: object
+                  description: Additional labels for the ingress / route
+                tlsEnabled:
+                  type: boolean
+                  description: If set to true, it enables TLS for the ingress
+                    created by the operator
+                tlsSecretName:
+                  type: string
+                  description: TLS secret name in the same namespace
               type: object
             externalDatabase:
               description: "Controls external database settings. Using an external
