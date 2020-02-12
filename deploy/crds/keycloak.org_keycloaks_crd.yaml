@@ -92,7 +92,6 @@ spec:
                   type: boolean
               type: object
             instances:
-              default: 1
               description: Number of Keycloak instances in HA mode. Default is 1.
               type: integer
             podDisruptionBudget:
