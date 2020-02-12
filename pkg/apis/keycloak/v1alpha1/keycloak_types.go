@@ -57,7 +57,17 @@ type KeycloakSpec struct {
 type KeycloakExternalAccess struct {
 	// If set to true, the Operator will create an Ingress or a Route
 	// pointing to Keycloak.
-	Enabled bool `json:"enabled,omitempty"`
+	Enabled 	  bool 					 `json:"enabled,omitempty"`
+
+	// further settings to customize our ingress further
+	Annotations   map[string]string      `json:"annotations,omitempty"`
+	Hostname      string                 `json:"hostname,omitempty"`
+	Labels        map[string]string      `json:"labels,omitempty"`
+	Path          string                 `json:"path,omitempty"`
+	TLSEnabled    bool                   `json:"tlsEnabled,omitempty"`
+	TLSSecretName string                 `json:"tlsSecretName,omitempty"`
+	TargetPort    string                 `json:"targetPort,omitempty"`
+	Termination   v12.TLSTerminationType `json:"termination,omitempty"`
 }
 
 type KeycloakExternalDatabase struct {
