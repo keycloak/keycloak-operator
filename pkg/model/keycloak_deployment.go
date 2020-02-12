@@ -273,10 +273,17 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 						},
 					},
 				},
-				{
-					Name:  "DB_DATABASE",
-					Value: PostgresqlDatabase,
-				},
+        {
+          Name: "DB_DATABASE",
+          ValueFrom: &v1.EnvVarSource{
+            SecretKeyRef: &v1.SecretKeySelector{
+              LocalObjectReference: v1.LocalObjectReference{
+                Name: DatabaseSecretName,
+              },
+              Key: DatabaseSecretDatabaseProperty,
+            },
+          },
+        },
 				// Discovery settings
 				{
 					Name:  "NAMESPACE",
