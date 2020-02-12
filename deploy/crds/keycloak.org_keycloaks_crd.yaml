@@ -40,29 +40,33 @@ spec:
             externalAccess:
               description: Controls external Ingress/Route settings.
               properties:
+                annotations:
+                  additionalProperties:
+                    type: string
+                  description: further settings to customize our ingress further
+                  type: object
                 enabled:
                   description: If set to true, the Operator will create an Ingress
                     or a Route pointing to Keycloak.
                   type: boolean
-                path:
-                  type: string
-                  description: Ingress path
                 hostname:
                   type: string
-                  description: The hostname of the ingress / route
-                annotations:
-                  type: object
-                  description: Additional annotations for the ingress / route
                 labels:
+                  additionalProperties:
+                    type: string
                   type: object
-                  description: Additional labels for the ingress / route
+                path:
+                  type: string
+                targetPort:
+                  type: string
+                termination:
+                  description: 'TLSTerminationType dictates where the secure communication
+                    will stop TODO: Reconsider this type in v2'
+                  type: string
                 tlsEnabled:
                   type: boolean
-                  description: If set to true, it enables TLS for the ingress
-                    created by the operator
                 tlsSecretName:
                   type: string
-                  description: TLS secret name in the same namespace
               type: object
             externalDatabase:
               description: "Controls external database settings. Using an external
@@ -88,6 +92,7 @@ spec:
                   type: boolean
               type: object
             instances:
+              default: 1
               description: Number of Keycloak instances in HA mode. Default is 1.
               type: integer
             podDisruptionBudget:
