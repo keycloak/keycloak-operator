@@ -52,6 +52,9 @@ type KeycloakAPIClient struct {
 	// Default Client roles.
 	// +optional
 	DefaultRoles []string `json:"defaultRoles,omitempty"`
+	// Default Client scopes.
+	// optional
+	DefaultClientScopes []string `json:"defaultClientScopes,omitempty"`
 	// A list of valid Redirection URLs.
 	// +optional
 	RedirectUris []string `json:"redirectUris,omitempty"`
@@ -63,25 +66,25 @@ type KeycloakAPIClient struct {
 	NotBefore int `json:"notBefore,omitempty"`
 	// True if a client supports only Bearer Tokens.
 	// +optional
-	BearerOnly bool `json:"bearerOnly,omitempty"`
+	BearerOnly bool `json:"bearerOnly"`
 	// True if Consent Screen is required.
 	// +optional
-	ConsentRequired bool `json:"consentRequired,omitempty"`
+	ConsentRequired bool `json:"consentRequired"`
 	// True if Standard flow is enabled.
 	// +optional
-	StandardFlowEnabled bool `json:"standardFlowEnabled,omitempty"`
+	StandardFlowEnabled bool `json:"standardFlowEnabled"`
 	// True if Implicit flow is enabled.
 	// +optional
-	ImplicitFlowEnabled bool `json:"implicitFlowEnabled,omitempty"`
+	ImplicitFlowEnabled bool `json:"implicitFlowEnabled"`
 	// True if Direct Grant is enabled.
 	// +optional
-	DirectAccessGrantsEnabled bool `json:"directAccessGrantsEnabled,omitempty"`
+	DirectAccessGrantsEnabled bool `json:"directAccessGrantsEnabled"`
 	// True if Service Accounts are enabled.
 	// +optional
-	ServiceAccountsEnabled bool `json:"serviceAccountsEnabled,omitempty"`
+	ServiceAccountsEnabled bool `json:"serviceAccountsEnabled"`
 	// True if this is a public Client.
 	// +optional
-	PublicClient bool `json:"publicClient,omitempty"`
+	PublicClient bool `json:"publicClient"`
 	// True if this client supports Front Channel logout.
 	// +optional
 	FrontchannelLogout bool `json:"frontchannelLogout,omitempty"`
