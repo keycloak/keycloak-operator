@@ -122,3 +122,14 @@ func GetImageRepoAndVersion(image string) (string, string, string, string) {
 
 	return imageRepo, imageMajor, imageMinor, imagePatch
 }
+
+func MergeAnnotations(requested map[string]string, existing map[string]string) map[string]string {
+	if existing == nil {
+		return requested
+	}
+
+	for k, v := range requested {
+		existing[k] = v
+	}
+	return existing
+}
