@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"k8s.io/api/extensions/v1beta1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,7 +52,7 @@ func getIngressTLS(cr *kc.Keycloak) []v1beta1.IngressTLS {
 	return nil
 }
 
-func getIngressSpec(cr *v1alpha1.Grafana) v1beta1.IngressSpec {
+func getIngressSpec(cr *kc.Keycloak) v1beta1.IngressSpec {
 	return v1beta1.IngressSpec{
 		TLS: getIngressTLS(cr),
 		Rules: []v1beta1.IngressRule{
