@@ -35,6 +35,12 @@ func (i *ClientState) Read(context context.Context, cr *kc.KeycloakClient, realm
 		return nil
 	}
 
+	clientSecret, err := realmClient.GetClientSecret(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
+	if err != nil {
+		return err
+	}
+	cr.Spec.Client.Secret = clientSecret
+
 	err = i.readClientSecret(context, cr, i.Client, controllerClient)
 	if err != nil {
 		return err
