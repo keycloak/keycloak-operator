@@ -67,6 +67,7 @@ rules:
   - apiGroups:
       - monitoring.coreos.com
     resources:
+      - podmonitors
       - servicemonitors
       - prometheusrules
     verbs:
@@ -115,6 +116,9 @@ rules:
       - keycloakbackups
       - keycloakbackups/status
       - keycloakbackups/finalizers
+      - keycloakclients
+      - keycloakclients/status
+      - keycloakusers
     verbs:
       - get
       - list
