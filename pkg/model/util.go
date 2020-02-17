@@ -3,7 +3,11 @@ package model
 import (
 	"fmt"
 	"math/rand"
+	"net"
+	"strconv"
 	"strings"
+
+	v1 "k8s.io/api/core/v1"
 
 	v13 "k8s.io/api/apps/v1"
 )
@@ -122,6 +126,36 @@ func GetImageRepoAndVersion(image string) (string, string, string, string) {
 
 	return imageRepo, imageMajor, imageMinor, imagePatch
 }
+
+func IsIP(host []byte) bool {
+	return net.ParseIP(string(host)) != nil
+}
+
+func GetExternalDatabaseHost(secret *v1.Secret) string {
+	host := secret.Data[DatabaseSecretExternalAddressProperty]
+	return string(host)
+}
+
+func GetExternalDatabaseName(secret *v1.Secret) string {
+	if secret == nil {
+		return PostgresqlDatabase
+	}
+
+	name := secret.Data[DatabaseSecretDatabaseProperty]
+	return string(name)
+}
+
+func GetExternalDatabasePort(secret *v1.Secret) int32 {
+	if secret == nil {
+		return PostgresDefaultPort
+	}
+
+	port := secret.Data[DatabaseSecretExternalPortProperty]
+	parsed, err := strconv.Atoi(string(port))
+	if err != nil {
+		return PostgresDefaultPort
+	}
+	return int32(parsed)
 
 func MergeAnnotations(requested map[string]string, existing map[string]string) map[string]string {
 	if existing == nil {

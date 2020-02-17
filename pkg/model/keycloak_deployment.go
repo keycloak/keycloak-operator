@@ -1,7 +1,9 @@
 package model
 
 import (
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v13 "k8s.io/api/apps/v1"
@@ -11,7 +13,109 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
+func GetServiceEnvVar(suffix string) string {
+	serviceName := strings.ToUpper(PostgresqlServiceName)
+	serviceName = strings.ReplaceAll(serviceName, "-", "_")
+	return fmt.Sprintf("%v_%v", serviceName, suffix)
+}
+
+func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
+	return []v1.EnvVar{
+		// Database settings
+		{
+			Name:  "DB_VENDOR",
+			Value: "POSTGRES",
+		},
+		{
+			Name:  "DB_SCHEMA",
+			Value: "public",
+		},
+		{
+			Name:  "DB_ADDR",
+			Value: PostgresqlServiceName + "." + cr.Namespace + ".svc.cluster.local",
+		},
+		{
+			Name:  "DB_DATABASE",
+			Value: GetExternalDatabaseName(dbSecret),
+		},
+		{
+			Name: "DB_USER",
+			ValueFrom: &v1.EnvVarSource{
+				SecretKeyRef: &v1.SecretKeySelector{
+					LocalObjectReference: v1.LocalObjectReference{
+						Name: DatabaseSecretName,
+					},
+					Key: DatabaseSecretUsernameProperty,
+				},
+			},
+		},
+		{
+			Name: "DB_PASSWORD",
+			ValueFrom: &v1.EnvVarSource{
+				SecretKeyRef: &v1.SecretKeySelector{
+					LocalObjectReference: v1.LocalObjectReference{
+						Name: DatabaseSecretName,
+					},
+					Key: DatabaseSecretPasswordProperty,
+				},
+			},
+		},
+		// Discovery settings
+		{
+			Name:  "NAMESPACE",
+			Value: cr.Namespace,
+		},
+		{
+			Name:  "JGROUPS_DISCOVERY_PROTOCOL",
+			Value: "dns.DNS_PING",
+		},
+		{
+			Name:  "JGROUPS_DISCOVERY_PROPERTIES",
+			Value: "dns_query=" + KeycloakDiscoveryServiceName + "." + cr.Namespace + ".svc.cluster.local",
+		},
+		// Cache settings
+		{
+			Name:  "CACHE_OWNERS_COUNT",
+			Value: "2",
+		},
+		{
+			Name:  "CACHE_OWNERS_AUTH_SESSIONS_COUNT",
+			Value: "2",
+		},
+		{
+			Name: "KEYCLOAK_USER",
+			ValueFrom: &v1.EnvVarSource{
+				SecretKeyRef: &v1.SecretKeySelector{
+					LocalObjectReference: v1.LocalObjectReference{
+						Name: "credential-" + cr.Name,
+					},
+					Key: AdminUsernameProperty,
+				},
+			},
+		},
+		{
+			Name: "KEYCLOAK_PASSWORD",
+			ValueFrom: &v1.EnvVarSource{
+				SecretKeyRef: &v1.SecretKeySelector{
+					LocalObjectReference: v1.LocalObjectReference{
+						Name: "credential-" + cr.Name,
+					},
+					Key: AdminPasswordProperty,
+				},
+			},
+		},
+		{
+			Name:  GetServiceEnvVar("SERVICE_HOST"),
+			Value: PostgresqlServiceName + "." + cr.Namespace + ".svc.cluster.local",
+		},
+		{
+			Name:  GetServiceEnvVar("SERVICE_PORT"),
+			Value: fmt.Sprintf("%v", GetExternalDatabasePort(dbSecret)),
+		},
+	}
+}
+
+func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
 	return &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      KeycloakDeploymentName,
@@ -59,99 +163,8 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 									Protocol:      "TCP",
 								},
 							},
-							Env: []v1.EnvVar{
-								// Database settings
-								{
-									Name:  "DB_VENDOR",
-									Value: "POSTGRES",
-								},
-								{
-									Name:  "DB_SCHEMA",
-									Value: "public",
-								},
-								{
-									Name:  "DB_ADDR",
-									Value: PostgresqlServiceName + "." + cr.Namespace + ".svc.cluster.local",
-								},
-								{
-									Name: "DB_USER",
-									ValueFrom: &v1.EnvVarSource{
-										SecretKeyRef: &v1.SecretKeySelector{
-											LocalObjectReference: v1.LocalObjectReference{
-												Name: DatabaseSecretName,
-											},
-											Key: DatabaseSecretUsernameProperty,
-										},
-									},
-								},
-								{
-									Name: "DB_PASSWORD",
-									ValueFrom: &v1.EnvVarSource{
-										SecretKeyRef: &v1.SecretKeySelector{
-											LocalObjectReference: v1.LocalObjectReference{
-												Name: DatabaseSecretName,
-											},
-											Key: DatabaseSecretPasswordProperty,
-										},
-									},
-								},
-								{
-									Name: "DB_DATABASE",
-									ValueFrom: &v1.EnvVarSource{
-										SecretKeyRef: &v1.SecretKeySelector{
-											LocalObjectReference: v1.LocalObjectReference{
-												Name: DatabaseSecretName,
-											},
-											Key: DatabaseSecretDatabaseProperty,
-										},
-									},
-								},
-								// Discovery settings
-								{
-									Name:  "NAMESPACE",
-									Value: cr.Namespace,
-								},
-								{
-									Name:  "JGROUPS_DISCOVERY_PROTOCOL",
-									Value: "dns.DNS_PING",
-								},
-								{
-									Name:  "JGROUPS_DISCOVERY_PROPERTIES",
-									Value: "dns_query=" + KeycloakDiscoveryServiceName + "." + cr.Namespace + ".svc.cluster.local",
-								},
-								// Cache settings
-								{
-									Name:  "CACHE_OWNERS_COUNT",
-									Value: "2",
-								},
-								{
-									Name:  "CACHE_OWNERS_AUTH_SESSIONS_COUNT",
-									Value: "2",
-								},
-								{
-									Name: "KEYCLOAK_USER",
-									ValueFrom: &v1.EnvVarSource{
-										SecretKeyRef: &v1.SecretKeySelector{
-											LocalObjectReference: v1.LocalObjectReference{
-												Name: "credential-" + cr.Name,
-											},
-											Key: AdminUsernameProperty,
-										},
-									},
-								},
-								{
-									Name: "KEYCLOAK_PASSWORD",
-									ValueFrom: &v1.EnvVarSource{
-										SecretKeyRef: &v1.SecretKeySelector{
-											LocalObjectReference: v1.LocalObjectReference{
-												Name: "credential-" + cr.Name,
-											},
-											Key: AdminPasswordProperty,
-										},
-									},
-								},
-							},
 							VolumeMounts: KeycloakVolumeMounts(cr, KeycloakExtensionPath),
+              Env:          getKeycloakEnv(cr, dbSecret),
 							LivenessProbe: &v1.Probe{
 								InitialDelaySeconds: 60,
 								TimeoutSeconds:      1,
@@ -189,7 +202,7 @@ func KeycloakDeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 	}
 }
 
-func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet) *v13.StatefulSet {
+func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet, dbSecret *v1.Secret) *v13.StatefulSet {
 	currentImage := GetCurrentKeycloakImage(currentState)
 
 	reconciled := currentState.DeepCopy()
@@ -237,98 +250,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 					},
 				},
 			},
-			Env: []v1.EnvVar{
-				// Database settings
-				{
-					Name:  "DB_VENDOR",
-					Value: "POSTGRES",
-				},
-				{
-					Name:  "DB_SCHEMA",
-					Value: "public",
-				},
-				{
-					Name:  "DB_ADDR",
-					Value: PostgresqlServiceName + "." + cr.Namespace + ".svc.cluster.local",
-				},
-				{
-					Name: "DB_USER",
-					ValueFrom: &v1.EnvVarSource{
-						SecretKeyRef: &v1.SecretKeySelector{
-							LocalObjectReference: v1.LocalObjectReference{
-								Name: DatabaseSecretName,
-							},
-							Key: DatabaseSecretUsernameProperty,
-						},
-					},
-				},
-				{
-					Name: "DB_PASSWORD",
-					ValueFrom: &v1.EnvVarSource{
-						SecretKeyRef: &v1.SecretKeySelector{
-							LocalObjectReference: v1.LocalObjectReference{
-								Name: DatabaseSecretName,
-							},
-							Key: DatabaseSecretPasswordProperty,
-						},
-					},
-				},
-				{
-					Name: "DB_DATABASE",
-					ValueFrom: &v1.EnvVarSource{
-						SecretKeyRef: &v1.SecretKeySelector{
-							LocalObjectReference: v1.LocalObjectReference{
-								Name: DatabaseSecretName,
-							},
-							Key: DatabaseSecretDatabaseProperty,
-						},
-					},
-				},
-				// Discovery settings
-				{
-					Name:  "NAMESPACE",
-					Value: cr.Namespace,
-				},
-				{
-					Name:  "JGROUPS_DISCOVERY_PROTOCOL",
-					Value: "dns.DNS_PING",
-				},
-				{
-					Name:  "JGROUPS_DISCOVERY_PROPERTIES",
-					Value: "dns_query=" + KeycloakDiscoveryServiceName + "." + cr.Namespace + ".svc.cluster.local",
-				},
-				// Cache settings
-				{
-					Name:  "CACHE_OWNERS_COUNT",
-					Value: "2",
-				},
-				{
-					Name:  "CACHE_OWNERS_AUTH_SESSIONS_COUNT",
-					Value: "2",
-				},
-				{
-					Name: "KEYCLOAK_USER",
-					ValueFrom: &v1.EnvVarSource{
-						SecretKeyRef: &v1.SecretKeySelector{
-							LocalObjectReference: v1.LocalObjectReference{
-								Name: "credential-" + cr.Name,
-							},
-							Key: AdminUsernameProperty,
-						},
-					},
-				},
-				{
-					Name: "KEYCLOAK_PASSWORD",
-					ValueFrom: &v1.EnvVarSource{
-						SecretKeyRef: &v1.SecretKeySelector{
-							LocalObjectReference: v1.LocalObjectReference{
-								Name: "credential-" + cr.Name,
-							},
-							Key: AdminPasswordProperty,
-						},
-					},
-				},
-			},
+			Env: getKeycloakEnv(cr, dbSecret),
 		},
 	}
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
