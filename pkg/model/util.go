@@ -156,4 +156,14 @@ func GetExternalDatabasePort(secret *v1.Secret) int32 {
 		return PostgresDefaultPort
 	}
 	return int32(parsed)
+
+func MergeAnnotations(requested map[string]string, existing map[string]string) map[string]string {
+	if existing == nil {
+		return requested
+	}
+
+	for k, v := range requested {
+		existing[k] = v
+	}
+	return existing
 }

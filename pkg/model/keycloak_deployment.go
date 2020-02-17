@@ -163,7 +163,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 									Protocol:      "TCP",
 								},
 							},
-							Env:          getKeycloakEnv(cr, dbSecret),
+              Env:          getKeycloakEnv(cr, dbSecret),
 							VolumeMounts: KeycloakVolumeMounts(KeycloakExtensionPath),
 							LivenessProbe: &v1.Probe{
 								InitialDelaySeconds: 60,

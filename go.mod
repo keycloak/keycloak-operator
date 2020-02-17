@@ -5,36 +5,49 @@ require (
 	contrib.go.opencensus.io/exporter/ocagent v0.4.12 // indirect
 	github.com/Azure/go-autorest v11.7.0+incompatible // indirect
 	github.com/coreos/prometheus-operator v0.34.0
+	github.com/fatih/color v1.9.0 // indirect
 	github.com/go-openapi/spec v0.19.2
-	github.com/gogo/protobuf v1.3.0 // indirect
+	github.com/gogo/protobuf v1.3.1 // indirect
+	github.com/golangci/gocyclo v0.0.0-20180528144436-0a533e8fa43d // indirect
+	github.com/golangci/golangci-lint v1.23.3 // indirect
+	github.com/golangci/revgrep v0.0.0-20180812185044-276a5c0a1039 // indirect
 	github.com/google/uuid v1.1.1 // indirect
+	github.com/gostaticanalysis/analysisutil v0.0.3 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.11.2 // indirect
 	github.com/hashicorp/golang-lru v0.5.3 // indirect
 	github.com/integr8ly/grafana-operator/v3 v3.0.2-0.20200103111057-03d7fa884db4
+	github.com/jirfag/go-printf-func-name v0.0.0-20200119135958-7558a9eaa5af // indirect
 	github.com/json-iterator/go v1.1.7
-	github.com/onsi/ginkgo v1.10.1 // indirect
-	github.com/onsi/gomega v1.7.0 // indirect
+	github.com/mattn/go-isatty v0.0.12 // indirect
 	github.com/openshift/api v3.9.1-0.20190424152011-77b8897ec79a+incompatible
 	github.com/operator-framework/operator-sdk v0.12.1-0.20191112211508-82fc57de5e5b
-	github.com/pkg/errors v0.8.1
+	github.com/pelletier/go-toml v1.6.0 // indirect
+	github.com/pkg/errors v0.9.1
+	github.com/securego/gosec v0.0.0-20200203094520-d13bb6d2420c // indirect
 	github.com/sirupsen/logrus v1.4.2
-	github.com/spf13/pflag v1.0.3
+	github.com/spf13/cast v1.3.1 // indirect
+	github.com/spf13/jwalterweatherman v1.1.0 // indirect
+	github.com/spf13/pflag v1.0.5
+	github.com/spf13/viper v1.6.2 // indirect
 	github.com/stretchr/testify v1.4.0
+	github.com/tommy-muehle/go-mnd v1.2.0 // indirect
 	go.opencensus.io v0.22.1 // indirect
 	golang.org/x/net v0.0.0-20190926025831-c00fd9afed17 // indirect
-	golang.org/x/sys v0.0.0-20190924154521-2837fb4f24fe // indirect
+	golang.org/x/sys v0.0.0-20200202164722-d101bd2416d5 // indirect
 	golang.org/x/time v0.0.0-20190921001708-c4c64cad1fd0 // indirect
-	golang.org/x/tools v0.0.0-20200114052453-d31a08c2edf2 // indirect
+	golang.org/x/tools v0.0.0-20200207131002-533eb2654509 // indirect
 	google.golang.org/api v0.10.0 // indirect
 	google.golang.org/appengine v1.6.3 // indirect
 	google.golang.org/genproto v0.0.0-20190925194540-b8fbc687dcfb // indirect
 	google.golang.org/grpc v1.24.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
+	gopkg.in/ini.v1 v1.52.0 // indirect
 	k8s.io/api v0.0.0
 	k8s.io/apimachinery v0.0.0
 	k8s.io/client-go v12.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20190918143330-0270cf2f1c1d
+	mvdan.cc/unparam v0.0.0-20191111180625-960b1ec0f2c2 // indirect
 	sigs.k8s.io/controller-runtime v0.3.0
+	sourcegraph.com/sqs/pbtypes v1.0.0 // indirect
 )
 
 // Pinned to kubernetes-1.15.4

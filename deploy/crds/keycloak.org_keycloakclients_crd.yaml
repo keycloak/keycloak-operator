@@ -62,6 +62,11 @@ spec:
                 consentRequired:
                   description: True if Consent Screen is required.
                   type: boolean
+                defaultClientScopes:
+                  description: Default Client scopes. optional
+                  items:
+                    type: string
+                  type: array
                 defaultRoles:
                   description: Default Client roles.
                   items:
