@@ -58,7 +58,7 @@ type KeycloakSpec struct {
 type KeycloakExternalAccess struct {
 	// If set to true, the Operator will create an Ingress or a Route
 	// pointing to Keycloak.
-	Enabled 	  bool 					 `json:"enabled,omitempty"`
+	Enabled bool `json:"enabled,omitempty"`
 
 	// further settings to customize our ingress further
 	Annotations   map[string]string      `json:"annotations,omitempty"`
