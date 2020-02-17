@@ -20,6 +20,8 @@ const (
 	KeycloakDeploymentComponent          = "keycloak"
 	PostgresqlBackupComponent            = "database-backup"
 	PostgresqlDatabase                   = "root"
+	PostgresqlUsername                   = ApplicationName
+	PostgresqlPasswordLength             = 32
 	PostgresqlPersistentVolumeCapacity   = "1Gi"
 	DatabaseSecretUsernameProperty       = "POSTGRES_USERNAME" // nolint
 	DatabaseSecretPasswordProperty       = "POSTGRES_PASSWORD" // nolint
