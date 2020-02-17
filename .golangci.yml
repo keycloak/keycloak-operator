@@ -28,3 +28,4 @@ linters:
     - gochecknoglobals
     - wsl
     - godox
+    - gomnd
