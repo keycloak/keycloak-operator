@@ -30,7 +30,7 @@ func TestKeycloakMigrations_Test_No_Need_For_Migration_On_Missing_Deployment_In_
 	migrator := NewDefaultMigrator()
 	cr := &v1alpha1.Keycloak{}
 
-	keycloakDeployment := model.KeycloakDeployment(cr)
+	keycloakDeployment := model.KeycloakDeployment(cr, nil)
 	keycloakDeployment.Spec.Replicas = &[]int32{5}[0]
 	keycloakDeployment.Spec.Template.Spec.Containers[0].Image = "old_image" //nolint
 
@@ -56,7 +56,7 @@ func TestKeycloakMigrations_Test_Migrating_Image(t *testing.T) {
 	migrator := NewDefaultMigrator()
 	cr := &v1alpha1.Keycloak{}
 
-	keycloakDeployment := model.KeycloakDeployment(cr)
+	keycloakDeployment := model.KeycloakDeployment(cr, model.DatabaseSecret(cr))
 	keycloakDeployment.Spec.Replicas = &[]int32{5}[0]
 	keycloakDeployment.Spec.Template.Spec.Containers[0].Image = "old_image" //nolint
 
@@ -66,7 +66,7 @@ func TestKeycloakMigrations_Test_Migrating_Image(t *testing.T) {
 
 	desiredState := common.DesiredClusterState{}
 	desiredState = append(desiredState, common.GenericUpdateAction{
-		Ref: model.KeycloakDeployment(cr),
+		Ref: model.KeycloakDeployment(cr, nil),
 	})
 
 	// when
@@ -86,7 +86,7 @@ func TestKeycloakMigrations_Test_Migrating_RHSSO_Image(t *testing.T) {
 		},
 	}
 
-	keycloakDeployment := model.RHSSODeployment(cr)
+	keycloakDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr))
 	keycloakDeployment.Spec.Replicas = &[]int32{5}[0]
 	keycloakDeployment.Spec.Template.Spec.Containers[0].Image = "old_image" //nolint
 
@@ -96,7 +96,7 @@ func TestKeycloakMigrations_Test_Migrating_RHSSO_Image(t *testing.T) {
 
 	desiredState := common.DesiredClusterState{}
 	desiredState = append(desiredState, common.GenericUpdateAction{
-		Ref: model.RHSSODeployment(cr),
+		Ref: model.RHSSODeployment(cr, model.DatabaseSecret(cr)),
 	})
 
 	// when

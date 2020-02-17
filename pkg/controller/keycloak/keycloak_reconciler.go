@@ -32,10 +32,10 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 		desired = desired.AddAction(i.getDatabaseSecretDesiredState(clusterState, cr))
 		desired = desired.AddAction(i.getPostgresqlPersistentVolumeClaimDesiredState(clusterState, cr))
 		desired = desired.AddAction(i.getPostgresqlDeploymentDesiredState(clusterState, cr))
+		desired = desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, false))
 	} else {
-		desired = desired.AddAction(i.getPostgresqlServiceEndpointsDesiredState(clusterState, cr))
+		i.reconcileExternalDatabase(&desired, clusterState, cr)
 	}
-	desired = desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr))
 
 	desired = desired.AddAction(i.getKeycloakServiceDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDiscoveryServiceDesiredState(clusterState, cr))
@@ -43,6 +43,24 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 	i.reconcileExternalAccess(&desired, clusterState, cr)
 	desired = desired.AddAction(i.getPodDisruptionBudgetDesiredState(clusterState, cr))
 	return desired
+}
+
+func (i *KeycloakReconciler) reconcileExternalDatabase(desired *common.DesiredClusterState, clusterState *common.ClusterState, cr *kc.Keycloak) {
+	// If the database secret does not exist we can't continue
+	if clusterState.DatabaseSecret == nil {
+		return
+	}
+	if model.IsIP(clusterState.DatabaseSecret.Data[model.DatabaseSecretExternalAddressProperty]) {
+		// If the address of the external database is an IP address then we have to
+		// set up an endpoints object for the service to send traffic. An externalName
+		// type service won't work in this case. For more details, see https://cloud.google.com/blog/products/gcp/kubernetes-best-practices-mapping-external-services
+		desired.AddAction(i.getPostgresqlServiceEndpointsDesiredState(clusterState, cr))
+		desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, false))
+	} else {
+		// If we have an URI for the external database then we can use a service of
+		// type externalName
+		desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, true))
+	}
 }
 
 func (i *KeycloakReconciler) reconcileExternalAccess(desired *common.DesiredClusterState, clusterState *common.ClusterState, cr *kc.Keycloak) {
@@ -91,8 +109,8 @@ func (i *KeycloakReconciler) getPostgresqlPersistentVolumeClaimDesiredState(clus
 	}
 }
 
-func (i *KeycloakReconciler) getPostgresqlServiceDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
-	postgresqlService := model.PostgresqlService(cr)
+func (i *KeycloakReconciler) getPostgresqlServiceDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak, isExternal bool) common.ClusterAction {
+	postgresqlService := model.PostgresqlService(cr, clusterState.DatabaseSecret, isExternal)
 	if clusterState.PostgresqlService == nil {
 		return common.GenericCreateAction{
 			Ref: postgresqlService,
@@ -100,7 +118,7 @@ func (i *KeycloakReconciler) getPostgresqlServiceDesiredState(clusterState *comm
 		}
 	}
 	return common.GenericUpdateAction{
-		Ref: model.PostgresqlServiceReconciled(cr, clusterState.PostgresqlService),
+		Ref: model.PostgresqlServiceReconciled(clusterState.PostgresqlService),
 		Msg: "Update Postgresql KeycloakService",
 	}
 }
@@ -261,11 +279,11 @@ func (i *KeycloakReconciler) getDatabaseSecretDesiredState(clusterState *common.
 func (i *KeycloakReconciler) getKeycloakDeploymentOrRHSSODesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
 	isRHSSO := cr.Spec.Profile == common.RHSSOProfile
 
-	deployment := model.KeycloakDeployment(cr)
+	deployment := model.KeycloakDeployment(cr, clusterState.DatabaseSecret)
 	deploymentName := "Keycloak"
 
 	if isRHSSO {
-		deployment = model.RHSSODeployment(cr)
+		deployment = model.RHSSODeployment(cr, clusterState.DatabaseSecret)
 		deploymentName = common.RHSSOProfile
 	}
 
@@ -276,9 +294,9 @@ func (i *KeycloakReconciler) getKeycloakDeploymentOrRHSSODesiredState(clusterSta
 		}
 	}
 
-	deploymentReconciled := model.KeycloakDeploymentReconciled(cr, clusterState.KeycloakDeployment)
+	deploymentReconciled := model.KeycloakDeploymentReconciled(cr, clusterState.KeycloakDeployment, clusterState.DatabaseSecret)
 	if isRHSSO {
-		deploymentReconciled = model.RHSSODeploymentReconciled(cr, clusterState.KeycloakDeployment)
+		deploymentReconciled = model.RHSSODeploymentReconciled(cr, clusterState.KeycloakDeployment, clusterState.DatabaseSecret)
 	}
 
 	return common.GenericUpdateAction{
