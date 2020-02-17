@@ -16,6 +16,10 @@ type KeycloakSpec struct {
 	// +optional
 	// +kubebuilder:default=1
 	Instances int `json:"instances,omitempty"`
+	// Feature to disable ServingCertSecret
+	// which is a necessary logic to work with a TLS Ingress
+	// on a non-Openshift setup
+	ServingCertDisabled bool `json:"servingCertDisabled,omitempty"`
 	// Controls external Ingress/Route settings.
 	// +optional
 	ExternalAccess KeycloakExternalAccess `json:"externalAccess,omitempty"`
@@ -53,6 +57,10 @@ type KeycloakSpec struct {
 	// Specify PodDisruptionBudget configuration
 	// +optional
 	PodDisruptionBudget PodDisruptionBudgetConfig `json:"podDisruptionBudget,omitempty"`
+}
+
+type ServingCertSecretName struct {
+
 }
 
 type KeycloakExternalAccess struct {

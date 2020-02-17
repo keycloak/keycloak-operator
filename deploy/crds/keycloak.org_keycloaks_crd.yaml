@@ -108,6 +108,10 @@ spec:
               description: Profile used for controlling Operator behavior. Default
                 is empty.
               type: string
+            servingCertDisabled:
+              description: Feature to disable ServingCertSecret which is a necessary
+                logic to work with a TLS Ingress on a non-Openshift setup
+              type: boolean
           type: object
         status:
           description: KeycloakStatus defines the observed state of Keycloak
