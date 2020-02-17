@@ -128,7 +128,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSe
 					},
 				},
 				Spec: v1.PodSpec{
-					Volumes:        KeycloakVolumes(),
+					Volumes:        KeycloakVolumes(cr),
 					InitContainers: KeycloakExtensionsInitContainers(cr),
 					Containers: []v1.Container{
 						{
