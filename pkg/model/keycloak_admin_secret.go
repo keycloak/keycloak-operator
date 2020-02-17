@@ -19,7 +19,7 @@ func KeycloakAdminSecret(cr *v1alpha1.Keycloak) *v1.Secret {
 		},
 		Data: map[string][]byte{
 			AdminUsernameProperty: []byte("admin"),
-			AdminPasswordProperty: []byte(RandStringRunes(10)),
+			AdminPasswordProperty: []byte(GenerateRandomString(10)),
 		},
 		Type: "Opaque",
 	}
@@ -39,7 +39,7 @@ func KeycloakAdminSecretReconciled(cr *v1alpha1.Keycloak, currentState *v1.Secre
 		reconciled.Data[AdminUsernameProperty] = []byte("admin")
 	}
 	if val, ok := reconciled.Data[AdminPasswordProperty]; !ok || len(val) == 0 {
-		reconciled.Data[AdminPasswordProperty] = []byte(RandStringRunes(10))
+		reconciled.Data[AdminPasswordProperty] = []byte(GenerateRandomString(10))
 	}
 	return reconciled
 }
