@@ -151,7 +151,11 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 							Image: KeycloakImage,
 							Ports: []v1.ContainerPort{
 								{
-									ContainerPort: KeycloakServicePort,
+									ContainerPort: KeycloakPodPort,
+									Protocol:      "TCP",
+								},
+								{
+									ContainerPort: KeycloakPodPortSSL,
 									Protocol:      "TCP",
 								},
 								{
@@ -215,7 +219,11 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 			Image: GetReconciledKeycloakImage(currentImage),
 			Ports: []v1.ContainerPort{
 				{
-					ContainerPort: KeycloakServicePort,
+					ContainerPort: KeycloakPodPort,
+					Protocol:      "TCP",
+				},
+				{
+					ContainerPort: KeycloakPodPortSSL,
 					Protocol:      "TCP",
 				},
 				{

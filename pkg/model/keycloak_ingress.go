@@ -8,6 +8,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+func GetKeycloakServicePortTarget(cr *kc.Keycloak) int {
+	if cr.Spec.ServingCertDisabled {
+		return KeycloakPodPort
+	}
+	return KeycloakPodPortSSL
+}
+
 func GetHost(cr *kc.Keycloak) string {
 	if !cr.Spec.ExternalAccess.Enabled {
 		return ""
@@ -65,7 +72,7 @@ func getIngressSpec(cr *kc.Keycloak) v1beta1.IngressSpec {
 								Path: GetPath(cr),
 								Backend: v1beta1.IngressBackend{
 									ServiceName: ApplicationName,
-									ServicePort: intstr.FromInt(KeycloakServicePort),
+									ServicePort: intstr.FromInt(GetKeycloakServicePortTarget(cr)),
 								},
 							},
 						},
