@@ -152,8 +152,8 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSe
 									Protocol:      "TCP",
 								},
 							},
+							VolumeMounts: KeycloakVolumeMounts(cr, RhssoExtensionPath),
 							Env:          getRHSSOEnv(cr, dbSecret),
-							VolumeMounts: KeycloakVolumeMounts(RhssoExtensionPath),
 							LivenessProbe: &v1.Probe{
 								InitialDelaySeconds: 60,
 								TimeoutSeconds:      1,
@@ -197,7 +197,7 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 	reconciled := currentState.DeepCopy()
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
-	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes()
+	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr)
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:  KeycloakDeploymentName,
@@ -220,7 +220,7 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 					Protocol:      "TCP",
 				},
 			},
-			VolumeMounts: KeycloakVolumeMounts(RhssoExtensionPath),
+			VolumeMounts: KeycloakVolumeMounts(cr, RhssoExtensionPath),
 			LivenessProbe: &v1.Probe{
 				InitialDelaySeconds: 60,
 				TimeoutSeconds:      1,

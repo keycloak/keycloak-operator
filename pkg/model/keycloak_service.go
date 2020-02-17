@@ -8,6 +8,18 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+func GetServiceAnnotation(cr *v1alpha1.Keycloak) map[string]string {
+
+	if cr.Spec.ServingCertDisabled {
+		return map[string]string{}
+	}
+
+	return map[string]string{
+		"description": "The web server's https port.",
+		"service.alpha.openshift.io/serving-cert-secret-name": ServingCertSecretName,
+	}
+}
+
 func KeycloakService(cr *v1alpha1.Keycloak) *v1.Service {
 	return &v1.Service{
 		ObjectMeta: v12.ObjectMeta{
@@ -16,10 +28,7 @@ func KeycloakService(cr *v1alpha1.Keycloak) *v1.Service {
 			Labels: map[string]string{
 				"app": ApplicationName,
 			},
-			Annotations: map[string]string{
-				"description": "The web server's https port.",
-				"service.alpha.openshift.io/serving-cert-secret-name": ServingCertSecretName,
-			},
+			Annotations: GetServiceAnnotation(cr),
 		},
 		Spec: v1.ServiceSpec{
 			Selector: map[string]string{
