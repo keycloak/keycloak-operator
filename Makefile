@@ -108,7 +108,10 @@ code/compile:
 .PHONY: code/gen
 code/gen:
 	operator-sdk generate k8s
-	operator-sdk generate openapi
+	operator-sdk generate crds
+	# This is a copy-paste part of `operator-sdk generate openapi` command (suggested by the manual)
+	which ./bin/openapi-gen > /dev/null || go build -o ./bin/openapi-gen k8s.io/kube-openapi/cmd/openapi-gen
+	./bin/openapi-gen --logtostderr=true -o "" -i ./pkg/apis/keycloak/v1alpha1 -O zz_generated.openapi -p ./pkg/apis/keycloak/v1alpha1 -h ./hack/boilerplate.go.txt -r "-"
 
 .PHONY: code/check
 code/check:

@@ -13,7 +13,6 @@ type KeycloakSpec struct {
 	Extensions []string `json:"extensions,omitempty"`
 	// Number of Keycloak instances in HA mode. Default is 1.
 	// +optional
-	// +kubebuilder:default=1
 	Instances int `json:"instances,omitempty"`
 	// Controls external Ingress/Route settings.
 	// +optional
