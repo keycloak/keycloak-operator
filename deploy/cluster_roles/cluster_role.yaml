@@ -20,6 +20,7 @@ rules:
       - create
       - update
       - watch
+      - delete
   - apiGroups:
       - apps
     resources:
@@ -113,11 +114,15 @@ rules:
       - keycloakrealms
       - keycloakrealms/status
       - keycloakrealms/finalizers
+      - keycloakclients
+      - keycloakclients/status
+      - keycloakclients/finalizers
       - keycloakbackups
       - keycloakbackups/status
       - keycloakbackups/finalizers
-      - keycloakclients
       - keycloakusers
+      - keycloakusers/status
+      - keycloakusers/finalizers
     verbs:
       - get
       - list
