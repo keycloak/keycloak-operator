@@ -798,6 +798,13 @@ func (in *KeycloakSpec) DeepCopyInto(out *KeycloakSpec) {
 		copy(*out, *in)
 	}
 	out.ExternalAccess = in.ExternalAccess
+	if in.ExtraEnv != nil {
+		in, out := &in.ExtraEnv, &out.ExtraEnv
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	out.ExternalDatabase = in.ExternalDatabase
 	out.PodDisruptionBudget = in.PodDisruptionBudget
 	return

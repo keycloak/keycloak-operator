@@ -27,7 +27,7 @@ func GetServiceEnvVar(suffix string) string {
 }
 
 func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
-	return []v1.EnvVar{
+	defaultEnv := []v1.EnvVar{
 		// Database settings
 		{
 			Name:  "DB_VENDOR",
@@ -124,6 +124,17 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 			Value: "/var/run/secrets/kubernetes.io/serviceaccount/*.crt",
 		},
 	}
+
+	if len(cr.Spec.ExtraEnv) > 0 {
+		for k, v := range cr.Spec.ExtraEnv {
+			defaultEnv = append(defaultEnv, v1.EnvVar{
+				Name: k,
+				Value: v,
+			})
+		}
+	}
+
+	return defaultEnv
 }
 
 func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {

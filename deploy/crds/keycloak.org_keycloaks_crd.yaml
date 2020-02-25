@@ -68,6 +68,12 @@ spec:
                     pointing to Keycloak.
                   type: boolean
               type: object
+            extraEnv:
+              additionalProperties:
+                type: string
+              description: Enables to pass extra Environment variables to the keycloak
+                instance
+              type: object
             instances:
               description: Number of Keycloak instances in HA mode. Default is 1.
               type: integer

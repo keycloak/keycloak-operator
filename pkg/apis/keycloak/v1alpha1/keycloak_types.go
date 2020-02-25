@@ -18,6 +18,9 @@ type KeycloakSpec struct {
 	// Controls external Ingress/Route settings.
 	// +optional
 	ExternalAccess KeycloakExternalAccess `json:"externalAccess,omitempty"`
+	// Enables to pass extra Environment variables to the keycloak instance
+	// +optional
+	ExtraEnv map[string]string `json:"extraEnv,omitempty"`
 	// Controls external database settings.
 	// Using an external database requires providing a secret containing credentials
 	// as well as connection details. Here's an example of such secret:

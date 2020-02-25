@@ -558,6 +558,21 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 							Ref:         ref("github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakExternalAccess"),
 						},
 					},
+					"extraEnv": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Enables to pass extra Environment variables to the keycloak instance",
+							Type:        []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Allows: true,
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Type:   []string{"string"},
+										Format: "",
+									},
+								},
+							},
+						},
+					},
 					"externalDatabase": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Controls external database settings. Using an external database requires providing a secret containing credentials as well as connection details. Here's an example of such secret:\n\n    apiVersion: v1\n    kind: Secret\n    metadata:\n        name: keycloak-db-secret\n        namespace: keycloak\n    stringData:\n        POSTGRES_DATABASE: <Database Name>\n        POSTGRES_EXTERNAL_ADDRESS: <External Database IP or URL (resolvable by K8s)>\n        POSTGRES_EXTERNAL_PORT: <External Database Port>\n        # Strongly recommended to use <'Keycloak CR Name'-postgresql>\n        POSTGRES_HOST: <Database Service Name>\n        POSTGRES_PASSWORD: <Database Password>\n        # Required for AWS Backup functionality\n        POSTGRES_SUPERUSER: true\n        POSTGRES_USERNAME: <Database Username>\n     type: Opaque\n\nBoth POSTGRES_EXTERNAL_ADDRESS and POSTGRES_EXTERNAL_PORT are specifically required for creating connection to the external database. The secret name is created using the following convention:\n      <Custom Resource Name>-db-secret\n\nFor more information, please refer to the Operator documentation.",
