@@ -17,8 +17,8 @@ func DatabaseSecret(cr *v1alpha1.Keycloak) *v1.Secret {
 			},
 		},
 		StringData: map[string]string{
-			DatabaseSecretUsernameProperty: cr.ObjectMeta.Name + "-" + RandStringRunes(4),
-			DatabaseSecretPasswordProperty: cr.ObjectMeta.Name + "-" + RandStringRunes(4),
+			DatabaseSecretUsernameProperty: PostgresqlUsername,
+			DatabaseSecretPasswordProperty: cr.ObjectMeta.Name + "-" + GenerateRandomString(PostgresqlPasswordLength),
 			// The 3 entries below are not used by the Operator itself but rather by the Backup container
 			DatabaseSecretDatabaseProperty:  PostgresqlDatabase,
 			DatabaseSecretSuperuserProperty: "true",
@@ -38,10 +38,10 @@ func DatabaseSecretReconciled(cr *v1alpha1.Keycloak, currentState *v1.Secret) *v
 	reconciled := currentState.DeepCopy()
 	// K8s automatically converts StringData to Data when getting the resource
 	if _, ok := reconciled.Data[DatabaseSecretUsernameProperty]; !ok {
-		reconciled.StringData[DatabaseSecretUsernameProperty] = cr.ObjectMeta.Name + "-" + RandStringRunes(4)
+		reconciled.StringData[DatabaseSecretUsernameProperty] = PostgresqlUsername
 	}
 	if _, ok := reconciled.Data[DatabaseSecretPasswordProperty]; !ok {
-		reconciled.StringData[DatabaseSecretPasswordProperty] = cr.ObjectMeta.Name + "-" + RandStringRunes(4)
+		reconciled.StringData[DatabaseSecretPasswordProperty] = cr.ObjectMeta.Name + "-" + GenerateRandomString(PostgresqlPasswordLength)
 	}
 	if _, ok := reconciled.Data[DatabaseSecretDatabaseProperty]; !ok {
 		reconciled.StringData[DatabaseSecretDatabaseProperty] = PostgresqlDatabase

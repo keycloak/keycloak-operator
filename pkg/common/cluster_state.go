@@ -54,6 +54,7 @@ type ClusterState struct {
 	KeycloakRoute                   *v13.Route
 	PostgresqlServiceEndpoints      *v1.Endpoints
 	PodDisruptionBudget             *v1beta12.PodDisruptionBudget
+	KeycloakProbes                  *v1.ConfigMap
 }
 
 func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error { //nolint
@@ -86,6 +87,11 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 	}
 
 	err = i.readDatabaseSecretCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readProbesCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
 	}
@@ -183,7 +189,7 @@ func (i *ClusterState) readPostgresqlPersistentVolumeClaimCurrentState(context c
 }
 
 func (i *ClusterState) readPostgresqlServiceCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
-	postgresqlService := model.PostgresqlService(cr)
+	postgresqlService := model.PostgresqlService(cr, nil, false)
 	postgresqlServiceSelector := model.PostgresqlServiceSelector(cr)
 
 	err := controllerClient.Get(context, postgresqlServiceSelector, postgresqlService)
@@ -358,13 +364,33 @@ func (i *ClusterState) readDatabaseSecretCurrentState(context context.Context, c
 	return nil
 }
 
+func (i *ClusterState) readProbesCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	probesConfigMap := model.KeycloakProbes(cr)
+	probesConfigMapSelector := model.KeycloakProbesSelector(cr)
+
+	err := controllerClient.Get(context, probesConfigMapSelector, probesConfigMap)
+
+	if err != nil {
+		// If the resource type doesn't exist on the cluster or does exist but is not found
+		if meta.IsNoMatchError(err) || apiErrors.IsNotFound(err) {
+			i.KeycloakProbes = nil
+		} else {
+			return err
+		}
+	} else {
+		i.KeycloakProbes = probesConfigMap.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakProbes.Kind, i.KeycloakProbes.Name)
+	}
+	return nil
+}
+
 func (i *ClusterState) readKeycloakOrRHSSODeploymentCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
 	isRHSSO := cr.Spec.Profile == RHSSOProfile
 
-	deployment := model.KeycloakDeployment(cr)
+	deployment := model.KeycloakDeployment(cr, nil)
 	selector := model.KeycloakDeploymentSelector(cr)
 	if isRHSSO {
-		deployment = model.RHSSODeployment(cr)
+		deployment = model.RHSSODeployment(cr, nil)
 		selector = model.RHSSODeploymentSelector(cr)
 	}
 

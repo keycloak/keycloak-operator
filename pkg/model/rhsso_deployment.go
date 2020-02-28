@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -8,11 +9,101 @@ import (
 	v13 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func RHSSODeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
+func getRHSSOEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
+	return []v1.EnvVar{
+		// Database settings
+		{
+			Name:  "DB_SERVICE_PREFIX_MAPPING",
+			Value: PostgresqlServiceName + "=DB",
+		},
+		{
+			Name:  "TX_DATABASE_PREFIX_MAPPING",
+			Value: PostgresqlServiceName + "=DB",
+		},
+		{
+			Name:  "DB_JNDI",
+			Value: "java:jboss/datasources/KeycloakDS",
+		},
+		{
+			Name:  "DB_SCHEMA",
+			Value: "public",
+		},
+		{
+			Name: "DB_USERNAME",
+			ValueFrom: &v1.EnvVarSource{
+				SecretKeyRef: &v1.SecretKeySelector{
+					LocalObjectReference: v1.LocalObjectReference{
+						Name: DatabaseSecretName,
+					},
+					Key: DatabaseSecretUsernameProperty,
+				},
+			},
+		},
+		{
+			Name: "DB_PASSWORD",
+			ValueFrom: &v1.EnvVarSource{
+				SecretKeyRef: &v1.SecretKeySelector{
+					LocalObjectReference: v1.LocalObjectReference{
+						Name: DatabaseSecretName,
+					},
+					Key: DatabaseSecretPasswordProperty,
+				},
+			},
+		},
+		{
+			Name:  "DB_DATABASE",
+			Value: GetExternalDatabaseName(dbSecret),
+		},
+		// Discovery settings
+		{
+			Name:  "JGROUPS_PING_PROTOCOL",
+			Value: "dns.DNS_PING",
+		},
+		{
+			Name:  "OPENSHIFT_DNS_PING_SERVICE_NAME",
+			Value: KeycloakDiscoveryServiceName + "." + cr.Namespace + ".svc.cluster.local",
+		},
+		{
+			Name: "SSO_ADMIN_USERNAME",
+			ValueFrom: &v1.EnvVarSource{
+				SecretKeyRef: &v1.SecretKeySelector{
+					LocalObjectReference: v1.LocalObjectReference{
+						Name: "credential-" + cr.Name,
+					},
+					Key: AdminUsernameProperty,
+				},
+			},
+		},
+		{
+			Name: "SSO_ADMIN_PASSWORD",
+			ValueFrom: &v1.EnvVarSource{
+				SecretKeyRef: &v1.SecretKeySelector{
+					LocalObjectReference: v1.LocalObjectReference{
+						Name: "credential-" + cr.Name,
+					},
+					Key: AdminPasswordProperty,
+				},
+			},
+		},
+		{
+			Name:  GetServiceEnvVar("SERVICE_HOST"),
+			Value: PostgresqlServiceName + "." + cr.Namespace + ".svc.cluster.local",
+		},
+		{
+			Name:  GetServiceEnvVar("SERVICE_PORT"),
+			Value: fmt.Sprintf("%v", GetExternalDatabasePort(dbSecret)),
+		},
+		{
+			Name:  "X509_CA_BUNDLE",
+			Value: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
+		},
+	}
+}
+
+func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
 	return &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      KeycloakDeploymentName,
@@ -64,105 +155,10 @@ func RHSSODeployment(cr *v1alpha1.Keycloak) *v13.StatefulSet {
 									Protocol:      "TCP",
 								},
 							},
-							Env: []v1.EnvVar{
-								// Database settings
-								{
-									Name:  "DB_SERVICE_PREFIX_MAPPING",
-									Value: PostgresqlServiceName + "=DB",
-								},
-								{
-									Name:  "TX_DATABASE_PREFIX_MAPPING",
-									Value: PostgresqlServiceName + "=DB",
-								},
-								{
-									Name:  "DB_JNDI",
-									Value: "java:jboss/datasources/KeycloakDS",
-								},
-								{
-									Name:  "DB_SCHEMA",
-									Value: "public",
-								},
-								{
-									Name: "DB_USERNAME",
-									ValueFrom: &v1.EnvVarSource{
-										SecretKeyRef: &v1.SecretKeySelector{
-											LocalObjectReference: v1.LocalObjectReference{
-												Name: DatabaseSecretName,
-											},
-											Key: DatabaseSecretUsernameProperty,
-										},
-									},
-								},
-								{
-									Name: "DB_PASSWORD",
-									ValueFrom: &v1.EnvVarSource{
-										SecretKeyRef: &v1.SecretKeySelector{
-											LocalObjectReference: v1.LocalObjectReference{
-												Name: DatabaseSecretName,
-											},
-											Key: DatabaseSecretPasswordProperty,
-										},
-									},
-								},
-								{
-									Name:  "DB_DATABASE",
-									Value: PostgresqlDatabase,
-								},
-								// Discovery settings
-								{
-									Name:  "JGROUPS_PING_PROTOCOL",
-									Value: "dns.DNS_PING",
-								},
-								{
-									Name:  "OPENSHIFT_DNS_PING_SERVICE_NAME",
-									Value: KeycloakDiscoveryServiceName + "." + cr.Namespace + ".svc.cluster.local",
-								},
-								{
-									Name: "SSO_ADMIN_USERNAME",
-									ValueFrom: &v1.EnvVarSource{
-										SecretKeyRef: &v1.SecretKeySelector{
-											LocalObjectReference: v1.LocalObjectReference{
-												Name: "credential-" + cr.Name,
-											},
-											Key: AdminUsernameProperty,
-										},
-									},
-								},
-								{
-									Name: "SSO_ADMIN_PASSWORD",
-									ValueFrom: &v1.EnvVarSource{
-										SecretKeyRef: &v1.SecretKeySelector{
-											LocalObjectReference: v1.LocalObjectReference{
-												Name: "credential-" + cr.Name,
-											},
-											Key: AdminPasswordProperty,
-										},
-									},
-								},
-							},
-							VolumeMounts: KeycloakVolumeMounts(RhssoExtensionPath),
-							LivenessProbe: &v1.Probe{
-								InitialDelaySeconds: 60,
-								TimeoutSeconds:      1,
-								Handler: v1.Handler{
-									HTTPGet: &v1.HTTPGetAction{
-										Path:   "/auth/realms/master",
-										Port:   intstr.FromInt(8080),
-										Scheme: "HTTP",
-									},
-								},
-							},
-							ReadinessProbe: &v1.Probe{
-								TimeoutSeconds:      1,
-								InitialDelaySeconds: 10,
-								Handler: v1.Handler{
-									HTTPGet: &v1.HTTPGetAction{
-										Path:   "/auth/realms/master",
-										Port:   intstr.FromInt(8080),
-										Scheme: "HTTP",
-									},
-								},
-							},
+							LivenessProbe:  livenessProbe(),
+							ReadinessProbe: readinessProbe(),
+							Env:            getRHSSOEnv(cr, dbSecret),
+							VolumeMounts:   KeycloakVolumeMounts(RhssoExtensionPath),
 						},
 					},
 				},
@@ -178,7 +174,7 @@ func RHSSODeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 	}
 }
 
-func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet) *v13.StatefulSet {
+func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet, dbSecret *v1.Secret) *v13.StatefulSet {
 	currentImage := GetCurrentKeycloakImage(currentState)
 
 	reconciled := currentState.DeepCopy()
@@ -207,105 +203,10 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 					Protocol:      "TCP",
 				},
 			},
-			VolumeMounts: KeycloakVolumeMounts(RhssoExtensionPath),
-			LivenessProbe: &v1.Probe{
-				InitialDelaySeconds: 60,
-				TimeoutSeconds:      1,
-				Handler: v1.Handler{
-					HTTPGet: &v1.HTTPGetAction{
-						Path:   "/auth/realms/master",
-						Port:   intstr.FromInt(8080),
-						Scheme: "HTTP",
-					},
-				},
-			},
-			ReadinessProbe: &v1.Probe{
-				TimeoutSeconds:      1,
-				InitialDelaySeconds: 10,
-				Handler: v1.Handler{
-					HTTPGet: &v1.HTTPGetAction{
-						Path:   "/auth/realms/master",
-						Port:   intstr.FromInt(8080),
-						Scheme: "HTTP",
-					},
-				},
-			},
-			Env: []v1.EnvVar{
-				// Database settings
-				{
-					Name:  "DB_SERVICE_PREFIX_MAPPING",
-					Value: PostgresqlServiceName + "=DB",
-				},
-				{
-					Name:  "TX_DATABASE_PREFIX_MAPPING",
-					Value: PostgresqlServiceName + "=DB",
-				},
-				{
-					Name:  "DB_JNDI",
-					Value: "java:jboss/datasources/KeycloakDS",
-				},
-				{
-					Name:  "DB_SCHEMA",
-					Value: "public",
-				},
-				{
-					Name: "DB_USERNAME",
-					ValueFrom: &v1.EnvVarSource{
-						SecretKeyRef: &v1.SecretKeySelector{
-							LocalObjectReference: v1.LocalObjectReference{
-								Name: DatabaseSecretName,
-							},
-							Key: DatabaseSecretUsernameProperty,
-						},
-					},
-				},
-				{
-					Name: "DB_PASSWORD",
-					ValueFrom: &v1.EnvVarSource{
-						SecretKeyRef: &v1.SecretKeySelector{
-							LocalObjectReference: v1.LocalObjectReference{
-								Name: DatabaseSecretName,
-							},
-							Key: DatabaseSecretPasswordProperty,
-						},
-					},
-				},
-				{
-					Name:  "DB_DATABASE",
-					Value: PostgresqlDatabase,
-				},
-				// Discovery settings
-				{
-					Name:  "JGROUPS_PING_PROTOCOL",
-					Value: "dns.DNS_PING",
-				},
-				{
-					Name:  "OPENSHIFT_DNS_PING_SERVICE_NAME",
-					Value: KeycloakDiscoveryServiceName + "." + cr.Namespace + ".svc.cluster.local",
-				},
-				{
-					Name: "SSO_ADMIN_USERNAME",
-					ValueFrom: &v1.EnvVarSource{
-						SecretKeyRef: &v1.SecretKeySelector{
-							LocalObjectReference: v1.LocalObjectReference{
-								Name: "credential-" + cr.Name,
-							},
-							Key: AdminUsernameProperty,
-						},
-					},
-				},
-				{
-					Name: "SSO_ADMIN_PASSWORD",
-					ValueFrom: &v1.EnvVarSource{
-						SecretKeyRef: &v1.SecretKeySelector{
-							LocalObjectReference: v1.LocalObjectReference{
-								Name: "credential-" + cr.Name,
-							},
-							Key: AdminPasswordProperty,
-						},
-					},
-				},
-			},
+			VolumeMounts:   KeycloakVolumeMounts(RhssoExtensionPath),
+			LivenessProbe:  livenessProbe(),
+			ReadinessProbe: readinessProbe(),
+			Env:            getRHSSOEnv(cr, dbSecret),
 		},
 	}
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)

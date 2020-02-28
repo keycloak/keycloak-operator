@@ -60,8 +60,8 @@ spec:
                           type: string
                         type: array
                     required:
-                    - key
-                    - operator
+                      - key
+                      - operator
                     type: object
                   type: array
                 matchLabels:
@@ -215,7 +215,7 @@ spec:
                           type: string
                         type: array
                     required:
-                    - clientId
+                      - clientId
                     type: object
                   type: array
                 displayName:
@@ -359,7 +359,7 @@ spec:
                     type: object
                   type: array
               required:
-              - realm
+                - realm
               type: object
             realmOverrides:
               description: A list of overrides to the default Realm behavior.
@@ -373,8 +373,17 @@ spec:
                     type: string
                 type: object
               type: array
+            eventsEnabled:
+              description: Enable events recording
+              type: boolean
+            adminEventsEnabled:
+              description: Enable admin events recording
+              type: boolean
+            adminEventsDetailsEnabled:
+              description: Enable admin events details
+              type: boolean
           required:
-          - realm
+            - realm
           type: object
         status:
           description: KeycloakRealmStatus defines the observed state of KeycloakRealm
@@ -403,14 +412,14 @@ spec:
                 ]'
               type: object
           required:
-          - loginURL
-          - message
-          - phase
-          - ready
+            - loginURL
+            - message
+            - phase
+            - ready
           type: object
       type: object
   version: v1alpha1
   versions:
-  - name: v1alpha1
-    served: true
-    storage: true
+    - name: v1alpha1
+      served: true
+      storage: true

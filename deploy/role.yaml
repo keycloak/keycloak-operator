@@ -21,6 +21,7 @@ rules:
   - create
   - update
   - watch
+  - delete
 - apiGroups:
   - apps
   resources:

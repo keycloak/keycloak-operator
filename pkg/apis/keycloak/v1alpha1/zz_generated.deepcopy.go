@@ -206,6 +206,21 @@ func (in *KeycloakAPIRealm) DeepCopyInto(out *KeycloakAPIRealm) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.EventsEnabled != nil {
+		in, out := &in.EventsEnabled, &out.EventsEnabled
+		*out = new(bool)
+		**out = **in
+	}
+	if in.AdminEventsEnabled != nil {
+		in, out := &in.AdminEventsEnabled, &out.AdminEventsEnabled
+		*out = new(bool)
+		**out = **in
+	}
+	if in.AdminEventsDetailsEnabled != nil {
+		in, out := &in.AdminEventsDetailsEnabled, &out.AdminEventsDetailsEnabled
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
