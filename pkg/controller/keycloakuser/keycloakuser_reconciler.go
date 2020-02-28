@@ -266,8 +266,7 @@ func containsRoleID(list []string, id string) bool {
 func containsIdentity(list []v1alpha1.FederatedIdentity, identity v1alpha1.FederatedIdentity) bool {
 	for _, item := range list {
 		if item.UserID == identity.UserID &&
-			item.IdentityProvider == identity.IdentityProvider &&
-			item.UserName == identity.UserName {
+			item.IdentityProvider == identity.IdentityProvider {
 			return true
 		}
 	}
