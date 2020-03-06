@@ -57,12 +57,13 @@ func (i *UserState) Read(keycloakClient KeycloakInterface, userClient client.Cli
 }
 
 func (i *UserState) readUser(client KeycloakInterface, user *v1alpha1.KeycloakUser, realm string) error {
-	keycloakUser, err := client.FindUserByUsername(user.Spec.User.UserName, realm)
-	if err != nil {
-		return err
+	if user.Spec.User.ID != "" {
+		keycloakUser, err := client.GetUser(user.Spec.User.ID, realm)
+		if err != nil {
+			return err
+		}
+		i.User = keycloakUser
 	}
-
-	i.User = keycloakUser
 	return nil
 }
 
