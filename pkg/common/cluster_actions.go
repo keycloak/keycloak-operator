@@ -116,14 +116,18 @@ func (i *ClusterActionRunner) CreateRealm(obj *v1alpha1.KeycloakRealm) error {
 	if i.keycloakClient == nil {
 		return errors.New("cannot perform realm create when client is nil")
 	}
-	return i.keycloakClient.CreateRealm(obj)
+
+	_, err := i.keycloakClient.CreateRealm(obj)
+	return err
 }
 
 func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm string) error {
 	if i.keycloakClient == nil {
 		return errors.New("cannot perform client create when client is nil")
 	}
-	return i.keycloakClient.CreateClient(obj.Spec.Client, realm)
+
+	_, err := i.keycloakClient.CreateClient(obj.Spec.Client, realm)
+	return err
 }
 
 func (i *ClusterActionRunner) UpdateClient(obj *v1alpha1.KeycloakClient, realm string) error {
@@ -154,7 +158,14 @@ func (i *ClusterActionRunner) CreateUser(obj *v1alpha1.KeycloakUser, realm strin
 	}
 
 	// Create the user
-	return i.keycloakClient.CreateUser(&obj.Spec.User, realm)
+	uid, err := i.keycloakClient.CreateUser(&obj.Spec.User, realm)
+	if err != nil {
+		return err
+	}
+
+	// Update newly created user with its uid
+	obj.Spec.User.ID = uid
+	return i.client.Update(i.context, obj)
 }
 
 func (i *ClusterActionRunner) UpdateUser(obj *v1alpha1.KeycloakUser, realm string) error {
@@ -189,7 +200,9 @@ func (i *ClusterActionRunner) AssignRealmRole(obj *v1alpha1.KeycloakUserRole, us
 	if i.keycloakClient == nil {
 		return errors.New("cannot perform role assign when client is nil")
 	}
-	return i.keycloakClient.CreateUserRealmRole(obj, realm, userID)
+
+	_, err := i.keycloakClient.CreateUserRealmRole(obj, realm, userID)
+	return err
 }
 
 func (i *ClusterActionRunner) RemoveRealmRole(obj *v1alpha1.KeycloakUserRole, userID, realm string) error {
@@ -203,7 +216,9 @@ func (i *ClusterActionRunner) AssignClientRole(obj *v1alpha1.KeycloakUserRole, c
 	if i.keycloakClient == nil {
 		return errors.New("cannot perform role assign when client is nil")
 	}
-	return i.keycloakClient.CreateUserClientRole(obj, realm, clientID, userID)
+
+	_, err := i.keycloakClient.CreateUserClientRole(obj, realm, clientID, userID)
+	return err
 }
 
 func (i *ClusterActionRunner) RemoveClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error {
@@ -275,7 +290,11 @@ func (i *ClusterActionRunner) configureBrowserRedirector(provider, flow string, 
 			Alias:  authenticationConfigAlias,
 			Config: map[string]string{"defaultProvider": provider},
 		}
-		return i.keycloakClient.CreateAuthenticatorConfig(config, realmName, redirectorExecutionID)
+
+		if _, err := i.keycloakClient.CreateAuthenticatorConfig(config, realmName, redirectorExecutionID); err != nil {
+			return err
+		}
+		return nil
 	}
 
 	return nil

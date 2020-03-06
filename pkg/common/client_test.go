@@ -13,12 +13,14 @@ import (
 )
 
 const (
-	RealmsGetPath    = "/auth/admin/realms/%s"
-	RealmsCreatePath = "/auth/admin/realms"
-	RealmsDeletePath = "/auth/admin/realms/%s"
-	UserCreatePath   = "/auth/admin/realms/%s/users"
-	UserDeletePath   = "/auth/admin/realms/%s/users/%s"
-	TokenPath        = "/auth/realms/master/protocol/openid-connect/token" // nolint
+	RealmsGetPath          = "/auth/admin/realms/%s"
+	RealmsCreatePath       = "/auth/admin/realms"
+	RealmsDeletePath       = "/auth/admin/realms/%s"
+	UserCreatePath         = "/auth/admin/realms/%s/users"
+	UserDeletePath         = "/auth/admin/realms/%s/users/%s"
+	UserGetPath            = "/auth/admin/realms/%s/users/%s"
+	UserFindByUsernamePath = "/auth/admin/realms/%s/users?username=%s&max=-1"
+	TokenPath              = "/auth/realms/master/protocol/openid-connect/token" // nolint
 )
 
 func getDummyRealm() *v1alpha1.KeycloakRealm {
@@ -29,6 +31,27 @@ func getDummyRealm() *v1alpha1.KeycloakRealm {
 				Realm:       "dummy",
 				Enabled:     false,
 				DisplayName: "dummy",
+				Users: []*v1alpha1.KeycloakAPIUser{
+					getExistingDummyUser(),
+				},
+			},
+		},
+	}
+}
+
+func getExistingDummyUser() *v1alpha1.KeycloakAPIUser {
+	return &v1alpha1.KeycloakAPIUser{
+		ID:            "existing-dummy-user",
+		UserName:      "existing-dummy-user",
+		FirstName:     "existing-dummy-user",
+		LastName:      "existing-dummy-user",
+		Enabled:       true,
+		EmailVerified: true,
+		Credentials: []v1alpha1.KeycloakCredential{
+			{
+				Type:      "password",
+				Value:     "password",
+				Temporary: false,
 			},
 		},
 	}
@@ -63,7 +86,7 @@ func TestClient_CreateRealm(t *testing.T) {
 	realm := getDummyRealm()
 
 	// when
-	err := client.CreateRealm(realm)
+	_, err := client.CreateRealm(realm)
 
 	// then
 	// no error expected
@@ -100,9 +123,12 @@ func TestClient_CreateUser(t *testing.T) {
 	// given
 	user := getDummyUser()
 	realm := getDummyRealm()
+	dummyUserID := "dummy-user-id"
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		assert.Equal(t, fmt.Sprintf(UserCreatePath, realm.Spec.Realm.Realm), req.URL.Path)
+		locationURL := fmt.Sprintf("http://dummy-keycloak-host/%s", UserGetPath)
+		w.Header().Set("Location", fmt.Sprintf(locationURL, realm.Spec.Realm.Realm, dummyUserID))
 		w.WriteHeader(201)
 	})
 	server := httptest.NewServer(handler)
@@ -115,11 +141,12 @@ func TestClient_CreateUser(t *testing.T) {
 	}
 
 	// when
-	err := client.CreateUser(user, realm.Spec.Realm.Realm)
+	uid, err := client.CreateUser(user, realm.Spec.Realm.Realm)
 
 	// then
 	// correct path expected on httptest server
 	assert.NoError(t, err)
+	assert.Equal(t, uid, dummyUserID)
 }
 
 func TestClient_DeleteUser(t *testing.T) {
@@ -146,6 +173,43 @@ func TestClient_DeleteUser(t *testing.T) {
 	// then
 	// correct path expected on httptest server
 	assert.NoError(t, err)
+}
+
+func TestClient_FindUserByUsername(t *testing.T) {
+	// given
+	realm := getDummyRealm()
+	user := getExistingDummyUser()
+
+	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		assert.Equal(t, fmt.Sprintf(UserFindByUsernamePath, realm.Spec.Realm.Realm, user.UserName), req.URL.String())
+		assert.Equal(t, req.Method, http.MethodGet)
+		json, err := jsoniter.Marshal(realm.Spec.Realm.Users)
+		assert.NoError(t, err)
+
+		size, err := w.Write(json)
+		assert.NoError(t, err)
+		assert.Equal(t, size, len(json))
+
+		w.WriteHeader(200)
+	})
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	client := Client{
+		requester: server.Client(),
+		URL:       server.URL,
+		token:     "dummy",
+	}
+
+	// when
+	userFound, err := client.FindUserByUsername(user.UserName, realm.Spec.Realm.Realm)
+
+	// then
+	// correct path expected on httptest server
+	assert.NoError(t, err)
+
+	// returned realm must equal dummy realm
+	assert.Equal(t, user, userFound)
 }
 
 func TestClient_GetRealm(t *testing.T) {

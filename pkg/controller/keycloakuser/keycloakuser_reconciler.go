@@ -79,9 +79,6 @@ func (i *KeycloakuserReconciler) getKeycloakUserDesiredState(state *common.UserS
 			Msg:   fmt.Sprintf("create user %v", cr.Spec.User.UserName),
 		})
 	} else {
-		// The ID is expected along with the user representation
-		cr.Spec.User.ID = state.User.ID
-
 		actions = append(actions, &common.UpdateUserAction{
 			Ref:   cr,
 			Realm: i.Realm.Spec.Realm.Realm,
