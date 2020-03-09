@@ -7,6 +7,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"unicode"
 
 	v1 "k8s.io/api/core/v1"
 
@@ -63,9 +64,9 @@ func SanitizeResourceName(name string) string {
 			continue
 		}
 
-		// Uppercase letters
+		// Uppercase letters are transformed to lowercase
 		if ascii >= 65 && ascii <= 90 {
-			sb.WriteRune(char)
+			sb.WriteRune(unicode.ToLower(char))
 			continue
 		}
 
