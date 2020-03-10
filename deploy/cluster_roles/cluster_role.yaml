@@ -18,6 +18,7 @@ rules:
       - list
       - get
       - create
+      - patch
       - update
       - watch
       - delete
