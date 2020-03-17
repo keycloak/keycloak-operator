@@ -78,10 +78,16 @@ func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework
 
 func keycloakBackupTest(t *testing.T, f *framework.Framework, ctx *framework.TestCtx, namespace string) error {
 	//given
+	lab := map[string]string{"app": "sso"}
+	labSel := metav1.LabelSelector{
+		MatchLabels: lab,
+	}
+
 	keycloakCR := &keycloakv1alpha1.Keycloak{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testKeycloakCRName,
 			Namespace: namespace,
+			Labels:    lab,
 		},
 		Spec: keycloakv1alpha1.KeycloakSpec{
 			Instances: 1,
@@ -92,6 +98,9 @@ func keycloakBackupTest(t *testing.T, f *framework.Framework, ctx *framework.Tes
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      testKeycloakCRName,
 			Namespace: namespace,
+		},
+		Spec: keycloakv1alpha1.KeycloakBackupSpec{
+			InstanceSelector: &labSel,
 		},
 	}
 

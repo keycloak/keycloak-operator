@@ -17,10 +17,13 @@ type BackupState struct {
 	LocalPersistentVolumeClaim *v1.PersistentVolumeClaim
 	AwsJob                     *v12.Job
 	AwsPeriodicJob             *v1beta1.CronJob
+	Keycloak                   *kc.Keycloak
 }
 
-func NewBackupState() *BackupState {
-	return &BackupState{}
+func NewBackupState(keycloak kc.Keycloak) *BackupState {
+	return &BackupState{
+		Keycloak: &keycloak,
+	}
 }
 
 func NewClusterState() *ClusterState {

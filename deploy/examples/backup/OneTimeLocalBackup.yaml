@@ -2,3 +2,9 @@ apiVersion: keycloak.org/v1alpha1
 kind: KeycloakBackup
 metadata:
   name: example-keycloakbackup
+  labels:
+    app: sso
+spec:
+  instanceSelector:
+    matchLabels:
+      app: sso

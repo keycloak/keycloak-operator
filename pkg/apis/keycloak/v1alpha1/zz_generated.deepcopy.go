@@ -311,7 +311,7 @@ func (in *KeycloakBackup) DeepCopyInto(out *KeycloakBackup) {
 	*out = *in
 	out.TypeMeta = in.TypeMeta
 	in.ObjectMeta.DeepCopyInto(&out.ObjectMeta)
-	out.Spec = in.Spec
+	in.Spec.DeepCopyInto(&out.Spec)
 	in.Status.DeepCopyInto(&out.Status)
 	return
 }
@@ -371,6 +371,11 @@ func (in *KeycloakBackupList) DeepCopyObject() runtime.Object {
 func (in *KeycloakBackupSpec) DeepCopyInto(out *KeycloakBackupSpec) {
 	*out = *in
 	out.AWS = in.AWS
+	if in.InstanceSelector != nil {
+		in, out := &in.InstanceSelector, &out.InstanceSelector
+		*out = new(v1.LabelSelector)
+		(*in).DeepCopyInto(*out)
+	}
 	return
 }
 
