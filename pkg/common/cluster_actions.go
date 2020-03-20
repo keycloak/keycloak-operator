@@ -232,7 +232,8 @@ func (i *ClusterActionRunner) AssignFederatedIdentity(obj v1alpha1.FederatedIden
 	if i.keycloakClient == nil {
 		return errors.New("cannot perform identity provider assign when client is nil")
 	}
-	return i.keycloakClient.CreateFederatedIdentity(obj, userID, realm)
+	_, err := i.keycloakClient.CreateFederatedIdentity(obj, userID, realm)
+	return err
 }
 
 func (i *ClusterActionRunner) RemoveFederatedIdentity(obj v1alpha1.FederatedIdentity, userID, realm string) error {
