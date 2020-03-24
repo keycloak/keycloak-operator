@@ -2,7 +2,7 @@
 NAMESPACE=keycloak
 PROJECT=keycloak-operator
 PKG=github.com/keycloak/keycloak-operator
-OPERATOR_SDK_VERSION=v0.12.1
+OPERATOR_SDK_VERSION=v0.15.1
 OPERATOR_SDK_DOWNLOAD_URL=https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk-$(OPERATOR_SDK_VERSION)-x86_64-linux-gnu
 MINIKUBE_DOWNLOAD_URL=https://storage.googleapis.com/minikube/releases/v1.4.0/minikube-linux-amd64
 KUBECTL_DOWNLOAD_URL=https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/linux/amd64/kubectl
