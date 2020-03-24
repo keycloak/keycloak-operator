@@ -22,6 +22,9 @@ type KeycloakBackupSpec struct {
 	// Persistent Volume backup will be chosen.
 	// +optional
 	AWS KeycloakAWSSpec `json:"aws,omitempty"`
+	// Selector for looking up Keycloak Custom Resources.
+	// +kubebuilder:validation:Required
+	InstanceSelector *metav1.LabelSelector `json:"instanceSelector,omitempty"`
 }
 
 // KeycloakAWSSpec defines the desired state of KeycloakBackupSpec

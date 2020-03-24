@@ -15,11 +15,12 @@ import (
 func TestKeycloakBackupReconciler_Test_Creating_Local_Backup_Job(t *testing.T) {
 	// given
 	cr := &v1alpha1.KeycloakBackup{}
+	keycloak := v1alpha1.Keycloak{}
 
-	currentState := common.NewBackupState()
+	currentState := common.NewBackupState(keycloak)
 
 	// when
-	reconciler := NewKeycloakBackupReconciler()
+	reconciler := NewKeycloakBackupReconciler(keycloak)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
@@ -32,6 +33,7 @@ func TestKeycloakBackupReconciler_Test_Creating_Local_Backup_Job(t *testing.T) {
 func TestKeycloakBackupReconciler_Test_Updating_Local_Backup_Job(t *testing.T) {
 	// given
 	cr := &v1alpha1.KeycloakBackup{}
+	keycloak := v1alpha1.Keycloak{}
 
 	currentState := &common.BackupState{
 		LocalPersistentVolumeJob:   &v1.Job{},
@@ -39,7 +41,7 @@ func TestKeycloakBackupReconciler_Test_Updating_Local_Backup_Job(t *testing.T) {
 	}
 
 	// when
-	reconciler := NewKeycloakBackupReconciler()
+	reconciler := NewKeycloakBackupReconciler(keycloak)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
@@ -58,13 +60,14 @@ func TestKeycloakBackupReconciler_Test_Creating_AWS_Job(t *testing.T) {
 			},
 		},
 	}
+	keycloak := v1alpha1.Keycloak{}
 
 	currentState := &common.BackupState{
 		AwsJob: &v1.Job{},
 	}
 
 	// when
-	reconciler := NewKeycloakBackupReconciler()
+	reconciler := NewKeycloakBackupReconciler(keycloak)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
@@ -81,11 +84,12 @@ func TestKeycloakBackupReconciler_Test_Updating_AWS_Job(t *testing.T) {
 			},
 		},
 	}
+	keycloak := v1alpha1.Keycloak{}
 
-	currentState := common.NewBackupState()
+	currentState := common.NewBackupState(keycloak)
 
 	// when
-	reconciler := NewKeycloakBackupReconciler()
+	reconciler := NewKeycloakBackupReconciler(keycloak)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
@@ -103,11 +107,12 @@ func TestKeycloakBackupReconciler_Test_Creating_AWS_Periodic_Job(t *testing.T) {
 			},
 		},
 	}
+	keycloak := v1alpha1.Keycloak{}
 
-	currentState := common.NewBackupState()
+	currentState := common.NewBackupState(keycloak)
 
 	// when
-	reconciler := NewKeycloakBackupReconciler()
+	reconciler := NewKeycloakBackupReconciler(keycloak)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
@@ -125,13 +130,14 @@ func TestKeycloakBackupReconciler_Test_Updating_AWS_Periodic_Job(t *testing.T) {
 			},
 		},
 	}
+	keycloak := v1alpha1.Keycloak{}
 
 	currentState := &common.BackupState{
 		AwsPeriodicJob: &v1beta1.CronJob{},
 	}
 
 	// when
-	reconciler := NewKeycloakBackupReconciler()
+	reconciler := NewKeycloakBackupReconciler(keycloak)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
