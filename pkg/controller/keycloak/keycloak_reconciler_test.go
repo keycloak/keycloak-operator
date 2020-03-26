@@ -76,8 +76,9 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	assert.IsType(t, model.PostgresqlService(cr, model.DatabaseSecret(cr), false), desiredState[7].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakService(cr), desiredState[8].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakDiscoveryService(cr), desiredState[9].(common.GenericCreateAction).Ref)
-	assert.IsType(t, model.KeycloakDeployment(cr, model.DatabaseSecret(cr)), desiredState[10].(common.GenericCreateAction).Ref)
-	assert.IsType(t, model.KeycloakRoute(cr), desiredState[11].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakProbes(cr), desiredState[10].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakDeployment(cr, model.DatabaseSecret(cr)), desiredState[11].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakRoute(cr), desiredState[12].(common.GenericCreateAction).Ref)
 }
 
 func TestKeycloakReconciler_Test_Creating_RHSSO(t *testing.T) {

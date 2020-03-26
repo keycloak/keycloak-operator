@@ -52,7 +52,52 @@ func TestKeycloakBackupReconciler_Test_Creating_Client(t *testing.T) {
 	assert.IsType(t, model.ClientSecret(cr), desiredState[2].(common.GenericCreateAction).Ref)
 }
 
-func TestKeycloakBackupReconciler_Test_Delete_Client(t *testing.T) {
+func TestKeycloakClientReconciler_Test_PartialUpdate_Client(t *testing.T) {
+	// given
+	keycloakCr := v1alpha1.Keycloak{}
+	cr := &v1alpha1.KeycloakClient{
+		ObjectMeta: v13.ObjectMeta{
+			Name:      "test",
+			Namespace: "test",
+		},
+		Spec: v1alpha1.KeycloakClientSpec{
+			RealmSelector: &v13.LabelSelector{
+				MatchLabels: map[string]string{"application": "sso"},
+			},
+			Client: &v1alpha1.KeycloakAPIClient{
+				ClientID: "test",
+				Secret:   "test",
+			},
+		},
+	}
+
+	currentState := &common.ClientState{
+		Realm: &v1alpha1.KeycloakRealm{
+			Spec: v1alpha1.KeycloakRealmSpec{
+				Realm: &v1alpha1.KeycloakAPIRealm{
+					Realm: "test",
+				},
+			},
+		},
+		Client: &v1alpha1.KeycloakAPIClient{
+			Name: "dummy",
+		},
+	}
+
+	// when
+	reconciler := NewKeycloakClientReconciler(keycloakCr)
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	assert.IsType(t, common.PingAction{}, desiredState[0])
+	assert.IsType(t, common.UpdateClientAction{}, desiredState[1])
+
+	// client secret still needs to be created even if the client exists
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
+	assert.IsType(t, model.ClientSecret(cr), desiredState[2].(common.GenericCreateAction).Ref)
+}
+
+func TestKeycloakClientReconciler_Test_Delete_Client(t *testing.T) {
 	// given
 	keycloakCr := v1alpha1.Keycloak{}
 	cr := &v1alpha1.KeycloakClient{
