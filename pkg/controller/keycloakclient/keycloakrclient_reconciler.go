@@ -28,11 +28,18 @@ func (i *KeycloakClientReconciler) Reconcile(state *common.ClientState, cr *kc.K
 	desired.AddAction(i.pingKeycloak())
 	if cr.DeletionTimestamp != nil { //nolint
 		desired.AddAction(i.getDeletedClientState(state, cr))
-	} else if state.Client == nil {
+		return desired
+	}
+
+	if state.Client == nil {
 		desired.AddAction(i.getCreatedClientState(state, cr))
-		desired.AddAction(i.getCreatedClientSecretState(state, cr))
 	} else {
 		desired.AddAction(i.getUpdatedClientState(state, cr))
+	}
+
+	if state.ClientSecret == nil {
+		desired.AddAction(i.getCreatedClientSecretState(state, cr))
+	} else {
 		desired.AddAction(i.getUpdatedClientSecretState(state, cr))
 	}
 
