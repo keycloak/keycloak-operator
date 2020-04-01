@@ -2,6 +2,7 @@ package keycloak
 
 import (
 	"reflect"
+	"strconv"
 	"testing"
 
 	v1 "k8s.io/api/core/v1"
@@ -357,6 +358,112 @@ func TestKeycloakReconciler_Test_Updating_External_Database_URI(t *testing.T) {
 	assert.NotNil(t, service)
 	assert.Equal(t, service.Spec.Type, v1.ServiceTypeExternalName)
 	assert.Equal(t, service.Spec.ExternalName, string(currentState.DatabaseSecret.Data[model.DatabaseSecretExternalAddressProperty]))
+}
+
+func TestKeycloakReconciler_Test_Updating_External_Database_URI_From_IP_To_ExternalName(t *testing.T) {
+	// given
+	const (
+		oldIP           = "1.2.3.4"
+		oldPort         = 1234
+		newExternalname = "host.example.database.location"
+		newPort         = 5432
+	)
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.ExternalDatabase.Enabled = true
+
+	currentState := common.NewClusterState()
+	currentState.PostgresqlServiceEndpoints = model.PostgresqlServiceEndpoints(cr)
+	currentState.DatabaseSecret = model.DatabaseSecret(cr)
+	currentState.DatabaseSecret.Data = map[string][]byte{
+		model.DatabaseSecretExternalAddressProperty: []byte(oldIP),
+		model.DatabaseSecretExternalPortProperty:    []byte(strconv.Itoa(oldPort)),
+	}
+
+	currentState.PostgresqlService = model.PostgresqlService(cr, currentState.DatabaseSecret, false)
+
+	// This conversion is done my K8s. In the tests, we need to fake it.
+	currentState.DatabaseSecret.Data = map[string][]byte{
+		model.DatabaseSecretExternalAddressProperty: []byte(newExternalname),
+		model.DatabaseSecretExternalPortProperty:    []byte(strconv.Itoa(newPort)),
+	}
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	var service *v1.Service
+	for _, v := range desiredState {
+		if reflect.TypeOf(v) == reflect.TypeOf(common.GenericUpdateAction{}) {
+			if reflect.TypeOf(v.(common.GenericUpdateAction).Ref) == reflect.TypeOf(model.PostgresqlService(cr, currentState.DatabaseSecret, true)) {
+				s := v.(common.GenericUpdateAction).Ref.(*v1.Service)
+				if s.Name == model.PostgresqlServiceName {
+					service = s
+				}
+			}
+		}
+	}
+	assert.NotNil(t, service)
+	assert.Equal(t, service.Spec.Type, v1.ServiceTypeExternalName)
+	assert.Equal(t, service.Spec.ExternalName, string(currentState.DatabaseSecret.Data[model.DatabaseSecretExternalAddressProperty]))
+	assert.Equal(t, service.Spec.Ports[0].Port, int32(newPort))
+}
+
+func TestKeycloakReconciler_Test_Updating_External_Database_From_ExternalName_To_IP(t *testing.T) {
+	// given
+	const (
+		oldExternalname = "host.example.database.location"
+		oldPort         = 1234
+		newIP           = "1.2.3.4"
+		newPort         = 5432
+	)
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.ExternalDatabase.Enabled = true
+
+	currentState := common.NewClusterState()
+	currentState.DatabaseSecret = model.DatabaseSecret(cr)
+	currentState.DatabaseSecret.Data = map[string][]byte{
+		model.DatabaseSecretExternalAddressProperty: []byte(oldExternalname),
+		model.DatabaseSecretExternalPortProperty:    []byte(strconv.Itoa(oldPort)),
+	}
+
+	currentState.PostgresqlService = model.PostgresqlService(cr, currentState.DatabaseSecret, false)
+
+	// This conversion is done my K8s. In the tests, we need to fake it.
+	currentState.DatabaseSecret.Data = map[string][]byte{
+		model.DatabaseSecretExternalAddressProperty: []byte(newIP),
+		model.DatabaseSecretExternalPortProperty:    []byte(strconv.Itoa(newPort)),
+	}
+	currentState.PostgresqlServiceEndpoints = model.PostgresqlServiceEndpoints(cr)
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	var service *v1.Service
+	var endpoints *v1.Endpoints
+	for _, v := range desiredState {
+		if reflect.TypeOf(v) == reflect.TypeOf(common.GenericUpdateAction{}) {
+			if reflect.TypeOf(v.(common.GenericUpdateAction).Ref) == reflect.TypeOf(model.PostgresqlService(cr, currentState.DatabaseSecret, true)) {
+				s := v.(common.GenericUpdateAction).Ref.(*v1.Service)
+				if s.Name == model.PostgresqlServiceName {
+					service = s
+				}
+			}
+		}
+		if reflect.TypeOf(v) == reflect.TypeOf(common.GenericUpdateAction{}) {
+			if reflect.TypeOf(v.(common.GenericUpdateAction).Ref) == reflect.TypeOf(model.PostgresqlServiceEndpoints(cr)) {
+				endpoints = v.(common.GenericUpdateAction).Ref.(*v1.Endpoints)
+			}
+		}
+	}
+	assert.NotNil(t, service)
+	assert.Equal(t, service.Spec.Type, v1.ServiceTypeClusterIP)
+	assert.Equal(t, model.PostgresqlServiceEndpointsReconciled(cr, currentState.PostgresqlServiceEndpoints, currentState.DatabaseSecret), endpoints)
+	assert.Equal(t, service.Spec.ExternalName, "")
+	assert.Equal(t, endpoints.Subsets[0].Ports[0].Port, int32(newPort))
+	assert.Equal(t, endpoints.Subsets[0].Addresses[0].IP, newIP)
 }
 
 func TestKeycloakReconciler_Test_Recreate_Credentials_When_Missig(t *testing.T) {
