@@ -107,7 +107,7 @@ metadata:
           }
         }
       ]
-  name: keycloak-operator.7.0.1
+  name: keycloak-operator.v7.0.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}

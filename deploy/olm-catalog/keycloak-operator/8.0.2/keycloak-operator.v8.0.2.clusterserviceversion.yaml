@@ -5,8 +5,8 @@ metadata:
     capabilities: Deep Insights
     categories: Security
     certified: 'False'
-    containerImage: 'quay.io/keycloak/keycloak-operator:9.0.0'
-    createdAt: 2020-03-12 00:00:00
+    containerImage: 'quay.io/keycloak/keycloak-operator:8.0.2'
+    createdAt: 2020-02-19 00:00:00
     description: 'An Operator for installing and managing Keycloak'
     repository: 'https://github.com/keycloak/keycloak-operator'
     support: Red Hat
@@ -56,8 +56,6 @@ metadata:
           "kind": "KeycloakBackup",
           "metadata": {
             "name": "example-keycloakbackup"
-          },
-          "spec": {
           }
         },
         {
@@ -108,7 +106,7 @@ metadata:
           }
         }
       ]
-  name: keycloak-operator.9.0.0
+  name: keycloak-operator.v8.0.2
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -186,7 +184,7 @@ spec:
                             fieldPath: metadata.name
                       - name: OPERATOR_NAME
                         value: keycloak-operator
-                    image: quay.io/keycloak/keycloak-operator:9.0.0
+                    image: quay.io/keycloak/keycloak-operator:8.0.2
                     imagePullPolicy: Always
                     name: keycloak-operator
                     resources: {}
@@ -334,7 +332,7 @@ spec:
     - Access
   links:
     - name: Documentation
-      url: https://github.com/keycloak/keycloak-operator/tree/9.0.0/docs
+      url: https://github.com/keycloak/keycloak-operator/tree/8.0.2/docs
     - name: Keycloak
       url: https://www.keycloak.org/
     - name: Keycloak Discourse
@@ -345,5 +343,5 @@ spec:
   maturity: alpha
   provider:
     name: Red Hat
-  version: 9.0.0
-  replaces: keycloak-operator.8.0.2
+  version: 8.0.2
+  replaces: keycloak-operator.v8.0.1
