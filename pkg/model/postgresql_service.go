@@ -55,13 +55,22 @@ func PostgresqlServiceSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 	}
 }
 
-func PostgresqlServiceReconciled(currentState *v1.Service) *v1.Service {
+func PostgresqlServiceReconciled(currentState *v1.Service, dbSecret *v1.Secret, serviceTypeExternal bool) *v1.Service {
 	reconciled := currentState.DeepCopy()
-	reconciled.Spec.Ports = []v1.ServicePort{
-		{
-			Port:       5432,
-			TargetPort: intstr.Parse("5432"),
-		},
+	if !serviceTypeExternal {
+		reconciled.Spec.Type = v1.ServiceTypeClusterIP
+		reconciled.Spec.Selector = map[string]string{
+			"app":       ApplicationName,
+			"component": PostgresqlDeploymentComponent,
+		}
+		reconciled.Spec.Ports = []v1.ServicePort{
+			{
+				Port:       5432,
+				TargetPort: intstr.Parse("5432"),
+			},
+		}
+	} else {
+		reconciled.Spec = getSpec(dbSecret, serviceTypeExternal)
 	}
 	return reconciled
 }

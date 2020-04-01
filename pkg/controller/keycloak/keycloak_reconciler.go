@@ -131,7 +131,7 @@ func (i *KeycloakReconciler) getPostgresqlServiceDesiredState(clusterState *comm
 		}
 	}
 	return common.GenericUpdateAction{
-		Ref: model.PostgresqlServiceReconciled(clusterState.PostgresqlService),
+		Ref: model.PostgresqlServiceReconciled(clusterState.PostgresqlService, clusterState.DatabaseSecret, isExternal),
 		Msg: "Update Postgresql KeycloakService",
 	}
 }
