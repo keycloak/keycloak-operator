@@ -59,6 +59,9 @@ type KeycloakSpec struct {
 	// Resources (Requests and Limits) for PostgresDeployment
 	// +optional
 	PostgresDeploymentSpec DeploymentSpec `json:"postgresDeploymentSpec,omitempty"`
+	// Specify Migration configuration
+	// +optional
+	Migration MigrateConfig `json:"migration,omitempty"`
 }
 
 type DeploymentSpec struct {
@@ -97,6 +100,17 @@ type KeycloakExternalDatabase struct {
 
 type PodDisruptionBudgetConfig struct {
 	// If set to true, the operator will create a PodDistruptionBudget for the Keycloak deployment and set its `maxUnavailable` value to 1
+	Enabled bool `json:"enabled,omitempty"`
+}
+
+type MigrateConfig struct {
+	// Set it to config backup policy for migration
+	// +optional
+	Backups BackupConfig `json:"backups,omitempty"`
+}
+
+type BackupConfig struct {
+	// If set to true, the operator will do database backup before doing migration
 	Enabled bool `json:"enabled,omitempty"`
 }
 

@@ -597,6 +597,12 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.DeploymentSpec"),
 						},
 					},
+					"migrations": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Specify Migrations configuration",
+							Ref:         ref("./pkg/apis/keycloak/v1alpha1.MigrateConfig"),
+						},
+					},
 				},
 			},
 		},

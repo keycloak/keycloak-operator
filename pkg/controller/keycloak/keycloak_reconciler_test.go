@@ -9,6 +9,7 @@ import (
 
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	grafanav1alpha1 "github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
@@ -637,4 +638,35 @@ func TestIsIP(t *testing.T) {
 	assert.True(t, model.IsIP([]byte("54.154.171.84")))
 	assert.False(t, model.IsIP([]byte("this.is.a.hostname")))
 	assert.False(t, model.IsIP([]byte("http://www.database.url")))
+}
+
+func TestKeycloakReconciler_Test_Should_Create_Backup(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.Migration.Backups.Enabled = true
+	backupCr := &v1alpha1.KeycloakBackup{}
+	labelSelect := metav1.LabelSelector{
+		MatchLabels: cr.Labels,
+	}
+
+	currentState := common.NewClusterState()
+	currentState.KeycloakBackup = &v1alpha1.KeycloakBackup{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      model.MigrateBackupName + "-" + common.BackupTime,
+			Namespace: cr.Namespace,
+			Labels:    cr.Labels,
+		},
+		Spec: v1alpha1.KeycloakBackupSpec{
+			InstanceSelector: &labelSelect,
+		},
+	}
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	assert.Equal(t, len(desiredState), 10)
+	assert.IsType(t, common.GenericUpdateAction{}, desiredState[9])
+	assert.IsType(t, model.KeycloakMigrationOneTimeBackup(backupCr), desiredState[9].(common.GenericUpdateAction).Ref)
 }
