@@ -103,6 +103,18 @@ spec:
                       type: object
                   type: object
               type: object
+            migration:
+              description: Specify Migration configuration
+              properties:
+                backups:
+                  description: Set it to config backup policy for migration
+                  properties:
+                    enabled:
+                      description: If set to true, the operator will do database backup
+                        before doing migration
+                      type: boolean
+                  type: object
+              type: object
             podDisruptionBudget:
               description: Specify PodDisruptionBudget configuration
               properties:

@@ -1,6 +1,7 @@
 package keycloak
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -8,7 +9,10 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"github.com/keycloak/keycloak-operator/pkg/model"
 	v13 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
+
+var errBackup = errors.New("migrate backup fails")
 
 type Migrator interface {
 	Migrate(cr *v1alpha1.Keycloak, currentState *common.ClusterState, desiredState common.DesiredClusterState) (common.DesiredClusterState, error)
@@ -26,9 +30,23 @@ func (i *DefaultMigrator) Migrate(cr *v1alpha1.Keycloak, currentState *common.Cl
 		desiredImage := model.Profiles.GetKeycloakOrRHSSOImage(cr)
 		log.Info(fmt.Sprintf("Performing migration from '%s' to '%s'", currentState.KeycloakDeployment.Spec.Template.Spec.Containers[0].Image, desiredImage))
 		deployment := findDeployment(&desiredState)
-		if deployment != nil {
-			log.Info("Number of replicas decreased to 1")
-			deployment.Spec.Replicas = &[]int32{1}[0]
+
+		// The backup should be made when Keycloak container is down.
+		// This way, we minimize the chance of skipping important updated
+		// that administrators/users could have made just before the backup.
+		if deployment != nil && deployment.Status.Replicas > 0 {
+			log.Info("Number of replicas decreased to 0")
+			deployment.Spec.Replicas = &[]int32{0}[0]
+			deployment.Spec.Template.Spec.Containers[0].Image = currentState.KeycloakDeployment.Spec.Template.Spec.Containers[0].Image
+			return desiredState, nil
+		}
+
+		if cr.Spec.Migration.Backups.Enabled {
+			var err error
+			desiredState, err = oneTimeLocalBackup(cr, currentState, desiredState)
+			if err != nil {
+				return desiredState, err
+			}
 		}
 	}
 
@@ -57,4 +75,36 @@ func findDeployment(desiredState *common.DesiredClusterState) *v13.StatefulSet {
 		}
 	}
 	return nil
+}
+
+func oneTimeLocalBackup(cr *v1alpha1.Keycloak, currentState *common.ClusterState, desiredState common.DesiredClusterState) (common.DesiredClusterState, error) {
+	keycloakBackup := currentState.KeycloakBackup
+	switch {
+	case keycloakBackup == nil:
+		backupCr := &v1alpha1.KeycloakBackup{}
+		backupCr.Namespace = cr.Namespace
+		backupCr.Name = model.MigrateBackupName + "-" + common.BackupTime
+		labelSelect := metav1.LabelSelector{
+			MatchLabels: cr.Labels,
+		}
+		backupCr.Spec.InstanceSelector = &labelSelect
+
+		migrationBackupCR := common.GenericCreateAction{
+			Ref: model.KeycloakMigrationOneTimeBackup(backupCr),
+			Msg: "Create Local Backup CR",
+		}
+
+		backupDesiredState := common.DesiredClusterState{}
+		backupDesiredState = backupDesiredState.AddAction(migrationBackupCR)
+		return backupDesiredState, nil
+	case keycloakBackup.Status.Phase == v1alpha1.BackupPhaseCreated:
+		log.Info("migrate backup succeeds")
+		return desiredState, nil
+	case keycloakBackup.Status.Phase == v1alpha1.BackupPhaseFailing:
+		return nil, errBackup
+	default:
+		emptyDesiredState := common.DesiredClusterState{}
+		log.Info("wait for migrate backup's creating")
+		return emptyDesiredState, nil
+	}
 }

@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"time"
 
 	v1beta12 "k8s.io/api/policy/v1beta1"
 
@@ -10,14 +11,23 @@ import (
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	grafanav1alpha1 "github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
+	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/model"
 	v12 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+// BackupTime is used for generating a unique Backup job name
+var BackupTime string
+
+func init() {
+	BackupTime = time.Now().Format("20060102-150405")
+}
 
 // The desired cluster state is defined by a list of actions that have to be run to
 // get from the current state to the desired state
@@ -55,6 +65,7 @@ type ClusterState struct {
 	PostgresqlServiceEndpoints      *v1.Endpoints
 	PodDisruptionBudget             *v1beta12.PodDisruptionBudget
 	KeycloakProbes                  *v1.ConfigMap
+	KeycloakBackup                  *v1alpha1.KeycloakBackup
 }
 
 func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
@@ -146,6 +157,11 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 		if err != nil {
 			return err
 		}
+	}
+
+	err = i.readKeycloakBackupCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
 	}
 
 	// Read other things
@@ -497,4 +513,28 @@ func (i *ClusterState) IsResourcesReady(cr *kc.Keycloak) (bool, error) {
 	}
 
 	return keycloakDeploymentReady && postgresqlDeploymentReady && keycloakRouteReady, nil
+}
+
+// Read Custom Resource KeycloakBackup for migration backup
+func (i *ClusterState) readKeycloakBackupCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	labelSelect := metav1.LabelSelector{
+		MatchLabels: cr.Labels,
+	}
+	backupCr := &v1alpha1.KeycloakBackup{}
+	backupCr.Namespace = cr.Namespace
+	backupCr.Name = model.MigrateBackupName + "-" + BackupTime
+	backupCr.Spec.InstanceSelector = &labelSelect
+
+	KeycloakBackup := model.KeycloakMigrationOneTimeBackup(backupCr)
+	KeycloakBackupSelector := model.KeycloakMigrationOneTimeBackupSelector(backupCr)
+
+	err := controllerClient.Get(context, KeycloakBackupSelector, KeycloakBackup)
+	if err != nil {
+		if !apiErrors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.KeycloakBackup = KeycloakBackup.DeepCopy()
+	}
+	return nil
 }

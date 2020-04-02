@@ -3,9 +3,11 @@ package keycloak
 import (
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	grafanav1alpha1 "github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
+	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"github.com/keycloak/keycloak-operator/pkg/model"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type Reconciler interface {
@@ -43,6 +45,10 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 	desired = desired.AddAction(i.getKeycloakDeploymentOrRHSSODesiredState(clusterState, cr))
 	i.reconcileExternalAccess(&desired, clusterState, cr)
 	desired = desired.AddAction(i.getPodDisruptionBudgetDesiredState(clusterState, cr))
+
+	if cr.Spec.Migration.Backups.Enabled {
+		desired = desired.AddAction(i.getKeycloakBackupDesiredState(clusterState, cr))
+	}
 	return desired
 }
 
@@ -371,4 +377,26 @@ func (i *KeycloakReconciler) getPodDisruptionBudgetDesiredState(clusterState *co
 		}
 	}
 	return nil
+}
+
+func (i *KeycloakReconciler) getKeycloakBackupDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	backupCr := &v1alpha1.KeycloakBackup{}
+	backupCr.Namespace = cr.Namespace
+	backupCr.Name = model.MigrateBackupName + "-" + common.BackupTime
+	labelSelect := metav1.LabelSelector{
+		MatchLabels: cr.Labels,
+	}
+	backupCr.Spec.InstanceSelector = &labelSelect
+
+	if clusterState.KeycloakBackup == nil {
+		// This happens before migration
+		return nil
+	}
+
+	keycloakbackup := model.KeycloakMigrationOneTimeBackup(backupCr)
+	keycloakbackup.ResourceVersion = clusterState.KeycloakBackup.ResourceVersion
+	return common.GenericUpdateAction{
+		Ref: keycloakbackup,
+		Msg: "Update Postgresql Backup for Keycloak Migration",
+	}
 }
