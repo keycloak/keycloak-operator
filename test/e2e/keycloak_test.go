@@ -2,7 +2,9 @@ package e2e
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
+	"net/http"
 	"testing"
 
 	apis "github.com/keycloak/keycloak-operator/pkg/apis"
@@ -12,6 +14,7 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/test/e2eutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
 )
 
 type testWithDeployedOperator func(*testing.T, *framework.Framework, *framework.TestCtx, string) error
@@ -41,6 +44,9 @@ func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework
 		},
 		Spec: keycloakv1alpha1.KeycloakSpec{
 			Instances: 1,
+			ExternalAccess: keycloakv1alpha1.KeycloakExternalAccess{
+				Enabled: true,
+			},
 		},
 	}
 
@@ -63,12 +69,24 @@ func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework
 	if err != nil {
 		return err
 	}
-	expectInternalURL := fmt.Sprintf("https://%s.%s.svc:%d",
-		model.ApplicationName, keycloakCR.ObjectMeta.Namespace,
-		model.KeycloakServicePort)
-	if keycloakCR.Status.InternalURL != expectInternalURL {
-		return fmt.Errorf("expected .Status.InternalURL %q but was %q",
-			expectInternalURL, keycloakCR.Status.InternalURL)
+
+	// Kubernetes case - Ingress is on
+	if _, ok := keycloakCR.Status.SecondaryResources["Ingress"]; ok {
+		// Skipping TLS verification is actually part of the test. In Kubernetes, if there's no signing
+		// manager installed, Keycloak will generate its own, self-signed cert. Of course
+		// we don't have a matching truststore for it, hence we need to skip TLS verification.
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint
+		err = WaitForCondition(t, f.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
+			response, err := http.Get("https://keycloak.local/auth")
+			if err != nil {
+				return err
+			}
+			response.Body.Close()
+			if response.StatusCode == 200 {
+				return nil
+			}
+			return fmt.Errorf("invalid response from Keycloak (%v)", response.Status)
+		})
 	}
 
 	//TODO: OpenShift platform may additionally test the route.

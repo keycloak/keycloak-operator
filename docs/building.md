@@ -9,6 +9,9 @@
 -- The above step will launch the operator on the local machine
 -- To see how do debug the operator or how to deploy to a cluster, see below alternatives to step 3
 4. In a new terminal run `make cluster/create/examples`
+5. (Optional for Minikube) Configure Ingress and DNS Resolver
+-- run `minikube addons enable ingress`
+-- run `./hack/modify_etc_hosts.sh`
 
 To clean the cluster (Removes CRDs, CRs, RBAC and namespace)
 1. run `make cluster/clean`
