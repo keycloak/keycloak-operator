@@ -4,8 +4,8 @@ PROJECT=keycloak-operator
 PKG=github.com/keycloak/keycloak-operator
 OPERATOR_SDK_VERSION=v0.15.1
 OPERATOR_SDK_DOWNLOAD_URL=https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk-$(OPERATOR_SDK_VERSION)-x86_64-linux-gnu
-MINIKUBE_DOWNLOAD_URL=https://storage.googleapis.com/minikube/releases/v1.4.0/minikube-linux-amd64
-KUBECTL_DOWNLOAD_URL=https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/linux/amd64/kubectl
+MINIKUBE_DOWNLOAD_URL=https://github.com/kubernetes/minikube/releases/download/v1.9.2/minikube-linux-amd64
+KUBECTL_DOWNLOAD_URL=https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
 
 # Compile constants
 COMPILE_TARGET=./tmp/_output/bin/$(PROJECT)
@@ -57,7 +57,7 @@ test/e2e: cluster/prepare
 	# is that Operator testing harness downloads things manually using `go mod` when executing the tests.
 	# Here is a corresponding Operator SDK call:
 	# operator-sdk test  local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count" --namespace ${NAMESPACE} --up-local --debug --verbose ./test/e2e
-	go test -tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -mod=vendor ./test/e2e/... -root=$(PWD) -kubeconfig=$(HOME)/.kube/config -globalMan deploy/empty-init.yaml -namespacedMan deploy/empty-init.yaml -v -singleNamespace -parallel=1 -localOperator
+	go test -tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -mod=vendor ./test/e2e/... -root=$(PWD) -kubeconfig=$(HOME)/.kube/config -globalMan deploy/empty-init.yaml -namespacedMan deploy/empty-init.yaml -test.v -singleNamespace -parallel=1 -localOperator -test.timeout 0
 
 .PHONY: test/coverage/prepare
 test/coverage/prepare:
@@ -146,8 +146,12 @@ setup/travis:
 	@echo Booting Minikube up, see Travis env. variables for more information
 	@mkdir -p $HOME/.kube $HOME/.minikube
 	@touch $KUBECONFIG
-	@sudo minikube start --vm-driver=none --kubernetes-version=v1.16.0
+	@sudo minikube start --vm-driver=none
 	@sudo chown -R travis: /home/travis/.minikube/
+	sudo ./hack/modify_etc_hosts.sh "keycloak.local"
+	@sudo minikube addons enable ingress
+	# Workaround for https://github.com/kubernetes/minikube/issues/3129
+	@kubectl create -f hack/issue_3129_workaround.yaml
 
 .PHONY: test/goveralls
 test/goveralls: test/coverage/prepare

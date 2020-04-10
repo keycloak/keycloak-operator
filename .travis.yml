@@ -15,7 +15,17 @@ env:
 before_install:
   - go get github.com/mattn/goveralls
   - go get github.com/modocache/gover
+  # Required by Kubernetes 1.18
+  - sudo apt-get install -y conntrack
   - make setup/travis
 
 # Since there's no persistence sharing, we need to run everything in a single stage
 install: make test/unit test/e2e test/goveralls NAMESPACE=default
+
+after_failure:
+  - echo "---- Keycloak Server logs ----"
+  - kubectl logs keycloak-0
+  - echo "---- Testing Ingress ----"
+  - curl -kv https://keycloak.local/auth
+  - echo "---- Ingress Controller logs ----"
+  - kubectl logs -l app.kubernetes.io/name=nginx-ingress-controller -n kube-system

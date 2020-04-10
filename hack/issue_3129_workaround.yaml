@@ -1,0 +1,27 @@
+# This is a workaround for issue https://github.com/kubernetes/minikube/issues/3129
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: keycloak
+  name: keycloak-postgresql-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: keycloak
+    component: database-backup
+  name: keycloak-backup-keycloak-test
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

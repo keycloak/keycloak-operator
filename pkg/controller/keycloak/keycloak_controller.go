@@ -237,6 +237,8 @@ func (r *ReconcileKeycloak) ManageSuccess(instance *v1alpha1.Keycloak, currentSt
 	// Make this keycloaks url public to allow access via the client
 	if currentState.KeycloakRoute != nil && currentState.KeycloakRoute.Spec.Host != "" {
 		instance.Status.InternalURL = fmt.Sprintf("https://%v", currentState.KeycloakRoute.Spec.Host)
+	} else if currentState.KeycloakIngress != nil && currentState.KeycloakIngress.Spec.Rules[0].Host != "" {
+		instance.Status.InternalURL = fmt.Sprintf("https://%v", currentState.KeycloakIngress.Spec.Rules[0].Host)
 	} else if currentState.KeycloakService != nil && currentState.KeycloakService.Spec.ClusterIP != "" {
 		instance.Status.InternalURL = fmt.Sprintf("https://%v.%v.svc:%v",
 			currentState.KeycloakService.Name,

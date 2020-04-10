@@ -42,6 +42,7 @@ const (
 	LivenessProbeProperty                 = "liveness_probe.sh"
 	ReadinessProbeProperty                = "readiness_probe.sh"
 	RouteLoadBalancingStrategy            = "source"
+	IngressDefaultHost                    = "keycloak.local"
 	PostgresqlBackupServiceAccountName    = "keycloak-operator"
 	KeycloakExtensionEnvVar               = "KEYCLOAK_EXTENSIONS"
 	KeycloakExtensionPath                 = "/opt/jboss/keycloak/providers"

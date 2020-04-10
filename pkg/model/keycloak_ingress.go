@@ -16,10 +16,14 @@ func KeycloakIngress(cr *kc.Keycloak) *v1beta1.Ingress {
 			Labels: map[string]string{
 				"app": ApplicationName,
 			},
+			Annotations: map[string]string{
+				"nginx.ingress.kubernetes.io/backend-protocol": "HTTPS",
+			},
 		},
 		Spec: v1beta1.IngressSpec{
 			Rules: []v1beta1.IngressRule{
 				{
+					Host: IngressDefaultHost,
 					IngressRuleValue: v1beta1.IngressRuleValue{
 						HTTP: &v1beta1.HTTPIngressRuleValue{
 							Paths: []v1beta1.HTTPIngressPath{
@@ -41,9 +45,11 @@ func KeycloakIngress(cr *kc.Keycloak) *v1beta1.Ingress {
 
 func KeycloakIngressReconciled(cr *kc.Keycloak, currentState *v1beta1.Ingress) *v1beta1.Ingress {
 	reconciled := currentState.DeepCopy()
+	reconciledHost := currentState.Spec.Rules[0].Host
 	reconciled.Spec = v1beta1.IngressSpec{
 		Rules: []v1beta1.IngressRule{
 			{
+				Host: reconciledHost,
 				IngressRuleValue: v1beta1.IngressRuleValue{
 					HTTP: &v1beta1.HTTPIngressRuleValue{
 						Paths: []v1beta1.HTTPIngressPath{
