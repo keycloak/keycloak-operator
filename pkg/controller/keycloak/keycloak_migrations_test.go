@@ -82,7 +82,7 @@ func TestKeycloakMigrations_Test_Migrating_RHSSO_Image(t *testing.T) {
 	migrator := NewDefaultMigrator()
 	cr := &v1alpha1.Keycloak{
 		Spec: v1alpha1.KeycloakSpec{
-			Profile: common.RHSSOProfile,
+			Profile: model.RHSSOProfile,
 		},
 	}
 

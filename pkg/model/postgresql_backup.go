@@ -34,7 +34,7 @@ func PostgresqlBackup(cr *v1alpha1.KeycloakBackup) *v13.Job {
 					Containers: []v1.Container{
 						{
 							Name:    cr.Name,
-							Image:   PostgresqlImage,
+							Image:   Images.Images[PostgresqlImage],
 							Command: []string{"/bin/sh", "-c"},
 							Args:    []string{"pg_dumpall --clean --if-exists --oids | tee /backup/backup.sql"},
 							Env: []v1.EnvVar{
@@ -118,7 +118,7 @@ func PostgresqlBackupReconciled(cr *v1alpha1.KeycloakBackup, currentState *v13.J
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:    cr.Name,
-			Image:   PostgresqlImage,
+			Image:   Images.Images[PostgresqlImage],
 			Command: []string{"/bin/sh", "-c"},
 			Args:    []string{"pg_dumpall --clean --if-exists --oids | tee /backup/backup.sql"},
 			Env: []v1.EnvVar{

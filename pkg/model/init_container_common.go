@@ -11,7 +11,7 @@ func KeycloakExtensionsInitContainers(cr *v1alpha1.Keycloak) []v1.Container {
 	return []v1.Container{
 		{
 			Name:  "extensions-init",
-			Image: KeycloakInitContainerImage,
+			Image: Images.Images[KeycloakInitContainer],
 			Env: []v1.EnvVar{
 				{
 					Name:  KeycloakExtensionEnvVar,

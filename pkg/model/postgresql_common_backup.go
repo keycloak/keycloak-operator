@@ -9,7 +9,7 @@ func postgresqlAwsBackupCommonContainers(cr *v1alpha1.KeycloakBackup) []v1.Conta
 	return []v1.Container{
 		{
 			Name:    cr.Name,
-			Image:   BackupImage,
+			Image:   Images.Images[RHMIBackupContainer],
 			Command: []string{"/opt/intly/tools/entrypoint.sh", "-c", "postgres", "-n", cr.Namespace, "-b", "s3", "-e", ""},
 			Env: []v1.EnvVar{
 				{

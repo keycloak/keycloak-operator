@@ -385,7 +385,7 @@ func (i *ClusterState) readProbesCurrentState(context context.Context, cr *kc.Ke
 }
 
 func (i *ClusterState) readKeycloakOrRHSSODeploymentCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
-	isRHSSO := cr.Spec.Profile == RHSSOProfile
+	isRHSSO := model.Profiles.IsRHSSO(cr)
 
 	deployment := model.KeycloakDeployment(cr, nil)
 	selector := model.KeycloakDeploymentSelector(cr)
