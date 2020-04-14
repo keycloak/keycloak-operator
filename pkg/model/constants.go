@@ -11,11 +11,6 @@ const (
 	KeycloakProbesName                   = ApplicationName + "-probes"
 	PostgresqlDeploymentComponent        = "database"
 	PostgresqlServiceName                = ApplicationName + "-postgresql"
-	PostgresqlImage                      = "postgres:11.5"
-	KeycloakImage                        = "quay.io/keycloak/keycloak:9.0.2"
-	KeycloakInitContainerImage           = "quay.io/keycloak/keycloak-init-container:master"
-	RHSSOImage                           = "registry.redhat.io/rh-sso-7/sso74-openshift-rhel8:7.4-1"
-	BackupImage                          = "quay.io/integreatly/backup-container:1.0.10"
 	KeycloakDiscoveryServiceName         = ApplicationName + "-discovery"
 	KeycloakDeploymentName               = ApplicationName
 	KeycloakDeploymentComponent          = "keycloak"

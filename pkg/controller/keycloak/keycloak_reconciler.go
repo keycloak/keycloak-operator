@@ -290,14 +290,14 @@ func (i *KeycloakReconciler) getDatabaseSecretDesiredState(clusterState *common.
 }
 
 func (i *KeycloakReconciler) getKeycloakDeploymentOrRHSSODesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
-	isRHSSO := cr.Spec.Profile == common.RHSSOProfile
+	isRHSSO := model.Profiles.IsRHSSO(cr)
 
 	deployment := model.KeycloakDeployment(cr, clusterState.DatabaseSecret)
 	deploymentName := "Keycloak"
 
 	if isRHSSO {
 		deployment = model.RHSSODeployment(cr, clusterState.DatabaseSecret)
-		deploymentName = common.RHSSOProfile
+		deploymentName = model.RHSSOProfile
 	}
 
 	if clusterState.KeycloakDeployment == nil {

@@ -23,10 +23,7 @@ func NewDefaultMigrator() *DefaultMigrator {
 
 func (i *DefaultMigrator) Migrate(cr *v1alpha1.Keycloak, currentState *common.ClusterState, desiredState common.DesiredClusterState) (common.DesiredClusterState, error) {
 	if needsMigration(cr, currentState) {
-		desiredImage := model.KeycloakImage
-		if cr.Spec.Profile == common.RHSSOProfile {
-			desiredImage = model.RHSSOImage
-		}
+		desiredImage := model.Profiles.GetKeycloakOrRHSSOImage(cr)
 		log.Info(fmt.Sprintf("Performing migration from '%s' to '%s'", currentState.KeycloakDeployment.Spec.Template.Spec.Containers[0].Image, desiredImage))
 		deployment := findDeployment(desiredState)
 		if deployment != nil {
@@ -43,10 +40,7 @@ func needsMigration(cr *v1alpha1.Keycloak, currentState *common.ClusterState) bo
 		return false
 	}
 	deployedImage := currentState.KeycloakDeployment.Spec.Template.Spec.Containers[0].Image
-	currentImage := model.KeycloakImage
-	if cr.Spec.Profile == common.RHSSOProfile {
-		currentImage = model.RHSSOImage
-	}
+	currentImage := model.Profiles.GetKeycloakOrRHSSOImage(cr)
 	return deployedImage != currentImage
 }
 

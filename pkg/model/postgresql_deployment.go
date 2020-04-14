@@ -39,7 +39,7 @@ func PostgresqlDeployment(cr *v1alpha1.Keycloak) *v13.Deployment {
 					Containers: []v1.Container{
 						{
 							Name:  PostgresqlDeploymentName,
-							Image: PostgresqlImage,
+							Image: Images.Images[PostgresqlImage],
 							Ports: []v1.ContainerPort{
 								{
 									ContainerPort: 5432,
@@ -155,7 +155,7 @@ func PostgresqlDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Dep
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:  PostgresqlDeploymentName,
-			Image: PostgresqlImage,
+			Image: Images.Images[PostgresqlImage],
 			Ports: []v1.ContainerPort{
 				{
 					ContainerPort: 5432,
