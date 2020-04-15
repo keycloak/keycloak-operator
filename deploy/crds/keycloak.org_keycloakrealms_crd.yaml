@@ -19,12 +19,12 @@ spec:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
             of an object. Servers should convert recognized schemas to the latest
-            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources'
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
           type: string
         kind:
           description: 'Kind is a string value representing the REST resource this
             object represents. Servers may infer this from the endpoint the client
-            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds'
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
           type: string
         metadata:
           type: object
@@ -77,6 +77,14 @@ spec:
             realm:
               description: Keycloak Realm REST object.
               properties:
+                adminEventsDetailsEnabled:
+                  description: 'Enable admin events details TODO: change to values
+                    and use kubebuilder default annotation once supported'
+                  type: boolean
+                adminEventsEnabled:
+                  description: 'Enable events recording TODO: change to values and
+                    use kubebuilder default annotation once supported'
+                  type: boolean
                 clients:
                   description: A set of Keycloak Clients.
                   items:
@@ -223,6 +231,10 @@ spec:
                   type: string
                 enabled:
                   description: Realm enabled flag.
+                  type: boolean
+                eventsEnabled:
+                  description: 'Enable events recording TODO: change to values and
+                    use kubebuilder default annotation once supported'
                   type: boolean
                 eventsListeners:
                   description: A set of Event Listeners.

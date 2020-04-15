@@ -15,8 +15,10 @@ import (
 const (
 	LivenessProbeInitialDelay  = 30
 	ReadinessProbeInitialDelay = 40
-	//10s (cli) + 10s (curl) + 2s (just in case)
-	ProbeTimeoutSeconds = 22
+
+	//10s (curl) + 10s (curl) + 2s (just in case)
+	ProbeTimeoutSeconds         = 22
+	ProbeTimeBetweenRunsSeconds = 30
 )
 
 func GetServiceEnvVar(suffix string) string {
@@ -178,7 +180,6 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 									Protocol:      "TCP",
 								},
 							},
-
 							VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
 							LivenessProbe:  livenessProbe(),
 							ReadinessProbe: readinessProbe(),
@@ -312,8 +313,6 @@ func GetReconciledKeycloakImage(currentImage string) string {
 
 func livenessProbe() *v1.Probe {
 	return &v1.Probe{
-		InitialDelaySeconds: LivenessProbeInitialDelay,
-		TimeoutSeconds:      ProbeTimeoutSeconds,
 		Handler: v1.Handler{
 			Exec: &v1.ExecAction{
 				Command: []string{
@@ -323,13 +322,14 @@ func livenessProbe() *v1.Probe {
 				},
 			},
 		},
+		InitialDelaySeconds: LivenessProbeInitialDelay,
+		TimeoutSeconds:      ProbeTimeoutSeconds,
+		PeriodSeconds:       ProbeTimeBetweenRunsSeconds,
 	}
 }
 
 func readinessProbe() *v1.Probe {
 	return &v1.Probe{
-		InitialDelaySeconds: ReadinessProbeInitialDelay,
-		TimeoutSeconds:      ProbeTimeoutSeconds,
 		Handler: v1.Handler{
 			Exec: &v1.ExecAction{
 				Command: []string{
@@ -339,5 +339,8 @@ func readinessProbe() *v1.Probe {
 				},
 			},
 		},
+		InitialDelaySeconds: ReadinessProbeInitialDelay,
+		TimeoutSeconds:      ProbeTimeoutSeconds,
+		PeriodSeconds:       ProbeTimeBetweenRunsSeconds,
 	}
 }

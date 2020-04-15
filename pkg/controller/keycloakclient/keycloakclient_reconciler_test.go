@@ -1,6 +1,8 @@
 package keycloakclient
 
 import (
+	"encoding/json"
+	"strings"
 	"testing"
 	"time"
 
@@ -12,7 +14,7 @@ import (
 	v13 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func TestKeycloakBackupReconciler_Test_Creating_Client(t *testing.T) {
+func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 	// given
 	keycloakCr := v1alpha1.Keycloak{}
 	cr := &v1alpha1.KeycloakClient{
@@ -138,7 +140,7 @@ func TestKeycloakClientReconciler_Test_Delete_Client(t *testing.T) {
 	assert.IsType(t, common.DeleteClientAction{}, desiredState[1])
 }
 
-func TestKeycloakBackupReconciler_Test_Update_Client(t *testing.T) {
+func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 	// given
 	keycloakCr := v1alpha1.Keycloak{}
 	cr := &v1alpha1.KeycloakClient{
@@ -179,4 +181,32 @@ func TestKeycloakBackupReconciler_Test_Update_Client(t *testing.T) {
 	assert.Equal(t, "test", desiredState[1].(common.UpdateClientAction).Realm)
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[2])
 	assert.IsType(t, model.ClientSecretReconciled(cr, currentState.ClientSecret), desiredState[2].(common.GenericUpdateAction).Ref)
+}
+
+func TestKeycloakClientReconciler_Test_Marshal_Client_directAccessGrantsEnabled(t *testing.T) {
+	// given
+	cr := &v1alpha1.KeycloakClient{
+		ObjectMeta: v13.ObjectMeta{
+			Name:      "test",
+			Namespace: "test",
+		},
+		Spec: v1alpha1.KeycloakClientSpec{
+			RealmSelector: &v13.LabelSelector{
+				MatchLabels: map[string]string{"application": "sso"},
+			},
+			Client: &v1alpha1.KeycloakAPIClient{
+				ClientID:                  "test",
+				Secret:                    "test",
+				DirectAccessGrantsEnabled: false,
+			},
+		},
+	}
+
+	// when
+	b, err := json.Marshal(cr)
+	s := string(b)
+
+	// then
+	assert.Nil(t, err, "Client couldn't be marshalled")
+	assert.True(t, strings.Contains(s, "\"directAccessGrantsEnabled\":false"), "Element directAccessGrantsEnabled should not be omitted if false, as keycloaks default is true")
 }

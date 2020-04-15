@@ -11,10 +11,13 @@ type Reconciler interface {
 }
 
 type KeycloakBackupReconciler struct { // nolint
+	Keycloak kc.Keycloak
 }
 
-func NewKeycloakBackupReconciler() *KeycloakBackupReconciler {
-	return &KeycloakBackupReconciler{}
+func NewKeycloakBackupReconciler(keycloak kc.Keycloak) *KeycloakBackupReconciler {
+	return &KeycloakBackupReconciler{
+		Keycloak: keycloak,
+	}
 }
 
 func (i *KeycloakBackupReconciler) Reconcile(currentState *common.BackupState, cr *kc.KeycloakBackup) common.DesiredClusterState {

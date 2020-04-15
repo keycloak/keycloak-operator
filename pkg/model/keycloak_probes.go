@@ -10,56 +10,37 @@ import (
 const (
 	LivenessProbeImplementation = `#!/bin/bash
 set -e
-
-PASSWORD_FILE="/tmp/management-password"
-PASSWORD="not set"
-USERNAME="admin"
-
-if [ -d "/opt/eap/bin" ]; then
-    pushd /opt/eap/bin > /dev/null
-else
-    pushd /opt/jboss/keycloak/bin > /dev/null
-fi
-
-if [ -f "$PASSWORD_FILE" ]; then
-    PASSWORD=$(cat $PASSWORD_FILE)
-else
-    PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-	./add-user.sh -m -u $USERNAME -p $PASSWORD > /dev/null
-	echo $PASSWORD > $PASSWORD_FILE
-fi
-
-./jboss-cli.sh --connect --user=$USERNAME --password=$PASSWORD --command-timeout=10 --commands="/deployment=keycloak-server.war:read-attribute(name=status)" > /dev/null
+curl -s --max-time 10 --fail http://$(hostname -i):8080/auth > /dev/null
 `
 	ReadinessProbeImplementation = `#!/bin/bash
 set -e
 
-PASSWORD_FILE="/tmp/management-password"
-PASSWORD="not set"
-USERNAME="admin"
-
 DATASOURCE_POOL_TYPE="data-source"
 DATASOURCE_POOL_NAME="KeycloakDS"
 
+PASSWORD_FILE="/tmp/management-password"
+PASSWORD="not set"
+USERNAME="admin"
+AUTH_STRING=""
+
 if [ -d "/opt/eap/bin" ]; then
     pushd /opt/eap/bin > /dev/null
-	DATASOURCE_POOL_TYPE=xa-data-source
-	DATASOURCE_POOL_NAME=keycloak_postgresql-DB
+	DATASOURCE_POOL_TYPE="xa-data-source"
+	DATASOURCE_POOL_NAME="keycloak_postgresql-DB"
 else
     pushd /opt/jboss/keycloak/bin > /dev/null
+	if [ -f "$PASSWORD_FILE" ]; then
+		PASSWORD=$(cat $PASSWORD_FILE)
+	else
+		PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+		./add-user.sh -u $USERNAME -p $PASSWORD> /dev/null
+		echo $PASSWORD > $PASSWORD_FILE
+	fi
+	AUTH_STRING="--digest -u $USERNAME:$PASSWORD"
 fi
 
-if [ -f "$PASSWORD_FILE" ]; then
-    PASSWORD=$(cat $PASSWORD_FILE)
-else
-    PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-	./add-user.sh -m -u $USERNAME -p $PASSWORD> /dev/null
-	echo $PASSWORD > $PASSWORD_FILE
-fi
-
-./jboss-cli.sh --connect --user=$USERNAME --password=$PASSWORD --command-timeout=10 --commands="/subsystem=datasources/${DATASOURCE_POOL_TYPE}=${DATASOURCE_POOL_NAME}:test-connection-in-pool" > /dev/null
-
-curl -s --max-time 10 http://$(hostname -i):8080/auth > /dev/null
+curl -s --max-time 10 --fail http://localhost:9990/management $AUTH_STRING --header "Content-Type: application/json" -d "{\"operation\":\"test-connection-in-pool\", \"address\":[\"subsystem\",\"datasources\",\"${DATASOURCE_POOL_TYPE}\",\"${DATASOURCE_POOL_NAME}\"], \"json.pretty\":1}"
+curl -s --max-time 10 --fail http://$(hostname -i):8080/auth > /dev/null
 `
 )
 
