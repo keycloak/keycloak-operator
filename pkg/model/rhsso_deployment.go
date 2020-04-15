@@ -13,7 +13,7 @@ import (
 )
 
 func getRHSSOEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
-	return []v1.EnvVar{
+	var env = []v1.EnvVar{
 		// Database settings
 		{
 			Name:  "DB_SERVICE_PREFIX_MAPPING",
@@ -104,6 +104,8 @@ func getRHSSOEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 			Value: fmt.Sprintf("%v", GetExternalDatabasePort(dbSecret)),
 		})
 	}
+
+	return env
 }
 
 func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
