@@ -87,6 +87,9 @@ type KeycloakAPIUser struct {
 	// A set of Credentials.
 	// +optional
 	Credentials []KeycloakCredential `json:"credentials,omitempty"`
+	// A set of Attributes.
+	// +optional
+	Attributes map[string][]string `json:"attributes,omitempty"`
 }
 
 type KeycloakCredential struct {
