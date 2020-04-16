@@ -77,6 +77,13 @@ spec:
             user:
               description: Keycloak User REST object.
               properties:
+                attributes:
+                  additionalProperties:
+                    items:
+                      type: string
+                    type: array
+                  description: A set of Attributes.
+                  type: object
                 clientRoles:
                   additionalProperties:
                     items:
