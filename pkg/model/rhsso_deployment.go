@@ -13,7 +13,7 @@ import (
 )
 
 func getRHSSOEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
-	return []v1.EnvVar{
+	var env = []v1.EnvVar{
 		// Database settings
 		{
 			Name:  "DB_SERVICE_PREFIX_MAPPING",
@@ -89,18 +89,23 @@ func getRHSSOEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 			},
 		},
 		{
-			Name:  GetServiceEnvVar("SERVICE_HOST"),
-			Value: PostgresqlServiceName + "." + cr.Namespace + ".svc.cluster.local",
-		},
-		{
-			Name:  GetServiceEnvVar("SERVICE_PORT"),
-			Value: fmt.Sprintf("%v", GetExternalDatabasePort(dbSecret)),
-		},
-		{
 			Name:  "X509_CA_BUNDLE",
 			Value: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
 		},
 	}
+
+	if cr.Spec.ExternalDatabase.Enabled {
+		env = append(env, v1.EnvVar{
+			Name:  GetServiceEnvVar("SERVICE_HOST"),
+			Value: PostgresqlServiceName + "." + cr.Namespace + ".svc.cluster.local",
+		})
+		env = append(env, v1.EnvVar{
+			Name:  GetServiceEnvVar("SERVICE_PORT"),
+			Value: fmt.Sprintf("%v", GetExternalDatabasePort(dbSecret)),
+		})
+	}
+
+	return env
 }
 
 func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
