@@ -223,8 +223,10 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 					Protocol:      "TCP",
 				},
 			},
-			VolumeMounts: KeycloakVolumeMounts(KeycloakExtensionPath),
-			Env:          getKeycloakEnv(cr, dbSecret),
+			VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
+			LivenessProbe:  livenessProbe(),
+			ReadinessProbe: readinessProbe(),
+			Env:            getKeycloakEnv(cr, dbSecret),
 		},
 	}
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
