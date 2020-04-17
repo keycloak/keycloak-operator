@@ -9,8 +9,8 @@ KUBECTL_DOWNLOAD_URL=https://storage.googleapis.com/kubernetes-release/release/v
 
 # Compile constants
 COMPILE_TARGET=./tmp/_output/bin/$(PROJECT)
-GOOS=linux
-GOARCH=amd64
+GOOS=${GOOS:-${GOHOSTOS}}
+GOARCH=${GOACH:-${GOHOSTARCH}}
 CGO_ENABLED=0
 
 ##############################
