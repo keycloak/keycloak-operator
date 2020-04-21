@@ -87,7 +87,7 @@ func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 		Expr: intstr.FromString(`(sum(rate(keycloak_request_duration_bucket{le="1000.0", namespace="` + cr.Namespace + `"}[5m])) by (job) / sum(rate(keycloak_request_duration_count{namespace="` + cr.Namespace + `"}[5m])) by (job)) < 0.90`),
 		For:  "5m",
 		Labels: map[string]string{
-			"severity": "critical",
+			"severity": "warning",
 		},
 	}, {
 		Alert: "KeycloakAPIRequestDuration99.5PercThresholdExceeded",
@@ -97,7 +97,7 @@ func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 		Expr: intstr.FromString(`(sum(rate(keycloak_request_duration_bucket{le="10000.0", namespace="` + cr.Namespace + `"}[5m])) by (job) / sum(rate(keycloak_request_duration_count{namespace="` + cr.Namespace + `"}[5m])) by (job)) < 0.995`),
 		For:  "5m",
 		Labels: map[string]string{
-			"severity": "critical",
+			"severity": "warning",
 		},
 	}}
 
