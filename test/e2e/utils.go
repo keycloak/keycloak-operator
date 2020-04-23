@@ -63,6 +63,14 @@ func Create(f *framework.Framework, obj runtime.Object, ctx *framework.TestCtx) 
 	return f.Client.Create(context.TODO(), obj, &framework.CleanupOptions{TestContext: ctx, Timeout: cleanupTimeout, RetryInterval: cleanupRetryInterval})
 }
 
-func Get(f *framework.Framework, key dynclient.ObjectKey, obj runtime.Object, ctx *framework.TestCtx) error {
+func Get(f *framework.Framework, key dynclient.ObjectKey, obj runtime.Object) error {
 	return f.Client.Get(context.TODO(), key, obj)
+}
+
+func Delete(f *framework.Framework, obj runtime.Object) error {
+	return f.Client.Delete(context.TODO(), obj)
+}
+
+func CreateLabel(namespace string) map[string]string {
+	return map[string]string{"app": "keycloak-in-" + namespace}
 }
