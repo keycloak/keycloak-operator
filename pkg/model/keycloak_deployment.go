@@ -27,7 +27,7 @@ func GetServiceEnvVar(suffix string) string {
 }
 
 func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
-	return []v1.EnvVar{
+	env := []v1.EnvVar{
 		// Database settings
 		{
 			Name:  "DB_VENDOR",
@@ -112,18 +112,23 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 			},
 		},
 		{
-			Name:  GetServiceEnvVar("SERVICE_HOST"),
-			Value: PostgresqlServiceName + "." + cr.Namespace + ".svc.cluster.local",
-		},
-		{
-			Name:  GetServiceEnvVar("SERVICE_PORT"),
-			Value: fmt.Sprintf("%v", GetExternalDatabasePort(dbSecret)),
-		},
-		{
 			Name:  "X509_CA_BUNDLE",
 			Value: "/var/run/secrets/kubernetes.io/serviceaccount/*.crt",
 		},
 	}
+
+	if cr.Spec.ExternalDatabase.Enabled {
+		env = append(env, v1.EnvVar{
+			Name:  GetServiceEnvVar("SERVICE_HOST"),
+			Value: PostgresqlServiceName + "." + cr.Namespace + ".svc.cluster.local",
+		})
+		env = append(env, v1.EnvVar{
+			Name:  GetServiceEnvVar("SERVICE_PORT"),
+			Value: fmt.Sprintf("%v", GetExternalDatabasePort(dbSecret)),
+		})
+	}
+
+	return env
 }
 
 func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
@@ -218,8 +223,10 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 					Protocol:      "TCP",
 				},
 			},
-			VolumeMounts: KeycloakVolumeMounts(KeycloakExtensionPath),
-			Env:          getKeycloakEnv(cr, dbSecret),
+			VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
+			LivenessProbe:  livenessProbe(),
+			ReadinessProbe: readinessProbe(),
+			Env:            getKeycloakEnv(cr, dbSecret),
 		},
 	}
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)

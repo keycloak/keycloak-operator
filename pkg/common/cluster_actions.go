@@ -205,7 +205,7 @@ func (i *ClusterActionRunner) AssignRealmRole(obj *v1alpha1.KeycloakUserRole, us
 
 func (i *ClusterActionRunner) RemoveRealmRole(obj *v1alpha1.KeycloakUserRole, userID, realm string) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform role assign when client is nil")
+		return errors.New("cannot perform role remove when client is nil")
 	}
 	return i.keycloakClient.DeleteUserRealmRole(obj, realm, userID)
 }
@@ -221,7 +221,7 @@ func (i *ClusterActionRunner) AssignClientRole(obj *v1alpha1.KeycloakUserRole, c
 
 func (i *ClusterActionRunner) RemoveClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform role assign when client is nil")
+		return errors.New("cannot perform role remove when client is nil")
 	}
 	return i.keycloakClient.DeleteUserClientRole(obj, realm, clientID, userID)
 }
