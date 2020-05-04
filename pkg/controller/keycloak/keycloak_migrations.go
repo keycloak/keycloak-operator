@@ -28,7 +28,7 @@ func (i *DefaultMigrator) Migrate(cr *v1alpha1.Keycloak, currentState *common.Cl
 			desiredImage = model.RHSSOImage
 		}
 		log.Info(fmt.Sprintf("Performing migration from '%s' to '%s'", currentState.KeycloakDeployment.Spec.Template.Spec.Containers[0].Image, desiredImage))
-		deployment := findDeployment(desiredState)
+		deployment := findDeployment(&desiredState)
 		if deployment != nil {
 			log.Info("Number of replicas decreased to 1")
 			deployment.Spec.Replicas = &[]int32{1}[0]
@@ -50,8 +50,8 @@ func needsMigration(cr *v1alpha1.Keycloak, currentState *common.ClusterState) bo
 	return deployedImage != currentImage
 }
 
-func findDeployment(desiredState common.DesiredClusterState) *v13.StatefulSet {
-	for _, v := range desiredState {
+func findDeployment(desiredState *common.DesiredClusterState) *v13.StatefulSet {
+	for _, v := range *desiredState {
 		if (reflect.TypeOf(v) == reflect.TypeOf(common.GenericUpdateAction{})) {
 			updateAction := v.(common.GenericUpdateAction)
 			if (reflect.TypeOf(updateAction.Ref) == reflect.TypeOf(&v13.StatefulSet{})) {
