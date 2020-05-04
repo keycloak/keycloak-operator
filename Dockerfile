@@ -2,13 +2,15 @@ FROM registry.access.redhat.com/ubi8/ubi-minimal:8.1 AS build-env
 
 RUN microdnf install -y git make golang
 
-ADD ./ /src
+COPY . /src/
 RUN cd /src && make code/compile
 RUN cd /src && echo "Build SHA1: $(git rev-parse HEAD)"
 RUN cd /src && echo "$(git rev-parse HEAD)" > /src/BUILD_INFO
 
 # final stage
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.1
+
+##LABELS
 
 RUN microdnf update && microdnf clean all && rm -rf /var/cache/yum/*
 
