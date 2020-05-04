@@ -6,13 +6,14 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	"k8s.io/client-go/kubernetes"
 
 	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/model"
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 func NewKeycloaksCRDTestStruct() *CRDTestStruct {
@@ -21,7 +22,7 @@ func NewKeycloaksCRDTestStruct() *CRDTestStruct {
 			prepareKeycloaksCR,
 		},
 		testSteps: map[string]deployedOperatorTestStep{
-			"keycloakDeploymentTest": keycloakDeploymentTest,
+			"keycloakDeploymentTest": {testFunction: keycloakDeploymentTest},
 		},
 	}
 }
@@ -41,6 +42,12 @@ func getKeycloakCR(namespace string) *keycloakv1alpha1.Keycloak {
 	}
 }
 
+func getDeployedKeycloakCR(framework *framework.Framework, namespace string) keycloakv1alpha1.Keycloak {
+	keycloakCR := keycloakv1alpha1.Keycloak{}
+	GetNamespacedObject(framework, namespace, testKeycloakCRName, &keycloakCR)
+	return keycloakCR
+}
+
 func prepareKeycloaksCR(t *testing.T, f *framework.Framework, ctx *framework.TestCtx, namespace string) error {
 	keycloakCR := getKeycloakCR(namespace)
 	err := Create(f, keycloakCR, ctx)
@@ -57,24 +64,16 @@ func prepareKeycloaksCR(t *testing.T, f *framework.Framework, ctx *framework.Tes
 }
 
 func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework.TestCtx, namespace string) error {
-	keycloakCRName := types.NamespacedName{
-		Namespace: namespace,
-		Name:      testKeycloakCRName,
-	}
-
-	keycloakCR := &keycloakv1alpha1.Keycloak{}
-
-	err := Get(f, keycloakCRName, keycloakCR)
-	if err != nil {
-		return err
-	}
+	keycloakCR := getDeployedKeycloakCR(f, namespace)
+	keycloakInternalURL := keycloakCR.Status.InternalURL
+	assert.NotEmpty(t, keycloakInternalURL)
 
 	// Skipping TLS verification is actually part of the test. In Kubernetes, if there's no signing
 	// manager installed, Keycloak will generate its own, self-signed cert. Of course
 	// we don't have a matching truststore for it, hence we need to skip TLS verification.
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint
-	err = WaitForCondition(t, f.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
-		response, err := http.Get(keycloakCR.Status.InternalURL + "/auth")
+	err := WaitForCondition(t, f.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
+		response, err := http.Get(keycloakInternalURL + "/auth")
 		if err != nil {
 			return err
 		}

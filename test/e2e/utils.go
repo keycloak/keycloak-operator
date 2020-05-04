@@ -2,9 +2,17 @@ package e2e
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"testing"
 	"time"
+
+	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
+	"github.com/stretchr/testify/assert"
+
+	"k8s.io/apimachinery/pkg/types"
 
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -59,12 +67,71 @@ func WaitForPersistentVolumeClaimCreated(t *testing.T, c kubernetes.Interface, p
 	})
 }
 
+func WaitForRealmToBeReady(t *testing.T, framework *framework.Framework, namespace string) error {
+	keycloakRealmCR := &keycloakv1alpha1.KeycloakRealm{}
+
+	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
+		err := GetNamespacedObject(framework, namespace, testKeycloakRealmCRName, keycloakRealmCR)
+		if err != nil {
+			return err
+		}
+
+		if !keycloakRealmCR.Status.Ready {
+			keycloakRealmCRParsed, err := json.Marshal(keycloakRealmCR)
+			if err != nil {
+				return err
+			}
+
+			return fmt.Errorf("KeycloakRealm is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
+		}
+
+		return nil
+	})
+}
+
+func WaitForSuccessResponseToContain(t *testing.T, framework *framework.Framework, url string, expectedString string) error {
+	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
+		response, err := http.Get(url)
+		if err != nil {
+			return err
+		}
+		defer response.Body.Close()
+
+		if response.StatusCode != 200 {
+			return fmt.Errorf("invalid response from url %s (%v)", url, response.Status)
+		}
+
+		responseData, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return err
+		}
+		responseString := string(responseData)
+
+		assert.Contains(t, responseString, expectedString)
+
+		return nil
+	})
+}
+
 func Create(f *framework.Framework, obj runtime.Object, ctx *framework.TestCtx) error {
 	return f.Client.Create(context.TODO(), obj, &framework.CleanupOptions{TestContext: ctx, Timeout: cleanupTimeout, RetryInterval: cleanupRetryInterval})
 }
 
 func Get(f *framework.Framework, key dynclient.ObjectKey, obj runtime.Object) error {
 	return f.Client.Get(context.TODO(), key, obj)
+}
+
+func GetNamespacedObject(f *framework.Framework, namespace string, objectName string, outputObject runtime.Object) error {
+	key := types.NamespacedName{
+		Namespace: namespace,
+		Name:      objectName,
+	}
+
+	return Get(f, key, outputObject)
+}
+
+func Update(f *framework.Framework, obj runtime.Object) error {
+	return f.Client.Update(context.TODO(), obj)
 }
 
 func Delete(f *framework.Framework, obj runtime.Object) error {
