@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis"
@@ -49,9 +50,17 @@ func runTestsFromCRDInterface(t *testing.T, crd *CRDTestStruct) {
 		// get global framework variables
 		f := framework.Global
 		// wait for Keycloak Operator to be ready
-		err = e2eutil.WaitForOperatorDeployment(t, f.KubeClient, namespace, testKeycloakCRName, 1, pollRetryInterval, pollTimeout)
+		err = e2eutil.WaitForOperatorDeployment(t, f.KubeClient, namespace, operatorCRName, 1, pollRetryInterval, pollTimeout)
 		if err != nil {
 			t.Fatal(err)
+		}
+
+		if !f.LocalOperator {
+			deployment, err := f.KubeClient.AppsV1().Deployments(namespace).Get(operatorCRName, metav1.GetOptions{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Logf("Operator deployed from: %s", deployment.Spec.Template.Spec.Containers[0].Image)
 		}
 
 		for _, prepareEnvironmentFunction := range crd.prepareEnvironmentSteps {

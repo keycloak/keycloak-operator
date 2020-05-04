@@ -59,6 +59,12 @@ test/e2e: cluster/prepare
 	# operator-sdk test  local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count" --namespace ${NAMESPACE} --up-local --debug --verbose ./test/e2e
 	go test -tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -mod=vendor ./test/e2e/... -root=$(PWD) -kubeconfig=$(HOME)/.kube/config -globalMan deploy/empty-init.yaml -namespacedMan deploy/empty-init.yaml -test.v -singleNamespace -parallel=1 -localOperator -test.timeout 0
 
+.PHONY: test/e2e-image
+test/e2e-image:
+	@echo Running tests with operator as an image in the cluster:
+	# Doesn't need cluster/prepare as it's done by operator-sdk. Uses a randomly generated namespace (instead of keycloak namespace) to support parallel test runs.
+	operator-sdk test local ./test/e2e --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count" --debug --verbose
+
 .PHONY: test/coverage/prepare
 test/coverage/prepare:
 	@echo Preparing coverage file:
