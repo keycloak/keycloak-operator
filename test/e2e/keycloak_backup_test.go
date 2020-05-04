@@ -14,10 +14,14 @@ func NewKeycloakBackupCRDTestStruct() *CRDTestStruct {
 	return &CRDTestStruct{
 		prepareEnvironmentSteps: []environmentInitializationStep{
 			prepareKeycloaksCR,
-			prepareKeycloakBackupCR,
 		},
 		testSteps: map[string]deployedOperatorTestStep{
-			"keycloakDeploymentTest": keycloakBackupTest,
+			"keycloakDeploymentTest": {
+				prepareTestEnvironmentSteps: []environmentInitializationStep{
+					prepareKeycloakBackupCR,
+				},
+				testFunction: keycloakBackupTest,
+			},
 		},
 	}
 }

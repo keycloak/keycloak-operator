@@ -11,7 +11,11 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/test/e2eutil"
 )
 
-type deployedOperatorTestStep func(*testing.T, *framework.Framework, *framework.TestCtx, string) error
+type deployedOperatorTestStep struct {
+	prepareTestEnvironmentSteps []environmentInitializationStep
+	testFunction                func(*testing.T, *framework.Framework, *framework.TestCtx, string) error
+}
+
 type environmentInitializationStep func(*testing.T, *framework.Framework, *framework.TestCtx, string) error
 
 type CRDTestStruct struct {
@@ -32,52 +36,77 @@ func TestKeycloakCRDS(t *testing.T) {
 	t.Run("KeycloakBackupCRDTest", func(t *testing.T) {
 		runTestsFromCRDInterface(t, NewKeycloakBackupCRDTestStruct())
 	})
+	t.Run("KeycloakRealmsCRDTest", func(t *testing.T) {
+		runTestsFromCRDInterface(t, NewKeycloakRealmsCRDTestStruct())
+	})
 }
 
 func runTestsFromCRDInterface(t *testing.T, crd *CRDTestStruct) {
+	globalCTX := framework.NewTestCtx(t)
+	defer globalCTX.Cleanup()
 
-	for testName, testMethod := range crd.testSteps {
-		ctx := framework.NewTestCtx(t)
+	err := globalCTX.InitializeClusterResources(&framework.CleanupOptions{TestContext: globalCTX, Timeout: cleanupTimeout, RetryInterval: cleanupRetryInterval})
+	if err != nil {
+		t.Fatalf("failed to initialize cluster resources: %v", err)
+	}
+	t.Log("initialized cluster resources")
+	namespace, err := globalCTX.GetNamespace()
+	if err != nil {
+		t.Fatal(err)
+	}
 
-		err := ctx.InitializeClusterResources(&framework.CleanupOptions{TestContext: ctx, Timeout: cleanupTimeout, RetryInterval: cleanupRetryInterval})
-		if err != nil {
-			t.Fatalf("failed to initialize cluster resources: %v", err)
-		}
-		t.Log("initialized cluster resources")
-		namespace, err := ctx.GetNamespace()
+	// get global framework variables
+	f := framework.Global
+	// wait for Keycloak Operator to be ready
+	err = e2eutil.WaitForOperatorDeployment(t, f.KubeClient, namespace, operatorCRName, 1, pollRetryInterval, pollTimeout)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !f.LocalOperator {
+		deployment, err := f.KubeClient.AppsV1().Deployments(namespace).Get(operatorCRName, metav1.GetOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}
-		// get global framework variables
-		f := framework.Global
-		// wait for Keycloak Operator to be ready
-		err = e2eutil.WaitForOperatorDeployment(t, f.KubeClient, namespace, operatorCRName, 1, pollRetryInterval, pollTimeout)
+		t.Logf("Operator deployed from: %s", deployment.Spec.Template.Spec.Containers[0].Image)
+	}
+
+	t.Log("prepare global CRD environment")
+	for _, prepareEnvironmentFunction := range crd.prepareEnvironmentSteps {
+		err = prepareEnvironmentFunction(t, f, globalCTX, namespace)
+
 		if err != nil {
 			t.Fatal(err)
 		}
+	}
 
-		if !f.LocalOperator {
-			deployment, err := f.KubeClient.AppsV1().Deployments(namespace).Get(operatorCRName, metav1.GetOptions{})
-			if err != nil {
-				t.Fatal(err)
-			}
-			t.Logf("Operator deployed from: %s", deployment.Spec.Template.Spec.Containers[0].Image)
-		}
-
-		for _, prepareEnvironmentFunction := range crd.prepareEnvironmentSteps {
-			err = prepareEnvironmentFunction(t, f, ctx, namespace)
-
-			if err != nil {
-				t.Fatal(err)
-			}
-		}
-
+	for testName, testStep := range crd.testSteps {
 		t.Run(testName, func(t *testing.T) {
-			if err = testMethod(t, f, ctx, namespace); err != nil {
+			t.Logf("test %s started", testName)
+			testCTX := framework.NewTestCtx(t)
+
+			t.Logf("prepare test environment for test %s", testName)
+			for _, prepareEnvironmentFunction := range testStep.prepareTestEnvironmentSteps {
+				err = prepareEnvironmentFunction(t, f, testCTX, namespace)
+
+				if err != nil {
+					t.Logf("preparation step for test %s failed, cleaning context", testName)
+					testCTX.Cleanup()
+					t.Fatal(err)
+				}
+			}
+
+			t.Logf("running test %s", testName)
+			if err = testStep.testFunction(t, f, testCTX, namespace); err != nil {
+				t.Logf("test %s failed, cleaning context", testName)
+				testCTX.Cleanup()
 				t.Fatal(err)
 			}
-		})
 
-		ctx.Cleanup()
+			t.Logf("cleanup for test %s", testName)
+			testCTX.Cleanup()
+
+			t.Logf("test finished %s", testName)
+		})
 	}
 }
