@@ -9,9 +9,14 @@
 -- The above step will launch the operator on the local machine
 -- To see how do debug the operator or how to deploy to a cluster, see below alternatives to step 3
 4. In a new terminal run `make cluster/create/examples`
-5. (Optional for Minikube) Configure Ingress and DNS Resolver
--- run `minikube addons enable ingress`
--- run `./hack/modify_etc_hosts.sh`
+5. Optional: configure Ingress and DNS Resolver
+   - minikube: \
+     -- run `minikube addons enable ingress` \
+     -- run `./hack/modify_etc_hosts.sh`
+   - Docker for Mac: \
+     -- run `kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-0.32.0/deploy/static/provider/cloud/deploy.yaml`
+        (see also https://kubernetes.github.io/ingress-nginx/deploy/) \
+     -- run `./hack/modify_etc_hosts.sh keycloak.local 127.0.0.1`
 
 To clean the cluster (Removes CRDs, CRs, RBAC and namespace)
 1. run `make cluster/clean`
@@ -67,12 +72,13 @@ Deploy the operator into the running cluster
 | `make cluster/create/examples` | Applies the example Keycloak and KeycloakRealm CRs                                                     |
 
 #### Tests
-| *Command*                    | *Description*                                           |
-| ---------------------------- | ------------------------------------------------------- |
-| `make test/unit`             | Runs unit tests                                         |
-| `make test/e2e`              | Runs e2e tests                                          |
-| `make test/coverage/prepare` | Prepares coverage report from unit and e2e test results |
-| `make test/coverage`         | Generates coverage report                               |
+| *Command*                    | *Description*                                               |
+| ---------------------------- | ----------------------------------------------------------- |
+| `make test/unit`             | Runs unit tests                                             |
+| `make test/e2e`              | Runs e2e tests with operator ran locally                    |
+| `make test/e2e-image`        | Runs e2e tests with operator ran as an image in the cluster |
+| `make test/coverage/prepare` | Prepares coverage report from unit and e2e test results     |
+| `make test/coverage`         | Generates coverage report                                   |
 
 #### Local Development
 | *Command*                 | *Description*                                                                    |
