@@ -1,0 +1,10 @@
+compose:
+  pulp_repos: true
+go:
+  modules:
+    - module: github.com/keycloak/keycloak-operator
+image_build_method: imagebuilder
+platforms:
+  only:
+    - x86_64
+    - s390x
