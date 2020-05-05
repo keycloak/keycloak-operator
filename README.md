@@ -57,7 +57,7 @@ All images used by the Operator might be controlled using dedicated Environmenta
  | `RHSSO` for OpenJDK | `IMAGE_RHSSO_OPENJDK`           | `registry.redhat.io/rh-sso-7/sso74-openshift-rhel8:7.4-1`        |
  | Init container      | `IMAGE_KEYCLOAK_INIT_CONTAINER` | `quay.io/keycloak/keycloak-init-container:master`                |
  | Backup container    | `IMAGE_RHMI_BACKUP_CONTAINER`   | `quay.io/integreatly/backup-container:1.0.10`                    |
- | Postgresql          | `IMAGE_POSTGRESQL`              | `postgres:11.5`                                                  |
+ | Postgresql          | `IMAGE_POSTGRESQL`              | `registry.redhat.io/rhel8/postgresql-10:1`                       |
 
 ## Contributing
 

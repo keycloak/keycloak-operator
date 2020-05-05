@@ -18,8 +18,8 @@ const (
 	DefaultRHSSOImageOpenJ9      = "registry.redhat.io/rh-sso-7/sso74-openshift-rhel8:7.4-1"
 	DefaultRHSSOImageOpenJDK     = "registry.redhat.io/rh-sso-7/sso74-openshift-rhel8:7.4-1"
 	DefaultKeycloakInitContainer = "quay.io/keycloak/keycloak-init-container:master"
-	DefaultRHMIBackupContainer   = "quay.io/integreatly/backup-container:1.0.10"
-	DefaultPostgresqlImage       = "postgres:11.5"
+	DefaultRHMIBackupContainer   = "quay.io/integreatly/backup-container:1.0.14"
+	DefaultPostgresqlImage       = "registry.access.redhat.com/rhscl/postgresql-10-rhel7:1"
 )
 
 var Images = NewImageManager()

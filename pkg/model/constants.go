@@ -26,7 +26,7 @@ const (
 	// Required by the Integreately Backup Image
 	DatabaseSecretDatabaseProperty = "POSTGRES_DATABASE" // nolint
 	// Required by the Integreately Backup Image
-	DatabaseSecretSuperuserProperty       = "POSTGRES_SUPERUSER"        // nolint
+	DatabaseSecretVersionProperty         = "POSTGRES_VERSION"          // nolint
 	DatabaseSecretExternalAddressProperty = "POSTGRES_EXTERNAL_ADDRESS" // nolint
 	DatabaseSecretExternalPortProperty    = "POSTGRES_EXTERNAL_PORT"    // nolint
 	KeycloakServicePort                   = 8443
