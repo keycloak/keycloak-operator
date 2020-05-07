@@ -49,8 +49,13 @@ func getDeployedKeycloakCR(framework *framework.Framework, namespace string) key
 }
 
 func prepareKeycloaksCR(t *testing.T, f *framework.Framework, ctx *framework.TestCtx, namespace string) error {
+	err := doWorkaroundIfNecessary(f, ctx, namespace)
+	if err != nil {
+		return err
+	}
+
 	keycloakCR := getKeycloakCR(namespace)
-	err := Create(f, keycloakCR, ctx)
+	err = Create(f, keycloakCR, ctx)
 	if err != nil {
 		return err
 	}

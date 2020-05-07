@@ -156,8 +156,6 @@ setup/travis:
 	@sudo chown -R travis: /home/travis/.minikube/
 	sudo ./hack/modify_etc_hosts.sh "keycloak.local"
 	@sudo minikube addons enable ingress
-	# Workaround for https://github.com/kubernetes/minikube/issues/3129
-	@kubectl create -f hack/issue_3129_workaround.yaml
 
 .PHONY: test/goveralls
 test/goveralls: test/coverage/prepare
