@@ -51,6 +51,11 @@ func (p *ImageManager) getImage(environmentalVariable string, defaultValue strin
 }
 
 func (p *ImageManager) getRHSSOImage() string {
+	defaultImage := p.getDefaultRHSSOImageForCurrentArchitecture()
+	return p.getImage(RHSSOImage, defaultImage)
+}
+
+func (p *ImageManager) getDefaultRHSSOImageForCurrentArchitecture() string {
 	// Full list of archs might be found here:
 	// https://github.com/golang/go/blob/release-branch.go1.10/src/go/build/syslist.go#L8
 	switch arch := runtime.GOARCH; arch {
