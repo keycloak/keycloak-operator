@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"testing"
 
+	"k8s.io/apimachinery/pkg/api/resource"
+
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
 
@@ -530,6 +532,105 @@ func TestKeycloakReconciler_Test_Should_Update_PDB(t *testing.T) {
 	assert.Equal(t, len(desiredState), 10)
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[9])
 	assert.IsType(t, model.PodDisruptionBudget(cr), desiredState[9].(common.GenericUpdateAction).Ref)
+}
+
+func TestKeycloakReconciler_Test_Setting_Resources(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.ExternalAccess = v1alpha1.KeycloakExternalAccess{
+		Enabled: true,
+	}
+
+	resource50m := resource.MustParse("50m")
+	resource100Mi := resource.MustParse("100Mi")
+	resource1900m := resource.MustParse("1900m")
+	resource700Mi := resource.MustParse("700Mi")
+
+	var resourceListKeycloak = make(v1.ResourceList)
+	resourceListKeycloak[v1.ResourceCPU] = resource1900m
+	resourceListKeycloak[v1.ResourceMemory] = resource700Mi
+
+	var resourceListPostgres = make(v1.ResourceList)
+	resourceListPostgres[v1.ResourceCPU] = resource50m
+	resourceListPostgres[v1.ResourceMemory] = resource100Mi
+
+	cr.Spec.KeycloakDeploymentSpec = v1alpha1.DeploymentSpec{
+		Resources: v1.ResourceRequirements{
+			Requests: resourceListKeycloak,
+			Limits:   resourceListKeycloak,
+		},
+	}
+	cr.Spec.PostgresDeploymentSpec = v1alpha1.DeploymentSpec{
+		Resources: v1.ResourceRequirements{
+			Requests: resourceListPostgres,
+			Limits:   resourceListPostgres,
+		},
+	}
+
+	currentState := common.NewClusterState()
+
+	//Set monitoring resources exist to true
+	stateManager := common.GetStateManager()
+	defer stateManager.Clear()
+	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.PrometheusRuleKind), true)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.ServiceMonitorsKind), true)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, grafanav1alpha1.GrafanaDashboardKind), true)
+	stateManager.SetState(common.RouteKind, true)
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+	// then
+	// Expectation:
+	//    6) Postgresql Deployment
+	//    11) Keycloak StatefulSets
+	assert.Equal(t, len(desiredState), 13)
+	assert.IsType(t, model.PostgresqlDeployment(cr), desiredState[6].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakDeployment(cr, model.DatabaseSecret(cr)), desiredState[11].(common.GenericCreateAction).Ref)
+	keycloakContainer := desiredState[11].(common.GenericCreateAction).Ref.(*v13.StatefulSet).Spec.Template.Spec.Containers[0]
+	assert.Equal(t, &resource700Mi, keycloakContainer.Resources.Requests.Memory(), "Keycloak Deployment: Memory-Requests should be: "+resource700Mi.String()+" but is "+keycloakContainer.Resources.Requests.Memory().String())
+	assert.Equal(t, &resource1900m, keycloakContainer.Resources.Requests.Cpu(), "Keycloak Deployment: Cpu-Requests should be: "+resource1900m.String()+" but is "+keycloakContainer.Resources.Requests.Cpu().String())
+	assert.Equal(t, &resource700Mi, keycloakContainer.Resources.Limits.Memory(), "Keycloak Deployment: Memory-Limit should be: "+resource700Mi.String()+" but is "+keycloakContainer.Resources.Limits.Memory().String())
+	assert.Equal(t, &resource1900m, keycloakContainer.Resources.Limits.Cpu(), "Keycloak Deployment:  Cpu-Limit should be: "+resource1900m.String()+" but is "+keycloakContainer.Resources.Limits.Cpu().String())
+	postgresContainer := desiredState[6].(common.GenericCreateAction).Ref.(*v13.Deployment).Spec.Template.Spec.Containers[0]
+	assert.Equal(t, &resource100Mi, postgresContainer.Resources.Requests.Memory(), "Postgres Deployment: Memory-Requests should be: "+resource100Mi.String()+" but is: "+postgresContainer.Resources.Requests.Memory().String())
+	assert.Equal(t, &resource50m, postgresContainer.Resources.Requests.Cpu(), "Postgres Deployment: Cpu-Requests should be: ", resource50m.String()+"b ut is "+postgresContainer.Resources.Requests.Cpu().String())
+	assert.Equal(t, &resource100Mi, postgresContainer.Resources.Limits.Memory(), "Postgres Deployment: Memory-Limits should be: "+resource100Mi.String()+" but is: "+postgresContainer.Resources.Limits.Memory().String())
+	assert.Equal(t, &resource50m, postgresContainer.Resources.Limits.Cpu(), "Postgres Deployment: Cpu-Limits should be: ", resource50m.String()+"b ut is "+postgresContainer.Resources.Limits.Cpu().String())
+}
+
+func TestKeycloakReconciler_Test_No_Resources_Specified(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.ExternalAccess = v1alpha1.KeycloakExternalAccess{
+		Enabled: true,
+	}
+	currentState := common.NewClusterState()
+
+	//Set monitoring resources exist to true
+	stateManager := common.GetStateManager()
+	defer stateManager.Clear()
+	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.PrometheusRuleKind), true)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.ServiceMonitorsKind), true)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, grafanav1alpha1.GrafanaDashboardKind), true)
+	stateManager.SetState(common.RouteKind, true)
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+	// then
+	// Expectation:
+	//    6) Postgresql Deployment
+	//    11) Keycloak StatefulSets
+	assert.Equal(t, len(desiredState), 13)
+	assert.IsType(t, model.PostgresqlDeployment(cr), desiredState[6].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.KeycloakDeployment(cr, model.DatabaseSecret(cr)), desiredState[11].(common.GenericCreateAction).Ref)
+	keycloakContainer := desiredState[11].(common.GenericCreateAction).Ref.(*v13.StatefulSet).Spec.Template.Spec.Containers[0]
+	assert.Equal(t, 0, len(keycloakContainer.Resources.Requests), "Requests-List should be empty")
+	assert.Equal(t, 0, len(keycloakContainer.Resources.Limits), "Limits-List should be empty")
+	postgresContainer := desiredState[6].(common.GenericCreateAction).Ref.(*v13.Deployment).Spec.Template.Spec.Containers[0]
+	assert.Equal(t, len(postgresContainer.Resources.Requests), 0, "Request-List should be empty")
+	assert.Equal(t, len(postgresContainer.Resources.Limits), 0, "Limits-List should be empty")
 }
 
 func TestIsIP(t *testing.T) {

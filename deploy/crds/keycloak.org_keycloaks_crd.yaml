@@ -29,7 +29,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: KeycloakSpec defines the desired state of Keycloak
+          description: KeycloakSpec defines the desired state of Keycloak.
           properties:
             extensions:
               description: A list of extensions, where each one is a URL to a JAR
@@ -81,6 +81,28 @@ spec:
             instances:
               description: Number of Keycloak instances in HA mode. Default is 1.
               type: integer
+            keycloakDeploymentSpec:
+              description: Resources (Requests and Limits) for KeycloakDeployment
+              properties:
+                resources:
+                  description: Resources (Requests and Limits) for the Pods
+                  properties:
+                    limits:
+                      additionalProperties:
+                        type: string
+                      description: 'Limits describes the maximum amount of compute
+                        resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      type: object
+                    requests:
+                      additionalProperties:
+                        type: string
+                      description: 'Requests describes the minimum amount of compute
+                        resources required. If Requests is omitted for a container,
+                        it defaults to Limits if that is explicitly specified, otherwise
+                        to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      type: object
+                  type: object
+              type: object
             podDisruptionBudget:
               description: Specify PodDisruptionBudget configuration
               properties:
@@ -89,6 +111,28 @@ spec:
                     for the Keycloak deployment and set its `maxUnavailable` value
                     to 1
                   type: boolean
+              type: object
+            postgresDeploymentSpec:
+              description: Resources (Requests and Limits) for PostgresDeployment
+              properties:
+                resources:
+                  description: Resources (Requests and Limits) for the Pods
+                  properties:
+                    limits:
+                      additionalProperties:
+                        type: string
+                      description: 'Limits describes the maximum amount of compute
+                        resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      type: object
+                    requests:
+                      additionalProperties:
+                        type: string
+                      description: 'Requests describes the minimum amount of compute
+                        resources required. If Requests is omitted for a container,
+                        it defaults to Limits if that is explicitly specified, otherwise
+                        to an implementation-defined value. More info: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/'
+                      type: object
+                  type: object
               type: object
             profile:
               description: Profile used for controlling Operator behavior. Default
