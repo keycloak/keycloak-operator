@@ -44,6 +44,16 @@ spec:
                   description: If set to true, the Operator will create an Ingress
                     or a Route pointing to Keycloak.
                   type: boolean
+                tlsTermination:
+                  description: TLS Termination type for the external access. Setting
+                    this field to "reencrypt" will terminate TLS on the Ingress/Route
+                    level. Setting this field to "passthrough" will send encrypted
+                    traffic to the Pod. If unspecified, defaults to "reencrypt". Note,
+                    that this setting has no effect on Ingress as Ingress TLS settings
+                    are not reconciled by this operator. In other words, Ingress TLS
+                    configuration is the same in both cases and it is up to the user
+                    to configure TLS section of the Ingress.
+                  type: string
               type: object
             externalDatabase:
               description: "Controls external database settings. Using an external

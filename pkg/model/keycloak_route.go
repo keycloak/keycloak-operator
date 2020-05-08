@@ -25,7 +25,7 @@ func KeycloakRoute(cr *kc.Keycloak) *v1.Route {
 				TargetPort: intstr.FromString(ApplicationName),
 			},
 			TLS: &v1.TLSConfig{
-				Termination: "passthrough",
+				Termination: getTLSTerminationType(cr),
 			},
 			To: v1.RouteTargetReference{
 				Kind: "Service",
@@ -42,7 +42,7 @@ func KeycloakRouteReconciled(cr *kc.Keycloak, currentState *v1.Route) *v1.Route 
 			TargetPort: intstr.FromString(ApplicationName),
 		},
 		TLS: &v1.TLSConfig{
-			Termination: "passthrough",
+			Termination: getTLSTerminationType(cr),
 		},
 		To: v1.RouteTargetReference{
 			Kind: "Service",
@@ -51,6 +51,13 @@ func KeycloakRouteReconciled(cr *kc.Keycloak, currentState *v1.Route) *v1.Route 
 	}
 
 	return reconciled
+}
+
+func getTLSTerminationType(cr *kc.Keycloak) v1.TLSTerminationType {
+	if cr.Spec.ExternalAccess.TLSTermination == kc.PassthroughTLSTerminationType {
+		return "passthrough"
+	}
+	return "reencrypt"
 }
 
 func KeycloakRouteSelector(cr *kc.Keycloak) client.ObjectKey {

@@ -53,10 +53,26 @@ type KeycloakSpec struct {
 	PodDisruptionBudget PodDisruptionBudgetConfig `json:"podDisruptionBudget,omitempty"`
 }
 
+type TLSTerminationType string
+
+var (
+	DefaultTLSTermintation        TLSTerminationType
+	ReencryptTLSTerminationType   TLSTerminationType = "reencrypt"
+	PassthroughTLSTerminationType TLSTerminationType = "passthrough"
+)
+
 type KeycloakExternalAccess struct {
 	// If set to true, the Operator will create an Ingress or a Route
 	// pointing to Keycloak.
 	Enabled bool `json:"enabled,omitempty"`
+	// TLS Termination type for the external access. Setting this field to "reencrypt" will
+	// terminate TLS on the Ingress/Route level. Setting this field to "passthrough" will
+	// send encrypted traffic to the Pod. If unspecified, defaults to "reencrypt".
+	// Note, that this setting has no effect on Ingress
+	// as Ingress TLS settings are not reconciled by this operator. In other words,
+	// Ingress TLS configuration is the same in both cases and it is up to the user
+	// to configure TLS section of the Ingress.
+	TLSTermination TLSTerminationType `json:"tlsTermination,omitempty"`
 }
 
 type KeycloakExternalDatabase struct {
