@@ -1,11 +1,13 @@
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// KeycloakSpec defines the desired state of Keycloak
+// KeycloakSpec defines the desired state of Keycloak.
 // +k8s:openapi-gen=true
+// .
 type KeycloakSpec struct {
 	// A list of extensions, where each one is a URL to a JAR files that will be deployed in Keycloak.
 	// +listType=set
@@ -51,6 +53,18 @@ type KeycloakSpec struct {
 	// Specify PodDisruptionBudget configuration
 	// +optional
 	PodDisruptionBudget PodDisruptionBudgetConfig `json:"podDisruptionBudget,omitempty"`
+	// Resources (Requests and Limits) for KeycloakDeployment
+	// +optional
+	KeycloakDeploymentSpec DeploymentSpec `json:"keycloakDeploymentSpec,omitempty"`
+	// Resources (Requests and Limits) for PostgresDeployment
+	// +optional
+	PostgresDeploymentSpec DeploymentSpec `json:"postgresDeploymentSpec,omitempty"`
+}
+
+type DeploymentSpec struct {
+	// Resources (Requests and Limits) for the Pods
+	// +optional
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
 type TLSTerminationType string
@@ -86,8 +100,9 @@ type PodDisruptionBudgetConfig struct {
 	Enabled bool `json:"enabled,omitempty"`
 }
 
-// KeycloakStatus defines the observed state of Keycloak
+// KeycloakStatus defines the observed state of Keycloak.
 // +k8s:openapi-gen=true
+// .
 type KeycloakStatus struct {
 	// Current phase of the operator.
 	Phase StatusPhase `json:"phase"`
@@ -120,6 +135,7 @@ var (
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:path=keycloaks,scope=Namespaced
+// .
 type Keycloak struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`

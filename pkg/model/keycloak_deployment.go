@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/api/resource"
+
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v13 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -23,6 +25,33 @@ func GetServiceEnvVar(suffix string) string {
 	serviceName := strings.ToUpper(PostgresqlServiceName)
 	serviceName = strings.ReplaceAll(serviceName, "-", "_")
 	return fmt.Sprintf("%v_%v", serviceName, suffix)
+}
+
+func getResources(cr *v1alpha1.Keycloak) v1.ResourceRequirements {
+	requirements := v1.ResourceRequirements{}
+	requirements.Limits = v1.ResourceList{}
+	requirements.Requests = v1.ResourceList{}
+
+	cpu, err := resource.ParseQuantity(cr.Spec.KeycloakDeploymentSpec.Resources.Requests.Cpu().String())
+	if err == nil && cpu.String() != "0" {
+		requirements.Requests[v1.ResourceCPU] = cpu
+	}
+
+	memory, err := resource.ParseQuantity(cr.Spec.KeycloakDeploymentSpec.Resources.Requests.Memory().String())
+	if err == nil && memory.String() != "0" {
+		requirements.Requests[v1.ResourceMemory] = memory
+	}
+
+	cpu, err = resource.ParseQuantity(cr.Spec.KeycloakDeploymentSpec.Resources.Limits.Cpu().String())
+	if err == nil && cpu.String() != "0" {
+		requirements.Limits[v1.ResourceCPU] = cpu
+	}
+	memory, err = resource.ParseQuantity(cr.Spec.KeycloakDeploymentSpec.Resources.Limits.Memory().String())
+	if err == nil && memory.String() != "0" {
+		requirements.Limits[v1.ResourceMemory] = memory
+	}
+
+	return requirements
 }
 
 func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
@@ -182,6 +211,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 							LivenessProbe:  livenessProbe(),
 							ReadinessProbe: readinessProbe(),
 							Env:            getKeycloakEnv(cr, dbSecret),
+							Resources:      getResources(cr),
 						},
 					},
 				},
@@ -224,6 +254,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 			LivenessProbe:  livenessProbe(),
 			ReadinessProbe: readinessProbe(),
 			Env:            getKeycloakEnv(cr, dbSecret),
+			Resources:      getResources(cr),
 		},
 	}
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
