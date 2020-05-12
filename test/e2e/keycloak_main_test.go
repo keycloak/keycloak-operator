@@ -42,6 +42,9 @@ func TestKeycloakCRDS(t *testing.T) {
 	t.Run("KeycloakUsersCRDTest", func(t *testing.T) {
 		runTestsFromCRDInterface(t, NewKeycloakUserCRDTestStruct())
 	})
+	t.Run("KeycloakClientsCRDTest", func(t *testing.T) {
+		runTestsFromCRDInterface(t, NewKeycloakClientsCRDTestStruct())
+	})
 }
 
 func runTestsFromCRDInterface(t *testing.T, crd *CRDTestStruct) {
