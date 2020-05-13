@@ -89,6 +89,28 @@ func WaitForRealmToBeReady(t *testing.T, framework *framework.Framework, namespa
 	})
 }
 
+func WaitForUserToBeReady(t *testing.T, framework *framework.Framework, namespace string) error {
+	keycloakUserCR := &keycloakv1alpha1.KeycloakUser{}
+
+	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
+		err := GetNamespacedObject(framework, namespace, testKeycloakUserCRName, keycloakUserCR)
+		if err != nil {
+			return err
+		}
+
+		if keycloakUserCR.Status.Phase != keycloakv1alpha1.UserPhaseReconciled {
+			keycloakRealmCRParsed, err := json.Marshal(keycloakUserCR)
+			if err != nil {
+				return err
+			}
+
+			return fmt.Errorf("KeycloakRealm is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
+		}
+
+		return nil
+	})
+}
+
 func WaitForSuccessResponseToContain(t *testing.T, framework *framework.Framework, url string, expectedString string) error {
 	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
 		response, err := http.Get(url)
