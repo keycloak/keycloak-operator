@@ -6,6 +6,7 @@ const (
 	testKeycloakCRName      = "keycloak-test"
 	operatorCRName          = "keycloak-operator"
 	testKeycloakRealmCRName = "keycloak-realm-test"
+	testKeycloakUserCRName  = "keycloak-user-test"
 	cleanupRetryInterval    = time.Second * 5
 	cleanupTimeout          = time.Minute * 2
 	pollRetryInterval       = time.Second * 10
