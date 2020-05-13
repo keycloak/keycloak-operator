@@ -2,10 +2,15 @@ FROM registry.access.redhat.com/ubi8/ubi-minimal:8.1 AS build-env
 
 RUN microdnf install -y git make golang
 
+## Do not delete the following line, used for productization
+## RUN git clone --single-branch https://github.com/keycloak/keycloak-operator.git --branch master .
+
 COPY . /src/
-RUN cd /src && make code/compile
-RUN cd /src && echo "Build SHA1: $(git rev-parse HEAD)"
-RUN cd /src && echo "$(git rev-parse HEAD)" > /src/BUILD_INFO
+
+RUN cd /src && \
+    make code/compile && \
+    echo "Build SHA1: $(git rev-parse HEAD)" &&
+    { echo "$(git rev-parse HEAD)" } > /src/BUILD_INFO
 
 # final stage
 FROM registry.access.redhat.com/ubi8/ubi-minimal:8.1
