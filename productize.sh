@@ -23,6 +23,7 @@ GIT_LAST_COMMIT_HASH=$(git ls-remote "${GIT_REPOSITORY}" "${GIT_BRANCH}" | awk '
 GIT_COMMAND="git clone --single-branch --branch ${GIT_BRANCH} ${GIT_REPOSITORY} .  #${GIT_LAST_COMMIT_HASH}"
 
 sed -i \
+    -e 's/registry.svc.ci.openshift.org\/openshift\/release:golang-1.13/openshift\/golang-builder:1.13/' \
     -e 's/FROM registry.access.redhat.com\/ubi8\/ubi-minimal:[0-9.]*/FROM ubi8-minimal:8-released/' \
     -e "s/##LABELS/$LABELS/g" \
     -e "s,^## *RUN git clone .*\$,RUN $GIT_COMMAND," \

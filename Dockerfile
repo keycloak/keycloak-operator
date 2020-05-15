@@ -1,6 +1,4 @@
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.1 AS build-env
-
-RUN microdnf install -y git make golang
+FROM registry.svc.ci.openshift.org/openshift/release:golang-1.13 AS build-env
 
 ## Do not delete the following line, used for productization
 ## RUN git clone --single-branch https://github.com/keycloak/keycloak-operator.git --branch master .
