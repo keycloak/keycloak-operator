@@ -1,8 +1,5 @@
 FROM registry.svc.ci.openshift.org/openshift/release:golang-1.13 AS build-env
 
-## Do not delete the following line, used for productization
-## RUN git clone --single-branch https://github.com/keycloak/keycloak-operator.git --branch master .
-
 COPY . /src/
 
 RUN cd /src && \
