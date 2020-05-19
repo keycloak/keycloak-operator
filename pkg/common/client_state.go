@@ -25,25 +25,25 @@ func NewClientState(context context.Context, realm *kc.KeycloakRealm) *ClientSta
 }
 
 func (i *ClientState) Read(context context.Context, cr *kc.KeycloakClient, realmClient KeycloakInterface, controllerClient client.Client) error {
-	client, err := realmClient.GetClient(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
-	i.Client = client
-	if err != nil {
-		return err
-	}
+	if cr.Spec.Client.ID != "" {
+		client, err := realmClient.GetClient(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
 
-	if client == nil {
-		return nil
-	}
+		if err != nil {
+			return err
+		}
 
-	clientSecret, err := realmClient.GetClientSecret(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
-	if err != nil {
-		return err
-	}
-	cr.Spec.Client.Secret = clientSecret
+		i.Client = client
 
-	err = i.readClientSecret(context, cr, i.Client, controllerClient)
-	if err != nil {
-		return err
+		clientSecret, err := realmClient.GetClientSecret(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
+		if err != nil {
+			return err
+		}
+		cr.Spec.Client.Secret = clientSecret
+
+		err = i.readClientSecret(context, cr, i.Client, controllerClient)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -124,7 +124,14 @@ func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm s
 		return errors.New("cannot perform client create when client is nil")
 	}
 
-	_, err := i.keycloakClient.CreateClient(obj.Spec.Client, realm)
+	uid, err := i.keycloakClient.CreateClient(obj.Spec.Client, realm)
+
+	if err != nil {
+		return err
+	}
+
+	obj.Spec.Client.ID = uid
+
 	return err
 }
 
