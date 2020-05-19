@@ -169,10 +169,6 @@ func (r *ReconcileKeycloakClient) Reconcile(request reconcile.Request) (reconcil
 
 // Fills the CR with default values. Nils are not acceptable for Kubernetes.
 func (r *ReconcileKeycloakClient) adjustCrDefaults(cr *kc.KeycloakClient) {
-	if cr.Spec.Client.ID == "" {
-		cr.Spec.Client.ID = cr.Namespace + "-" + cr.Name
-		log.Info(fmt.Sprintf("client ID is not specified, using %v", cr.Spec.Client.ID))
-	}
 	if cr.Spec.Client.Attributes == nil {
 		cr.Spec.Client.Attributes = make(map[string]string)
 	}
