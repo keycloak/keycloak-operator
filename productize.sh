@@ -2,7 +2,7 @@
 
 LABELS=$(cat <<-END
 LABEL \
-com.redhat.component="redhat-sso-7-sso74-rhel8-operator-container"  \
+com.redhat.component="redhat-sso-7-sso74-rhel8-tech-preview-operator-container"  \
 description="Red Hat Single Sign-On 7.4 Operator container image, based on the Red Hat Universal Base Image 8 Minimal container image" \
 summary="Red Hat Single Sign-On 7.4 Operator container image, based on the Red Hat Universal Base Image 8 Minimal container image" \
 version="7.4" \
