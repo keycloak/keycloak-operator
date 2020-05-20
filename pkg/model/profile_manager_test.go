@@ -122,3 +122,33 @@ func TestProfileManager_get_keycloak_image_with_no_profile(t *testing.T) {
 	//then
 	assert.Equal(t, DefaultKeycloakImage, image)
 }
+
+func TestProfileManager_get_init_container_image_with_no_profile(t *testing.T) {
+	//given
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{},
+	}
+
+	//when
+	profileManager := NewProfileManager()
+	image := profileManager.GetInitContainerImage(cr)
+
+	//then
+	assert.Equal(t, DefaultKeycloakInitContainer, image)
+}
+
+func TestProfileManager_get_init_container_image_with_with_RHSSO_profile(t *testing.T) {
+	//given
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{},
+	}
+
+	//when
+	os.Setenv(ProfileEnvironmentalVariable, RHSSOProfile)
+	profileManager := NewProfileManager()
+	os.Unsetenv(ProfileEnvironmentalVariable)
+	image := profileManager.GetInitContainerImage(cr)
+
+	//then
+	assert.Equal(t, DefaultRHSSOInitContainer, image)
+}

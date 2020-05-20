@@ -17,6 +17,7 @@ func TestImageManager_test_default_images(t *testing.T) {
 	assert.Equal(t, DefaultRHSSOImageOpenJDK, imageChooser.Images[RHSSOImageOpenJDK])
 	assert.Equal(t, DefaultRHSSOImageOpenJDK, imageChooser.Images[RHSSOImage])
 	assert.Equal(t, DefaultKeycloakInitContainer, imageChooser.Images[KeycloakInitContainer])
+	assert.Equal(t, DefaultRHSSOInitContainer, imageChooser.Images[RHSSOInitContainer])
 	assert.Equal(t, DefaultRHMIBackupContainer, imageChooser.Images[RHMIBackupContainer])
 }
 
