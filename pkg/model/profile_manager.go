@@ -43,6 +43,13 @@ func (p *ProfileManager) GetKeycloakOrRHSSOImage(cr *v1alpha1.Keycloak) string {
 	return Images.Images[KeycloakImage]
 }
 
+func (p *ProfileManager) GetInitContainerImage(cr *v1alpha1.Keycloak) string {
+	if p.IsRHSSO(cr) {
+		return Images.Images[RHSSOInitContainer]
+	}
+	return Images.Images[KeycloakInitContainer]
+}
+
 func (p *ProfileManager) getProfiles() []string {
 	env := os.Getenv(ProfileEnvironmentalVariable)
 	if env == "" {
