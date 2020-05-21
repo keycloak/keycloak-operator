@@ -87,10 +87,17 @@ func (i *ClusterActionRunner) RunAll(desiredState DesiredClusterState) error {
 }
 
 func (i *ClusterActionRunner) Create(obj runtime.Object) error {
-	err := controllerutil.SetControllerReference(i.cr.(v1.Object), obj.(v1.Object), i.scheme)
+	cr := i.cr.(v1.Object)
+	o := obj.(v1.Object)
+
+	err := controllerutil.SetControllerReference(cr, o, i.scheme)
 	if err != nil {
 		return err
 	}
+
+	labs := o.GetLabels()
+	labs["ownerReference"] = string(cr.GetUID())
+	o.SetLabels(labs)
 
 	err = i.client.Create(i.context, obj)
 	if err != nil {

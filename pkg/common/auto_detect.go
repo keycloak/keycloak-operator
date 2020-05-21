@@ -60,13 +60,11 @@ func (b *Background) autoDetectCapabilities() {
 
 func (b *Background) detectRoute() {
 	resourceExists, _ := k8sutil.ResourceExists(b.dc, routev1.SchemeGroupVersion.String(), RouteKind)
-	if resourceExists {
-		// Set state that the Route kind exists. Used to determine when a route or an Ingress should be created
-		stateManager := GetStateManager()
-		stateManager.SetState(RouteKind, true)
+	// Set state that the Route kind exists. Used to determine when a route or an Ingress should be created
+	stateManager := GetStateManager()
+	stateManager.SetState(RouteKind, resourceExists)
 
-		b.SubscriptionChannel <- routev1.SchemeGroupVersion.WithKind(RouteKind)
-	}
+	b.SubscriptionChannel <- routev1.SchemeGroupVersion.WithKind(RouteKind)
 }
 
 func (b *Background) detectMonitoringResources() {

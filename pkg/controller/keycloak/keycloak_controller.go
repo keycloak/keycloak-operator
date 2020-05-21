@@ -3,7 +3,13 @@ package keycloak
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/metadata"
+	config2 "sigs.k8s.io/controller-runtime/pkg/client/config"
 
 	v1beta12 "k8s.io/api/policy/v1beta1"
 
@@ -157,6 +163,13 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 	reqLogger := log.WithValues("Request.Namespace", request.Namespace, "Request.Name", request.Name)
 	reqLogger.Info("Reconciling Keycloak")
 
+	// Do not Reconcile until StateManager is loaded
+	stateManager := common.GetStateManager()
+	_, keyExists := stateManager.GetState(common.RouteKind).(bool)
+	if !keyExists {
+		return reconcile.Result{Requeue: true}, nil
+	}
+
 	// Fetch the Keycloak instance
 	instance := &keycloakv1alpha1.Keycloak{}
 	err := r.client.Get(r.context, request.NamespacedName, instance)
@@ -174,6 +187,11 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 	// Read current state
 	currentState := common.NewClusterState()
 	err = currentState.Read(r.context, instance, r.client)
+	if err != nil {
+		return r.ManageError(instance, err)
+	}
+
+	err = r.removeOrphanedResourcesWithOwnerReference(instance)
 	if err != nil {
 		return r.ManageError(instance, err)
 	}
@@ -262,4 +280,79 @@ func (r *ReconcileKeycloak) ManageSuccess(instance *v1alpha1.Keycloak, currentSt
 
 	log.Info("desired cluster state met")
 	return reconcile.Result{RequeueAfter: RequeueDelaySeconds}, nil
+}
+
+func (r *ReconcileKeycloak) removeOrphanedResourcesWithOwnerReference(instance *keycloakv1alpha1.Keycloak) error {
+	config, err := config2.GetConfig()
+	if err != nil {
+		return err
+	}
+
+	// Create Kubernetes Client
+	k8sClient, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return err
+	}
+
+	// Create Client which is working with PartialObjectMetadataList
+	metadataClient, err := metadata.NewForConfig(config)
+	if err != nil {
+		return err
+	}
+
+	// List all resources in cluster
+	// TODO: Investigate how to optimize this, it probably doesn't make sense to go through all resources
+	_, listResources, err := k8sClient.Discovery().ServerGroupsAndResources()
+	for _, resources := range listResources {
+		// Find out GroupName and Version of current resource group
+		var group, version string
+		if strings.Contains(resources.GroupVersion, "/") {
+			s := strings.Split(resources.GroupVersion, "/")
+			group, version = s[0], s[1]
+		} else {
+			group = ""
+			version = resources.GroupVersion
+		}
+
+		// Go through all resources in current group
+		for _, resource := range resources.APIResources {
+			gvr := schema.GroupVersionResource{
+				Group:    group,
+				Version:  version,
+				Resource: resource.Name,
+			}
+			kind := resource.Kind
+			if resource.Kind == "Endpoints" {
+				kind = "Service"
+			}
+			handle := metadataClient.Resource(gvr).Namespace(instance.Namespace)
+			// Look whether there exists a resource with owner reference pointing to our CR
+			list, _ := handle.List(metav1.ListOptions{LabelSelector: fmt.Sprintf("ownerReference=%s", string(instance.UID))})
+
+			// Ignore errors
+			if err != nil || list == nil {
+				continue
+			}
+
+			for _, obj := range list.Items {
+				if secondaryResourceArray, contains := instance.Status.SecondaryResources[kind]; !contains || !arrContains(secondaryResourceArray, obj.Name) {
+					log.Info("Resource '%s' with name '%s' is no longer present as Secondary Resource in %s CR. Removing", kind, obj.Name, instance.Kind)
+					err = handle.Delete(obj.Name, &metav1.DeleteOptions{})
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
+	}
+	return nil
+}
+
+func arrContains(arr []string, str string) bool {
+	for _, a := range arr {
+		if a == str {
+			return true
+		}
+	}
+	return false
 }

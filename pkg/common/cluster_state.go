@@ -61,6 +61,8 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 	stateManager := GetStateManager()
 	routeKindExists, keyExists := stateManager.GetState(RouteKind).(bool)
 
+	cr.Status.SecondaryResources = map[string][]string{}
+
 	err := i.readKeycloakAdminSecretCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
@@ -136,15 +138,17 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 		return err
 	}
 
-	if keyExists && routeKindExists {
-		err = i.readKeycloakRouteCurrentState(context, cr, controllerClient)
-		if err != nil {
-			return err
-		}
-	} else {
-		err = i.readKeycloakIngressCurrentState(context, cr, controllerClient)
-		if err != nil {
-			return err
+	if cr.Spec.ExternalAccess.Enabled {
+		if keyExists && routeKindExists {
+			err = i.readKeycloakRouteCurrentState(context, cr, controllerClient)
+			if err != nil {
+				return err
+			}
+		} else {
+			err = i.readKeycloakIngressCurrentState(context, cr, controllerClient)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
