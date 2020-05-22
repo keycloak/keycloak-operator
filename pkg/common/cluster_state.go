@@ -472,15 +472,21 @@ func (i *ClusterState) readPodDisruptionCurrentState(context context.Context, cr
 	return nil
 }
 
-func (i *ClusterState) IsResourcesReady() (bool, error) {
+func (i *ClusterState) IsResourcesReady(cr *kc.Keycloak) (bool, error) {
 	// Check keycloak statefulset is ready
 	keycloakDeploymentReady, _ := IsStatefulSetReady(i.KeycloakDeployment)
 	// Default Route ready to true in case we are running on native Kubernetes
 	keycloakRouteReady := true
+
 	// Check keycloak postgres deployment is ready
 	postgresqlDeploymentReady, err := IsDeploymentReady(i.PostgresqlDeployment)
 	if err != nil {
 		return false, err
+	}
+
+	// If the instance is using an external database, always set to true
+	if cr.Spec.ExternalDatabase.Enabled {
+		postgresqlDeploymentReady = true
 	}
 
 	// If running on OpenShift, check the Route is ready

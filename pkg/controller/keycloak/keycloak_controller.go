@@ -219,7 +219,7 @@ func (r *ReconcileKeycloak) ManageError(instance *v1alpha1.Keycloak, issue error
 
 func (r *ReconcileKeycloak) ManageSuccess(instance *v1alpha1.Keycloak, currentState *common.ClusterState) (reconcile.Result, error) {
 	// Check if the resources are ready
-	resourcesReady, err := currentState.IsResourcesReady()
+	resourcesReady, err := currentState.IsResourcesReady(instance)
 	if err != nil {
 		return r.ManageError(instance, err)
 	}
