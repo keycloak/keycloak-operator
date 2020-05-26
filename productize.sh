@@ -9,7 +9,7 @@ version="7.4" \
 io.k8s.description="Operator for Red Hat SSO" \
 io.k8s.display-name="Red Hat SSO 7.4 Operator" \
 io.openshift.tags="sso,sso74,keycloak,operator" \
-name="rh-sso-7\/sso74-operator-rhel8-tech-preview" \
+name="rh-sso-7-tech-preview\/sso74-rhel8-operator" \
 maintainer="Red Hat Single Sign-On Team"
 END
 )
