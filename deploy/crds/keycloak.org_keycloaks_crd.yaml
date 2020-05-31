@@ -14,7 +14,7 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: Keycloak is the Schema for the keycloaks API
+      description: Keycloak is the Schema for the keycloaks API .
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -29,7 +29,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: KeycloakSpec defines the desired state of Keycloak.
+          description: KeycloakSpec defines the desired state of Keycloak. .
           properties:
             extensions:
               description: A list of extensions, where each one is a URL to a JAR
@@ -140,7 +140,7 @@ spec:
               type: string
           type: object
         status:
-          description: KeycloakStatus defines the observed state of Keycloak
+          description: KeycloakStatus defines the observed state of Keycloak. .
           properties:
             credentialSecret:
               description: The secret where the admin credentials are to be found

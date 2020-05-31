@@ -183,7 +183,7 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 	assert.IsType(t, model.ClientSecretReconciled(cr, currentState.ClientSecret), desiredState[2].(common.GenericUpdateAction).Ref)
 }
 
-func TestKeycloakClientReconciler_Test_Marshal_Client_directAccessGrantsEnabled(t *testing.T) {
+func TestKeycloakClientReconciler_Test_Marshal_Client(t *testing.T) {
 	// given
 	cr := &v1alpha1.KeycloakClient{
 		ObjectMeta: v13.ObjectMeta{
@@ -198,6 +198,8 @@ func TestKeycloakClientReconciler_Test_Marshal_Client_directAccessGrantsEnabled(
 				ClientID:                  "test",
 				Secret:                    "test",
 				DirectAccessGrantsEnabled: false,
+				StandardFlowEnabled:       false,
+				PublicClient:              false,
 			},
 		},
 	}
@@ -209,4 +211,6 @@ func TestKeycloakClientReconciler_Test_Marshal_Client_directAccessGrantsEnabled(
 	// then
 	assert.Nil(t, err, "Client couldn't be marshalled")
 	assert.True(t, strings.Contains(s, "\"directAccessGrantsEnabled\":false"), "Element directAccessGrantsEnabled should not be omitted if false, as keycloaks default is true")
+	assert.True(t, strings.Contains(s, "\"standardFlowEnabled\":false"), "Element standardFlowEnabled should not be omitted if false, as keycloaks default is true")
+	assert.True(t, strings.Contains(s, "\"publicClient\":false"), "Element publicClient should not be omitted if false, as keycloaks default is true")
 }

@@ -36,7 +36,7 @@ func schema_pkg_apis_keycloak_v1alpha1_Keycloak(ref common.ReferenceCallback) co
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "Keycloak is the Schema for the keycloaks API",
+				Description: "Keycloak is the Schema for the keycloaks API .",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"kind": {
@@ -531,7 +531,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "KeycloakSpec defines the desired state of Keycloak.",
+				Description: "KeycloakSpec defines the desired state of Keycloak. .",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"extensions": {
@@ -609,7 +609,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 	return common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				Description: "KeycloakStatus defines the observed state of Keycloak",
+				Description: "KeycloakStatus defines the observed state of Keycloak. .",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
 					"phase": {

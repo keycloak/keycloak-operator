@@ -69,7 +69,7 @@ type KeycloakAPIClient struct {
 	ConsentRequired bool `json:"consentRequired,omitempty"`
 	// True if Standard flow is enabled.
 	// +optional
-	StandardFlowEnabled bool `json:"standardFlowEnabled,omitempty"`
+	StandardFlowEnabled bool `json:"standardFlowEnabled"`
 	// True if Implicit flow is enabled.
 	// +optional
 	ImplicitFlowEnabled bool `json:"implicitFlowEnabled,omitempty"`
@@ -81,7 +81,7 @@ type KeycloakAPIClient struct {
 	ServiceAccountsEnabled bool `json:"serviceAccountsEnabled,omitempty"`
 	// True if this is a public Client.
 	// +optional
-	PublicClient bool `json:"publicClient,omitempty"`
+	PublicClient bool `json:"publicClient"`
 	// True if this client supports Front Channel logout.
 	// +optional
 	FrontchannelLogout bool `json:"frontchannelLogout,omitempty"`
