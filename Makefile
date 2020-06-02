@@ -98,6 +98,10 @@ setup/mod:
 	go mod vendor
 	@echo setup complete
 
+.PHONY: setup/mod/verify
+setup/mod/verify:
+	go mod verify
+
 .PHONY: setup/operator-sdk
 setup/operator-sdk:
 	@echo Installing Operator SDK
@@ -136,7 +140,7 @@ code/fix:
 code/lint:
 	@echo "--> Running golangci-lint"
 	@which golangci-lint 2>/dev/null ; if [ $$? -eq 1 ]; then \
-		go get -u github.com/golangci/golangci-lint/cmd/golangci-lint; \
+		go get github.com/golangci/golangci-lint/cmd/golangci-lint@v1.26.0; \
 	fi
 	golangci-lint run
 
