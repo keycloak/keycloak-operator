@@ -121,6 +121,11 @@ func (r *ReconcileKeycloakBackup) Reconcile(request reconcile.Request) (reconcil
 		return r.ManageError(instance, err)
 	}
 
+	// backups without instances to backup are treated as errors
+	if len(keycloaks.Items) == 0 {
+		return r.ManageError(instance, fmt.Errorf("no instance to backup for %v/%v", instance.Namespace, instance.Name))
+	}
+
 	log.Info(fmt.Sprintf("found %v matching keycloak(s) for backup %v/%v", len(keycloaks.Items), instance.Namespace, instance.Name))
 
 	var currentState *common.BackupState
@@ -155,7 +160,7 @@ func (r *ReconcileKeycloakBackup) ManageError(instance *kc.KeycloakBackup, issue
 	}
 
 	return reconcile.Result{
-		RequeueAfter: RequeueDelayErrorSeconds,
+		RequeueAfter: RequeueDelayErrorSeconds * time.Second,
 		Requeue:      true,
 	}, nil
 }
@@ -178,7 +183,7 @@ func (r *ReconcileKeycloakBackup) ManageSuccess(instance *kc.KeycloakBackup, cur
 	if err != nil {
 		log.Error(err, "unable to update status")
 		return reconcile.Result{
-			RequeueAfter: RequeueDelayErrorSeconds,
+			RequeueAfter: RequeueDelayErrorSeconds * time.Second,
 			Requeue:      true,
 		}, nil
 	}

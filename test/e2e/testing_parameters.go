@@ -13,7 +13,6 @@ func init() {
 func currentProfile() string {
 	if isProductBuild {
 		return "RHSSO"
-	} else {
-		return "keycloak"
 	}
+	return "keycloak"
 }
