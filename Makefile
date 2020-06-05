@@ -109,7 +109,7 @@ setup/operator-sdk:
 
 .PHONY: code/run
 code/run:
-	@operator-sdk run --local --namespace=${NAMESPACE}
+	@operator-sdk run local --watch-namespace ${NAMESPACE}
 
 .PHONY: code/compile
 code/compile:
