@@ -82,7 +82,7 @@ func WaitForRealmToBeReady(t *testing.T, framework *framework.Framework, namespa
 				return err
 			}
 
-			return fmt.Errorf("KeycloakRealm is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
+			return fmt.Errorf("keycloakRealm is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
 		}
 
 		return nil
@@ -104,7 +104,7 @@ func WaitForClientToBeReady(t *testing.T, framework *framework.Framework, namesp
 				return err
 			}
 
-			return fmt.Errorf("KeycloakClient is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
+			return fmt.Errorf("keycloakClient is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
 		}
 
 		return nil
@@ -126,7 +126,7 @@ func WaitForUserToBeReady(t *testing.T, framework *framework.Framework, namespac
 				return err
 			}
 
-			return fmt.Errorf("KeycloakRealm is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
+			return fmt.Errorf("keycloakRealm is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
 		}
 
 		return nil
@@ -135,6 +135,7 @@ func WaitForUserToBeReady(t *testing.T, framework *framework.Framework, namespac
 
 func WaitForSuccessResponseToContain(t *testing.T, framework *framework.Framework, url string, expectedString string) error {
 	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
+		//golint:ignore
 		response, err := http.Get(url)
 		if err != nil {
 			return err

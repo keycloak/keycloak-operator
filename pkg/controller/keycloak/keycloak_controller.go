@@ -38,9 +38,9 @@ import (
 var log = logf.Log.WithName("controller_keycloak")
 
 const (
-	RequeueDelaySeconds      = 30 * time.Second
-	RequeueDelayErrorSeconds = 5 * time.Second
-	ControllerName           = "keycloak-controller"
+	RequeueDelay      = 30 * time.Second
+	RequeueDelayError = 5 * time.Second
+	ControllerName    = "keycloak-controller"
 )
 
 // Add creates a new Keycloak Controller and adds it to the Manager. The Manager will set fields on the Controller
@@ -212,7 +212,7 @@ func (r *ReconcileKeycloak) ManageError(instance *v1alpha1.Keycloak, issue error
 	}
 
 	return reconcile.Result{
-		RequeueAfter: RequeueDelayErrorSeconds,
+		RequeueAfter: RequeueDelayError,
 		Requeue:      true,
 	}, nil
 }
@@ -255,11 +255,11 @@ func (r *ReconcileKeycloak) ManageSuccess(instance *v1alpha1.Keycloak, currentSt
 	if err != nil {
 		log.Error(err, "unable to update status")
 		return reconcile.Result{
-			RequeueAfter: RequeueDelayErrorSeconds,
+			RequeueAfter: RequeueDelayError,
 			Requeue:      true,
 		}, nil
 	}
 
 	log.Info("desired cluster state met")
-	return reconcile.Result{RequeueAfter: RequeueDelaySeconds}, nil
+	return reconcile.Result{RequeueAfter: RequeueDelay}, nil
 }

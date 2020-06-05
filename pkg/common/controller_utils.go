@@ -3,7 +3,6 @@ package common
 import (
 	"context"
 	"fmt"
-	"reflect"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -68,7 +67,7 @@ func GetMatchingKeycloaks(ctx context.Context, c client.Client, labelSelector *v
 	}
 
 	err := c.List(ctx, &list, opts...)
-	return list, validateList(err, list.Items)
+	return list, err
 }
 
 // Try to get a list of keycloak instances that match the selector specified on the realm
@@ -79,17 +78,5 @@ func GetMatchingRealms(ctx context.Context, c client.Client, labelSelector *v1.L
 	}
 
 	err := c.List(ctx, &list, opts...)
-	return list, validateList(err, list.Items)
-}
-
-func validateList(previousError error, list interface{}) error {
-	if previousError != nil {
-		return previousError
-	}
-	listVal := reflect.ValueOf(list)
-	if listVal.Len() == 0 {
-		err := fmt.Errorf("could not find matching %v objects", listVal.Type())
-		return err
-	}
-	return nil
+	return list, err
 }
