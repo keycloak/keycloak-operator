@@ -121,7 +121,7 @@ func GetExternalDatabasePort(secret *v1.Secret) int32 {
 	}
 
 	port := secret.Data[DatabaseSecretExternalPortProperty]
-	parsed, err := strconv.Atoi(string(port))
+	parsed, err := strconv.ParseInt(string(port), 10, 32)
 	if err != nil {
 		return PostgresDefaultPort
 	}

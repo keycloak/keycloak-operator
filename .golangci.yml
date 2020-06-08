@@ -1,21 +1,20 @@
 linters-settings:
   golint:
-    # set the confidence level of a problem before it is reported. Setting it to 0 will show every issue from golint.
     min-confidence: 0
   gocyclo:
-    # a minimal complexity of function to report it
-    min-complexity: 60
+    min-complexity: 70
   goconst:
-    # only report strings with the minimum given length
     min-len: 2
-    # report from how many occurrence
     min-occurrences: 2
   funlen:
-    # We have very long type definitions for K8s resources
     lines: 200
+    statements: 70
 
 run:
   modules-download-mode: vendor
+
+service:
+  golangci-lint-version: 1.26.0
 
 linters:
   enable-all: true
@@ -29,3 +28,5 @@ linters:
     - wsl
     - godox
     - gomnd
+    - testpackage
+    - godot

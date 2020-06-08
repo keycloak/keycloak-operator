@@ -31,8 +31,8 @@ const (
 	DatabaseSecretExternalPortProperty    = "POSTGRES_EXTERNAL_PORT"    // nolint
 	KeycloakServicePort                   = 8443
 	PostgresDefaultPort                   = 5432
-	AdminUsernameProperty                 = "ADMIN_USERNAME"        // nolint
-	AdminPasswordProperty                 = "ADMIN_PASSWORD"        // nolint
+	AdminUsernameProperty                 = "ADMIN_USERNAME"
+	AdminPasswordProperty                 = "ADMIN_PASSWORD"
 	ServingCertSecretName                 = "sso-x509-https-secret" // nolint
 	LivenessProbeProperty                 = "liveness_probe.sh"
 	ReadinessProbeProperty                = "readiness_probe.sh"

@@ -66,7 +66,7 @@ func (c *Client) create(obj T, resourcePath, resourceName string) (string, error
 	defer res.Body.Close()
 
 	if res.StatusCode != 201 && res.StatusCode != 204 {
-		return "", fmt.Errorf("failed to create %s: (%d) %s", resourceName, res.StatusCode, res.Status)
+		return "", errors.Errorf("failed to create %s: (%d) %s", resourceName, res.StatusCode, res.Status)
 	}
 
 	if resourceName == "client" {
@@ -192,7 +192,7 @@ func (c *Client) FindUserByUsername(name, realm string) (*v1alpha1.KeycloakAPIUs
 				return user, nil
 			}
 		}
-		return nil, errors.New("not found")
+		return nil, errors.Errorf("not found")
 	})
 	if err != nil {
 		return nil, err
@@ -234,7 +234,7 @@ func (c *Client) get(resourcePath, resourceName string, unMarshalFunc func(body 
 	}
 
 	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("failed to GET %s: (%d) %s", resourceName, res.StatusCode, res.Status)
+		return nil, errors.Errorf("failed to GET %s: (%d) %s", resourceName, res.StatusCode, res.Status)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
@@ -386,7 +386,7 @@ func (c *Client) update(obj T, resourcePath, resourceName string) error {
 	defer res.Body.Close()
 	if res.StatusCode < 200 || res.StatusCode > 299 {
 		logrus.Errorf("failed to UPDATE %s %v", resourceName, res.Status)
-		return fmt.Errorf("failed to UPDATE %s: (%d) %s", resourceName, res.StatusCode, res.Status)
+		return errors.Errorf("failed to UPDATE %s: (%d) %s", resourceName, res.StatusCode, res.Status)
 	}
 
 	return nil
@@ -452,7 +452,7 @@ func (c *Client) delete(resourcePath, resourceName string, obj T) error {
 		logrus.Errorf("Resource %v/%v already deleted", resourcePath, resourceName)
 	}
 	if res.StatusCode != 204 && res.StatusCode != 404 {
-		return fmt.Errorf("failed to DELETE %s: (%d) %s", resourceName, res.StatusCode, res.Status)
+		return errors.Errorf("failed to DELETE %s: (%d) %s", resourceName, res.StatusCode, res.Status)
 	}
 
 	return nil
@@ -504,7 +504,7 @@ func (c *Client) list(resourcePath, resourceName string, unMarshalListFunc func(
 	defer res.Body.Close()
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return nil, fmt.Errorf("failed to LIST %s: (%d) %s", resourceName, res.StatusCode, res.Status)
+		return nil, errors.Errorf("failed to LIST %s: (%d) %s", resourceName, res.StatusCode, res.Status)
 	}
 
 	body, err := ioutil.ReadAll(res.Body)
@@ -548,7 +548,7 @@ func (c *Client) ListClients(realmName string) ([]*v1alpha1.KeycloakAPIClient, e
 	res, ok := result.([]*v1alpha1.KeycloakAPIClient)
 
 	if !ok {
-		return nil, errors.New("error decoding list clients response")
+		return nil, errors.Errorf("error decoding list clients response")
 	}
 
 	return res, nil
@@ -666,7 +666,7 @@ func (c *Client) Ping() error {
 
 	logrus.Debugf("response status: %v, %v", res.StatusCode, res.Status)
 	if res.StatusCode != 200 {
-		return fmt.Errorf("failed to ping, response status code: %v", res.StatusCode)
+		return errors.Errorf("failed to ping, response status code: %v", res.StatusCode)
 	}
 	defer res.Body.Close()
 
@@ -711,7 +711,7 @@ func (c *Client) login(user, pass string) error {
 
 	if tokenRes.Error != "" {
 		logrus.Errorf("error with request: " + tokenRes.ErrorDescription)
-		return errors.New(tokenRes.ErrorDescription)
+		return errors.Errorf(tokenRes.ErrorDescription)
 	}
 
 	c.token = tokenRes.AccessToken

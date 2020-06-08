@@ -112,7 +112,7 @@ func (i *ClusterActionRunner) Update(obj runtime.Object) error {
 // Create a new realm using the keycloak api
 func (i *ClusterActionRunner) CreateRealm(obj *v1alpha1.KeycloakRealm) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform realm create when client is nil")
+		return errors.Errorf("cannot perform realm create when client is nil")
 	}
 
 	_, err := i.keycloakClient.CreateRealm(obj)
@@ -121,7 +121,7 @@ func (i *ClusterActionRunner) CreateRealm(obj *v1alpha1.KeycloakRealm) error {
 
 func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm string) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform client create when client is nil")
+		return errors.Errorf("cannot perform client create when client is nil")
 	}
 
 	uid, err := i.keycloakClient.CreateClient(obj.Spec.Client, realm)
@@ -137,7 +137,7 @@ func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm s
 
 func (i *ClusterActionRunner) UpdateClient(obj *v1alpha1.KeycloakClient, realm string) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform client update when client is nil")
+		return errors.Errorf("cannot perform client update when client is nil")
 	}
 	return i.keycloakClient.UpdateClient(obj.Spec.Client, realm)
 }
@@ -145,21 +145,21 @@ func (i *ClusterActionRunner) UpdateClient(obj *v1alpha1.KeycloakClient, realm s
 // Delete a realm using the keycloak api
 func (i *ClusterActionRunner) DeleteRealm(obj *v1alpha1.KeycloakRealm) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform realm delete when client is nil")
+		return errors.Errorf("cannot perform realm delete when client is nil")
 	}
 	return i.keycloakClient.DeleteRealm(obj.Spec.Realm.Realm)
 }
 
 func (i *ClusterActionRunner) DeleteClient(obj *v1alpha1.KeycloakClient, realm string) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform client delete when client is nil")
+		return errors.Errorf("cannot perform client delete when client is nil")
 	}
 	return i.keycloakClient.DeleteClient(obj.Spec.Client.ID, realm)
 }
 
 func (i *ClusterActionRunner) CreateUser(obj *v1alpha1.KeycloakUser, realm string) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform user create when client is nil")
+		return errors.Errorf("cannot perform user create when client is nil")
 	}
 
 	// Create the user
@@ -175,7 +175,7 @@ func (i *ClusterActionRunner) CreateUser(obj *v1alpha1.KeycloakUser, realm strin
 
 func (i *ClusterActionRunner) UpdateUser(obj *v1alpha1.KeycloakUser, realm string) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform user update when client is nil")
+		return errors.Errorf("cannot perform user update when client is nil")
 	}
 
 	err := i.keycloakClient.UpdateUser(&obj.Spec.User, realm)
@@ -188,7 +188,7 @@ func (i *ClusterActionRunner) UpdateUser(obj *v1alpha1.KeycloakUser, realm strin
 
 func (i *ClusterActionRunner) DeleteUser(id, realm string) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform user delete when client is nil")
+		return errors.Errorf("cannot perform user delete when client is nil")
 	}
 	return i.keycloakClient.DeleteUser(id, realm)
 }
@@ -196,14 +196,14 @@ func (i *ClusterActionRunner) DeleteUser(id, realm string) error {
 // Check if Keycloak is available
 func (i *ClusterActionRunner) Ping() error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform keycloak ping when client is nil")
+		return errors.Errorf("cannot perform keycloak ping when client is nil")
 	}
 	return i.keycloakClient.Ping()
 }
 
 func (i *ClusterActionRunner) AssignRealmRole(obj *v1alpha1.KeycloakUserRole, userID, realm string) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform role assign when client is nil")
+		return errors.Errorf("cannot perform role assign when client is nil")
 	}
 
 	_, err := i.keycloakClient.CreateUserRealmRole(obj, realm, userID)
@@ -212,14 +212,14 @@ func (i *ClusterActionRunner) AssignRealmRole(obj *v1alpha1.KeycloakUserRole, us
 
 func (i *ClusterActionRunner) RemoveRealmRole(obj *v1alpha1.KeycloakUserRole, userID, realm string) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform role remove when client is nil")
+		return errors.Errorf("cannot perform role remove when client is nil")
 	}
 	return i.keycloakClient.DeleteUserRealmRole(obj, realm, userID)
 }
 
 func (i *ClusterActionRunner) AssignClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform role assign when client is nil")
+		return errors.Errorf("cannot perform role assign when client is nil")
 	}
 
 	_, err := i.keycloakClient.CreateUserClientRole(obj, realm, clientID, userID)
@@ -228,7 +228,7 @@ func (i *ClusterActionRunner) AssignClientRole(obj *v1alpha1.KeycloakUserRole, c
 
 func (i *ClusterActionRunner) RemoveClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform role remove when client is nil")
+		return errors.Errorf("cannot perform role remove when client is nil")
 	}
 	return i.keycloakClient.DeleteUserClientRole(obj, realm, clientID, userID)
 }
@@ -236,7 +236,7 @@ func (i *ClusterActionRunner) RemoveClientRole(obj *v1alpha1.KeycloakUserRole, c
 // Delete a realm using the keycloak api
 func (i *ClusterActionRunner) ApplyOverrides(obj *v1alpha1.KeycloakRealm) error {
 	if i.keycloakClient == nil {
-		return errors.New("cannot perform realm configure when client is nil")
+		return errors.Errorf("cannot perform realm configure when client is nil")
 	}
 
 	for _, override := range obj.Spec.RealmOverrides {
@@ -265,7 +265,7 @@ func (i *ClusterActionRunner) configureBrowserRedirector(provider, flow string, 
 		}
 	}
 	if redirectorExecutionID == "" {
-		return errors.New("'identity-provider-redirector' was not found in the list of executions of the 'browser' flow")
+		return errors.Errorf("'identity-provider-redirector' was not found in the list of executions of the 'browser' flow")
 	}
 
 	var authenticatorConfig *v1alpha1.AuthenticatorConfig
