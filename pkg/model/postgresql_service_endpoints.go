@@ -41,7 +41,7 @@ func PostgresqlServiceEndpointsReconciled(cr *v1alpha1.Keycloak, currentState *v
 	// improve the user experience.
 
 	port := string(currentDatabaseSecret.Data[DatabaseSecretExternalPortProperty])
-	portAsInt, err := strconv.Atoi(port)
+	portAsInt, err := strconv.ParseInt(port, 10, 32)
 	if err != nil {
 		// Default Postgresql Port - maybe we'll be lucky...
 		portAsInt = 5432

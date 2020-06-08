@@ -41,9 +41,9 @@ func getKeycloakClientCR(namespace string) *keycloakv1alpha1.KeycloakClient {
 				MatchLabels: CreateLabel(namespace),
 			},
 			Client: &keycloakv1alpha1.KeycloakAPIClient{
-				ID:       clientName,
-				ClientID: clientName,
-				Name:     clientName,
+				ID:                        clientName,
+				ClientID:                  clientName,
+				Name:                      clientName,
 				SurrogateAuthRequired:     false,
 				Enabled:                   true,
 				BaseURL:                   "https://operator-test.url/client-base-url",

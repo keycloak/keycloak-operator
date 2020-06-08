@@ -5,9 +5,12 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.13
+        id: go
       - name: Check out code into the Go module directory
         uses: actions/checkout@v2
-      - name: golangci-lint
-        uses: actions-contrib/golangci-lint@v1
-        with:
-          golangci_lint_version: v1.26
+      - name: Lint
+        run: make setup/linter code/lint

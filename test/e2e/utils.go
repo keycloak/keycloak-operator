@@ -3,11 +3,12 @@ package e2e
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/pkg/errors"
 
 	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/stretchr/testify/assert"
@@ -42,13 +43,13 @@ func WaitForStatefulSetReplicasReady(t *testing.T, c kubernetes.Interface, state
 	return WaitForCondition(t, c, func(t *testing.T, c kubernetes.Interface) error {
 		sts, err := c.AppsV1().StatefulSets(ns).Get(statefulSetName, metav1.GetOptions{})
 		if err != nil {
-			return fmt.Errorf("get StatefulSet %s failed, ignoring for %v: %v", statefulSetName, pollRetryInterval, err)
+			return errors.Errorf("get StatefulSet %s failed, ignoring for %v: %v", statefulSetName, pollRetryInterval, err)
 		}
 		if sts.Status.ReadyReplicas == *sts.Spec.Replicas {
 			t.Logf("all %d replicas of StatefulSet %s are ready.", sts.Status.ReadyReplicas, statefulSetName)
 			return nil
 		}
-		return fmt.Errorf("statefulSet %s found but there are %d ready replicas and %d total replicas", statefulSetName, sts.Status.ReadyReplicas, *sts.Spec.Replicas)
+		return errors.Errorf("statefulSet %s found but there are %d ready replicas and %d total replicas", statefulSetName, sts.Status.ReadyReplicas, *sts.Spec.Replicas)
 	})
 }
 
@@ -57,13 +58,13 @@ func WaitForPersistentVolumeClaimCreated(t *testing.T, c kubernetes.Interface, p
 	return WaitForCondition(t, c, func(t *testing.T, c kubernetes.Interface) error {
 		pvc, err := c.CoreV1().PersistentVolumeClaims(ns).Get(persistentVolumeClaimName, metav1.GetOptions{})
 		if err != nil {
-			return fmt.Errorf("get PersistentVolumeClaim %s failed, ignoring for %v: %v", persistentVolumeClaimName, pollRetryInterval, err)
+			return errors.Errorf("get PersistentVolumeClaim %s failed, ignoring for %v: %v", persistentVolumeClaimName, pollRetryInterval, err)
 		}
 		if pvc.Status.Phase == "Bound" {
 			t.Logf("PersistentVolumeClaim is bound")
 			return nil
 		}
-		return fmt.Errorf("persistentVolumeClaim %s found but is not bound", persistentVolumeClaimName)
+		return errors.Errorf("persistentVolumeClaim %s found but is not bound", persistentVolumeClaimName)
 	})
 }
 
@@ -82,7 +83,7 @@ func WaitForRealmToBeReady(t *testing.T, framework *framework.Framework, namespa
 				return err
 			}
 
-			return fmt.Errorf("keycloakRealm is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
+			return errors.Errorf("keycloakRealm is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
 		}
 
 		return nil
@@ -104,7 +105,7 @@ func WaitForClientToBeReady(t *testing.T, framework *framework.Framework, namesp
 				return err
 			}
 
-			return fmt.Errorf("keycloakClient is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
+			return errors.Errorf("keycloakClient is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
 		}
 
 		return nil
@@ -126,7 +127,7 @@ func WaitForUserToBeReady(t *testing.T, framework *framework.Framework, namespac
 				return err
 			}
 
-			return fmt.Errorf("keycloakRealm is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
+			return errors.Errorf("keycloakRealm is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
 		}
 
 		return nil
@@ -135,15 +136,14 @@ func WaitForUserToBeReady(t *testing.T, framework *framework.Framework, namespac
 
 func WaitForSuccessResponseToContain(t *testing.T, framework *framework.Framework, url string, expectedString string) error {
 	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
-		//golint:ignore
-		response, err := http.Get(url)
+		response, err := http.Get(url) //nolint
 		if err != nil {
 			return err
 		}
 		defer response.Body.Close()
 
 		if response.StatusCode != 200 {
-			return fmt.Errorf("invalid response from url %s (%v)", url, response.Status)
+			return errors.Errorf("invalid response from url %s (%v)", url, response.Status)
 		}
 
 		responseData, err := ioutil.ReadAll(response.Body)

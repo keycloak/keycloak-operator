@@ -58,7 +58,7 @@ func TestKeycloakMigrations_Test_Migrating_Image(t *testing.T) {
 
 	keycloakDeployment := model.KeycloakDeployment(cr, model.DatabaseSecret(cr))
 	keycloakDeployment.Spec.Replicas = &[]int32{5}[0]
-	keycloakDeployment.Spec.Template.Spec.Containers[0].Image = "old_image" //nolint
+	keycloakDeployment.Spec.Template.Spec.Containers[0].Image = "old_image"
 
 	currentState := common.ClusterState{
 		KeycloakDeployment: keycloakDeployment,
@@ -88,7 +88,7 @@ func TestKeycloakMigrations_Test_Migrating_RHSSO_Image(t *testing.T) {
 
 	keycloakDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr))
 	keycloakDeployment.Spec.Replicas = &[]int32{5}[0]
-	keycloakDeployment.Spec.Template.Spec.Containers[0].Image = "old_image" //nolint
+	keycloakDeployment.Spec.Template.Spec.Containers[0].Image = "old_image"
 
 	currentState := common.ClusterState{
 		KeycloakDeployment: keycloakDeployment,

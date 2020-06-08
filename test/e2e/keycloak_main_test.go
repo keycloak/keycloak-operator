@@ -87,6 +87,8 @@ func runTestsFromCRDInterface(t *testing.T, crd *CRDTestStruct) {
 	}
 
 	for testName, testStep := range crd.testSteps {
+		testName := testName
+		testStep := testStep
 		t.Run(testName, func(t *testing.T) {
 			t.Logf("test %s started", testName)
 			testCTX := framework.NewTestCtx(t)

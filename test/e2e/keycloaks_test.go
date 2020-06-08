@@ -2,9 +2,10 @@ package e2e
 
 import (
 	"crypto/tls"
-	"fmt"
 	"net/http"
 	"testing"
+
+	"github.com/pkg/errors"
 
 	"github.com/stretchr/testify/assert"
 
@@ -44,7 +45,7 @@ func getKeycloakCR(namespace string) *keycloakv1alpha1.Keycloak {
 
 func getDeployedKeycloakCR(framework *framework.Framework, namespace string) keycloakv1alpha1.Keycloak {
 	keycloakCR := keycloakv1alpha1.Keycloak{}
-	GetNamespacedObject(framework, namespace, testKeycloakCRName, &keycloakCR)
+	_ = GetNamespacedObject(framework, namespace, testKeycloakCRName, &keycloakCR)
 	return keycloakCR
 }
 
@@ -86,7 +87,7 @@ func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework
 		if response.StatusCode == 200 {
 			return nil
 		}
-		return fmt.Errorf("invalid response from Keycloak (%v)", response.Status)
+		return errors.Errorf("invalid response from Keycloak (%v)", response.Status)
 	})
 	return err
 }

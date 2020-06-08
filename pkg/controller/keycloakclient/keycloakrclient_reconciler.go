@@ -26,7 +26,7 @@ func (i *KeycloakClientReconciler) Reconcile(state *common.ClientState, cr *kc.K
 	desired := common.DesiredClusterState{}
 
 	desired.AddAction(i.pingKeycloak())
-	if cr.DeletionTimestamp != nil { //nolint
+	if cr.DeletionTimestamp != nil {
 		desired.AddAction(i.getDeletedClientState(state, cr))
 		return desired
 	}

@@ -1,9 +1,8 @@
 package common
 
 import (
-	"errors"
-
 	v1 "github.com/openshift/api/route/v1"
+	"github.com/pkg/errors"
 	v12 "k8s.io/api/apps/v1"
 	v13 "k8s.io/api/batch/v1"
 )
@@ -48,7 +47,7 @@ func IsDeploymentReady(deployment *v12.Deployment) (bool, error) {
 	for _, condition := range deployment.Status.Conditions {
 		// One failure condition exists, if this exists, return the Reason
 		if condition.Type == v12.DeploymentReplicaFailure {
-			return false, errors.New(condition.Reason)
+			return false, errors.Errorf(condition.Reason)
 			// A successful deployment will have the progressing condition type as true
 		} else if condition.Type == v12.DeploymentProgressing && condition.Status != ConditionStatusSuccess {
 			return false, nil

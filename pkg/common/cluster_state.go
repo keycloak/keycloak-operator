@@ -57,7 +57,7 @@ type ClusterState struct {
 	KeycloakProbes                  *v1.ConfigMap
 }
 
-func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error { //nolint
+func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
 	stateManager := GetStateManager()
 	routeKindExists, keyExists := stateManager.GetState(RouteKind).(bool)
 

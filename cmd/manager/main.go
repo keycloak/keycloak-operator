@@ -8,6 +8,7 @@ import (
 	"runtime"
 
 	"github.com/keycloak/keycloak-operator/version"
+	"github.com/pkg/errors"
 
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	routev1 "github.com/openshift/api/route/v1"
@@ -27,7 +28,6 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/operator-framework/operator-sdk/pkg/log/zap"
 	"github.com/operator-framework/operator-sdk/pkg/metrics"
-	"github.com/operator-framework/operator-sdk/pkg/restmapper"
 	sdkVersion "github.com/operator-framework/operator-sdk/version"
 	"github.com/spf13/pflag"
 	v1 "k8s.io/api/core/v1"
@@ -102,7 +102,6 @@ func main() {
 	// Create a new Cmd to provide shared dependencies and start components
 	mgr, err := manager.New(cfg, manager.Options{
 		Namespace:          namespace,
-		MapperProvider:     restmapper.NewDynamicRESTMapper,
 		MetricsBindAddress: fmt.Sprintf("%s:%d", metricsHost, metricsPort),
 	})
 	if err != nil {
@@ -178,7 +177,7 @@ func main() {
 		log.Info("Could not create ServiceMonitor object", "error", err.Error())
 		// If this operator is deployed to a cluster without the prometheus-operator running, it will return
 		// ErrServiceMonitorNotPresent, which can be used to safely skip ServiceMonitor creation.
-		if err == metrics.ErrServiceMonitorNotPresent {
+		if errors.Is(err, metrics.ErrServiceMonitorNotPresent) {
 			log.Info("Install prometheus-operator in your cluster to create ServiceMonitor objects", "error", err.Error())
 		}
 	}
@@ -194,7 +193,7 @@ func main() {
 
 func addMonitoringKeyLabelToOperatorService(ctx context.Context, cfg *rest.Config, service *v1.Service) error {
 	if service == nil {
-		return fmt.Errorf("service doesn't exist")
+		return errors.Errorf("service doesn't exist")
 	}
 
 	kclient, err := client.New(cfg, client.Options{})
