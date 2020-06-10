@@ -23,9 +23,9 @@ import (
 )
 
 const (
-	RealmFinalizer           = "realm.cleanup"
-	RequeueDelayErrorSeconds = 5
-	ControllerName           = "controller_keycloakrealm"
+	RealmFinalizer    = "realm.cleanup"
+	RequeueDelayError = 5 * time.Second
+	ControllerName    = "controller_keycloakrealm"
 )
 
 var log = logf.Log.WithName(ControllerName)
@@ -235,7 +235,7 @@ func (r *ReconcileKeycloakRealm) ManageError(realm *kc.KeycloakRealm, issue erro
 	}
 
 	return reconcile.Result{
-		RequeueAfter: RequeueDelayErrorSeconds * time.Second,
+		RequeueAfter: RequeueDelayError,
 		Requeue:      true,
 	}, nil
 }
