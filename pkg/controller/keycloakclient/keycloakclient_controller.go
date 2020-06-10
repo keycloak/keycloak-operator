@@ -3,6 +3,7 @@ package keycloakclient
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -24,9 +25,9 @@ import (
 var log = logf.Log.WithName("controller_keycloakclient")
 
 const (
-	ClientFinalizer          = "client.cleanup"
-	RequeueDelayErrorSeconds = 5
-	ControllerName           = "keycloakclient-controller"
+	ClientFinalizer   = "client.cleanup"
+	RequeueDelayError = 5 * time.Second
+	ControllerName    = "keycloakclient-controller"
 )
 
 // Add creates a new KeycloakClient Controller and adds it to the Manager. The Manager will set fields on the Controller
@@ -241,7 +242,7 @@ func (r *ReconcileKeycloakClient) ManageError(realm *kc.KeycloakClient, issue er
 	}
 
 	return reconcile.Result{
-		RequeueAfter: RequeueDelayErrorSeconds,
+		RequeueAfter: RequeueDelayError,
 		Requeue:      true,
 	}, nil
 }
