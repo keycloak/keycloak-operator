@@ -25,9 +25,9 @@ import (
 )
 
 const (
-	RequeueDelaySeconds      = 30
-	RequeueDelayErrorSeconds = 5
-	ControllerName           = "keycloakbackup-controller"
+	RequeueDelay      = 30 * time.Second
+	RequeueDelayError = 5 * time.Second
+	ControllerName    = "keycloakbackup-controller"
 )
 
 var log = logf.Log.WithName("controller_keycloakbackup")
@@ -161,7 +161,7 @@ func (r *ReconcileKeycloakBackup) ManageError(instance *kc.KeycloakBackup, issue
 	}
 
 	return reconcile.Result{
-		RequeueAfter: RequeueDelayErrorSeconds * time.Second,
+		RequeueAfter: RequeueDelayError,
 		Requeue:      true,
 	}, nil
 }
@@ -184,11 +184,11 @@ func (r *ReconcileKeycloakBackup) ManageSuccess(instance *kc.KeycloakBackup, cur
 	if err != nil {
 		log.Error(err, "unable to update status")
 		return reconcile.Result{
-			RequeueAfter: RequeueDelayErrorSeconds * time.Second,
+			RequeueAfter: RequeueDelayError,
 			Requeue:      true,
 		}, nil
 	}
 
 	log.Info("desired cluster state met")
-	return reconcile.Result{RequeueAfter: RequeueDelaySeconds * time.Second}, nil
+	return reconcile.Result{RequeueAfter: RequeueDelay}, nil
 }

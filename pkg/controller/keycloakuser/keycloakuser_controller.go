@@ -25,8 +25,8 @@ import (
 )
 
 const (
-	ControllerName           = "controller_keycloakuser"
-	RequeueDelayErrorSeconds = 5
+	ControllerName    = "controller_keycloakuser"
+	RequeueDelayError = 5 * time.Second
 )
 
 var log = logf.Log.WithName("controller_keycloakuser")
@@ -237,6 +237,6 @@ func (r *ReconcileKeycloakUser) ManageError(user *kc.KeycloakUser, issue error) 
 	}
 
 	return reconcile.Result{
-		RequeueAfter: RequeueDelayErrorSeconds * time.Second,
+		RequeueAfter: RequeueDelayError,
 	}, nil
 }
