@@ -19,3 +19,10 @@ sed -i \
     -e 's/FROM registry.access.redhat.com\/ubi8\/ubi-minimal:[0-9.]*/FROM ubi8-minimal:8-released/' \
     -e "s/##LABELS/$LABELS/g" \
     Dockerfile
+
+if [[ "$BUILD_OPENJ9" != "true" ]]
+then
+    # remove s390x arch from container.yaml
+    # upstream repo should always contain all archs
+    sed -i -e '/\-\ s390x/ s/^#*/#/' container.yaml
+fi
