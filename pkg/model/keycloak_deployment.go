@@ -143,6 +143,10 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 			Name:  "X509_CA_BUNDLE",
 			Value: "/var/run/secrets/kubernetes.io/serviceaccount/*.crt",
 		},
+		{
+			Name:  "PROXY_ADDRESS_FORWARDING",
+			Value: "true",
+		},
 	}
 
 	if cr.Spec.ExternalDatabase.Enabled {

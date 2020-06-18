@@ -24,3 +24,9 @@ func TestUtil_SanitizeResourceName(t *testing.T) {
 		assert.Equal(t, output, actual)
 	}
 }
+
+func TestIsIP(t *testing.T) {
+	assert.True(t, IsIP([]byte("54.154.171.84")))
+	assert.False(t, IsIP([]byte("this.is.a.hostname")))
+	assert.False(t, IsIP([]byte("http://www.database.url")))
+}

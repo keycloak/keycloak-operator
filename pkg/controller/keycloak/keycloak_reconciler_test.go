@@ -633,8 +633,25 @@ func TestKeycloakReconciler_Test_No_Resources_Specified(t *testing.T) {
 	assert.Equal(t, len(postgresContainer.Resources.Limits), 0, "Limits-List should be empty")
 }
 
-func TestIsIP(t *testing.T) {
-	assert.True(t, model.IsIP([]byte("54.154.171.84")))
-	assert.False(t, model.IsIP([]byte("this.is.a.hostname")))
-	assert.False(t, model.IsIP([]byte("http://www.database.url")))
+func TestKeycloakReconciler_Test_Proxy_Settings(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+
+	currentState := common.NewClusterState()
+	reconciler := NewKeycloakReconciler()
+
+	// when
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	// Expectation:
+	//    11) Keycloak StatefulSets
+	envs := desiredState[8].(common.GenericCreateAction).Ref.(*v13.StatefulSet).Spec.Template.Spec.Containers[0].Env
+	proxySet := false
+	for _, val := range envs {
+		if val.Name == "PROXY_ADDRESS_FORWARDING" && val.Value == "true" {
+			proxySet = true
+		}
+	}
+	assert.True(t, proxySet)
 }
