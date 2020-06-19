@@ -7,7 +7,6 @@ import (
 
 // KeycloakSpec defines the desired state of Keycloak.
 // +k8s:openapi-gen=true
-// .
 type KeycloakSpec struct {
 	// A list of extensions, where each one is a URL to a JAR files that will be deployed in Keycloak.
 	// +listType=set
@@ -50,13 +49,13 @@ type KeycloakSpec struct {
 	// Profile used for controlling Operator behavior. Default is empty.
 	// +optional
 	Profile string `json:"profile,omitempty"`
-	// Specify PodDisruptionBudget configuration
+	// Specify PodDisruptionBudget configuration.
 	// +optional
 	PodDisruptionBudget PodDisruptionBudgetConfig `json:"podDisruptionBudget,omitempty"`
-	// Resources (Requests and Limits) for KeycloakDeployment
+	// Resources (Requests and Limits) for KeycloakDeployment.
 	// +optional
 	KeycloakDeploymentSpec DeploymentSpec `json:"keycloakDeploymentSpec,omitempty"`
-	// Resources (Requests and Limits) for PostgresDeployment
+	// Resources (Requests and Limits) for PostgresDeployment.
 	// +optional
 	PostgresDeploymentSpec DeploymentSpec `json:"postgresDeploymentSpec,omitempty"`
 	// Specify Migration configuration
@@ -65,7 +64,7 @@ type KeycloakSpec struct {
 }
 
 type DeploymentSpec struct {
-	// Resources (Requests and Limits) for the Pods
+	// Resources (Requests and Limits) for the Pods.
 	// +optional
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 }
@@ -99,7 +98,7 @@ type KeycloakExternalDatabase struct {
 }
 
 type PodDisruptionBudgetConfig struct {
-	// If set to true, the operator will create a PodDistruptionBudget for the Keycloak deployment and set its `maxUnavailable` value to 1
+	// If set to true, the operator will create a PodDistruptionBudget for the Keycloak deployment and set its `maxUnavailable` value to 1.
 	Enabled bool `json:"enabled,omitempty"`
 }
 
@@ -116,7 +115,6 @@ type BackupConfig struct {
 
 // KeycloakStatus defines the observed state of Keycloak.
 // +k8s:openapi-gen=true
-// .
 type KeycloakStatus struct {
 	// Current phase of the operator.
 	Phase StatusPhase `json:"phase"`
@@ -124,13 +122,13 @@ type KeycloakStatus struct {
 	Message string `json:"message"`
 	// True if all resources are in a ready state and all work is done.
 	Ready bool `json:"ready"`
-	// A map of all the secondary resources types and names created for this CR. e.g "Deployment": [ "DeploymentName1", "DeploymentName2" ]
+	// A map of all the secondary resources types and names created for this CR. e.g "Deployment": [ "DeploymentName1", "DeploymentName2" ].
 	SecondaryResources map[string][]string `json:"secondaryResources,omitempty"`
-	// Version of Keycloak or RHSSO running on the cluster
+	// Version of Keycloak or RHSSO running on the cluster.
 	Version string `json:"version"`
-	// Service IP and Port for in-cluster access to the keycloak instance
+	// Service IP and Port for in-cluster access to the keycloak instance.
 	InternalURL string `json:"internalURL"`
-	// The secret where the admin credentials are to be found
+	// The secret where the admin credentials are to be found.
 	CredentialSecret string `json:"credentialSecret"`
 }
 
@@ -143,13 +141,10 @@ var (
 	PhaseInitialising StatusPhase = "initialising"
 )
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// Keycloak is the Schema for the keycloaks API
+// Keycloak is the Schema for the keycloaks API.
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:path=keycloaks,scope=Namespaced
-// .
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type Keycloak struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -158,9 +153,8 @@ type Keycloak struct {
 	Status KeycloakStatus `json:"status,omitempty"`
 }
 
+// KeycloakList contains a list of Keycloak.
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// KeycloakList contains a list of Keycloak
 type KeycloakList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

@@ -4,7 +4,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// KeycloakRealmSpec defines the desired state of KeycloakRealm
+// KeycloakRealmSpec defines the desired state of KeycloakRealm.
 // +k8s:openapi-gen=true
 type KeycloakRealmSpec struct {
 	// Selector for looking up Keycloak Custom Resources.
@@ -222,12 +222,10 @@ type KeycloakRealmStatus struct {
 	LoginURL string `json:"loginURL"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 // KeycloakRealm is the Schema for the keycloakrealms API
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:path=keycloakrealms,scope=Namespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type KeycloakRealm struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -236,9 +234,8 @@ type KeycloakRealm struct {
 	Status KeycloakRealmStatus `json:"status,omitempty"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 // KeycloakRealmList contains a list of KeycloakRealm
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type KeycloakRealmList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

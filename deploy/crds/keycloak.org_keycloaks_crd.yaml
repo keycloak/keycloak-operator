@@ -14,7 +14,7 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: Keycloak is the Schema for the keycloaks API .
+      description: Keycloak is the Schema for the keycloaks API.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -29,7 +29,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: KeycloakSpec defines the desired state of Keycloak. .
+          description: KeycloakSpec defines the desired state of Keycloak.
           properties:
             extensions:
               description: A list of extensions, where each one is a URL to a JAR
@@ -82,10 +82,10 @@ spec:
               description: Number of Keycloak instances in HA mode. Default is 1.
               type: integer
             keycloakDeploymentSpec:
-              description: Resources (Requests and Limits) for KeycloakDeployment
+              description: Resources (Requests and Limits) for KeycloakDeployment.
               properties:
                 resources:
-                  description: Resources (Requests and Limits) for the Pods
+                  description: Resources (Requests and Limits) for the Pods.
                   properties:
                     limits:
                       additionalProperties:
@@ -116,19 +116,19 @@ spec:
                   type: object
               type: object
             podDisruptionBudget:
-              description: Specify PodDisruptionBudget configuration
+              description: Specify PodDisruptionBudget configuration.
               properties:
                 enabled:
                   description: If set to true, the operator will create a PodDistruptionBudget
                     for the Keycloak deployment and set its `maxUnavailable` value
-                    to 1
+                    to 1.
                   type: boolean
               type: object
             postgresDeploymentSpec:
-              description: Resources (Requests and Limits) for PostgresDeployment
+              description: Resources (Requests and Limits) for PostgresDeployment.
               properties:
                 resources:
-                  description: Resources (Requests and Limits) for the Pods
+                  description: Resources (Requests and Limits) for the Pods.
                   properties:
                     limits:
                       additionalProperties:
@@ -152,14 +152,14 @@ spec:
               type: string
           type: object
         status:
-          description: KeycloakStatus defines the observed state of Keycloak. .
+          description: KeycloakStatus defines the observed state of Keycloak.
           properties:
             credentialSecret:
-              description: The secret where the admin credentials are to be found
+              description: The secret where the admin credentials are to be found.
               type: string
             internalURL:
               description: Service IP and Port for in-cluster access to the keycloak
-                instance
+                instance.
               type: string
             message:
               description: Human-readable message indicating details about current
@@ -179,10 +179,10 @@ spec:
                 type: array
               description: 'A map of all the secondary resources types and names created
                 for this CR. e.g "Deployment": [ "DeploymentName1", "DeploymentName2"
-                ]'
+                ].'
               type: object
             version:
-              description: Version of Keycloak or RHSSO running on the cluster
+              description: Version of Keycloak or RHSSO running on the cluster.
               type: string
           required:
           - credentialSecret

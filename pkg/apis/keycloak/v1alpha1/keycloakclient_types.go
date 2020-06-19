@@ -4,7 +4,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// KeycloakClientSpec defines the desired state of KeycloakClient
+// KeycloakClientSpec defines the desired state of KeycloakClient.
 // +k8s:openapi-gen=true
 type KeycloakClientSpec struct {
 	// Selector for looking up KeycloakRealm Custom Resources.
@@ -151,12 +151,10 @@ type KeycloakClientStatus struct {
 	SecondaryResources map[string][]string `json:"secondaryResources,omitempty"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// KeycloakClient is the Schema for the keycloakclients API
+// KeycloakClient is the Schema for the keycloakclients API.
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:path=keycloakclients,scope=Namespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type KeycloakClient struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -165,9 +163,8 @@ type KeycloakClient struct {
 	Status KeycloakClientStatus `json:"status,omitempty"`
 }
 
+// KeycloakClientList contains a list of KeycloakClient.
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// KeycloakClientList contains a list of KeycloakClient
 type KeycloakClientList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
