@@ -4,8 +4,9 @@
 ## Additional Information
 <!-- What/Why/How or any other context you feel is necessary.) -->
 
+<!-- (Add this section if applicable)
 ## Verification Steps
-<!--
+
 Add the steps required to check this change. Following an example.
 
 1. Go to `XX >> YY >> SS`
@@ -15,10 +16,10 @@ Add the steps required to check this change. Following an example.
 -->
 
 ## Checklist:
-- [ ] Verified by team member
-- [ ] Comments where necessary
 - [ ] Automated Tests
-- [ ] Documentation changes if necessary
+- [ ] [Documentation](https://github.com/keycloak/keycloak-documentation) changes if necessary
+- [ ] (If required) Discussed on [Keycloak DEV](https://groups.google.com/forum/#!forum/keycloak-dev)
 
-## Additional Notes
-<!-- PS.: Add images and/or .gifs to illustrate what was changed if this pull request modifies the appearance/output of something presented to the users. -->
+<!-- (Add this section if applicable)
+## Additional Notes 
+-->
