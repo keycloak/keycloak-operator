@@ -29,7 +29,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: KeycloakRealmSpec defines the desired state of KeycloakRealm
+          description: KeycloakRealmSpec defines the desired state of KeycloakRealm.
           properties:
             instanceSelector:
               description: Selector for looking up Keycloak Custom Resources.

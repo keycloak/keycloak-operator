@@ -14,7 +14,7 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: KeycloakUser is the Schema for the keycloakusers API
+      description: KeycloakUser is the Schema for the keycloakusers API.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -29,7 +29,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: KeycloakUserSpec defines the desired state of KeycloakUser
+          description: KeycloakUserSpec defines the desired state of KeycloakUser.
           properties:
             realmSelector:
               description: Selector for looking up KeycloakRealm Custom Resources.
@@ -162,7 +162,7 @@ spec:
           - user
           type: object
         status:
-          description: KeycloakUserStatus defines the observed state of KeycloakUser
+          description: KeycloakUserStatus defines the observed state of KeycloakUser.
           properties:
             message:
               description: Human-readable message indicating details about current

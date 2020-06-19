@@ -13,7 +13,7 @@ var (
 	UserPhaseFailing    StatusPhase = "failing"
 )
 
-// KeycloakUserSpec defines the desired state of KeycloakUser
+// KeycloakUserSpec defines the desired state of KeycloakUser.
 // +k8s:openapi-gen=true
 type KeycloakUserSpec struct {
 	// Selector for looking up KeycloakRealm Custom Resources.
@@ -24,7 +24,7 @@ type KeycloakUserSpec struct {
 	User KeycloakAPIUser `json:"user"`
 }
 
-// KeycloakUserStatus defines the observed state of KeycloakUser
+// KeycloakUserStatus defines the observed state of KeycloakUser.
 // +k8s:openapi-gen=true
 type KeycloakUserStatus struct {
 	// Current phase of the operator.
@@ -33,12 +33,10 @@ type KeycloakUserStatus struct {
 	Message string `json:"message"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
-// KeycloakUser is the Schema for the keycloakusers API
+// KeycloakUser is the Schema for the keycloakusers API.
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
-// +kubebuilder:resource:path=keycloakusers,scope=Namespaced
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type KeycloakUser struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -116,9 +114,8 @@ type FederatedIdentity struct {
 	UserName string `json:"userName,omitempty"`
 }
 
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
-
 // KeycloakUserList contains a list of KeycloakUser
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type KeycloakUserList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

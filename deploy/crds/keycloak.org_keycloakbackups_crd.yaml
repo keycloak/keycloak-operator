@@ -14,7 +14,7 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: KeycloakBackup is the Schema for the keycloakbackups API
+      description: KeycloakBackup is the Schema for the keycloakbackups API.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -29,7 +29,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: KeycloakBackupSpec defines the desired state of KeycloakBackup
+          description: KeycloakBackupSpec defines the desired state of KeycloakBackup.
           properties:
             aws:
               description: If provided, an automatic database backup will be created
@@ -57,7 +57,7 @@ spec:
                   type: string
                 schedule:
                   description: If specified, it will be used as a schedule for creating
-                    a CronJob
+                    a CronJob.
                   type: string
               type: object
             instanceSelector:
@@ -114,7 +114,7 @@ spec:
               type: boolean
           type: object
         status:
-          description: KeycloakBackupStatus defines the observed state of KeycloakBackup
+          description: KeycloakBackupStatus defines the observed state of KeycloakBackup.
           properties:
             message:
               description: Human-readable message indicating details about current
