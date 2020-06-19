@@ -1,0 +1,13 @@
+name: Commit Message
+on: [pull_request]
+jobs:
+  golangci:
+    name: commit-message
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Check if JIRA ID is in the commit message
+        run: git log -n 1 --pretty=format:'%s' --abbrev-commit | grep -E 'KEYCLOAK-[0-9]+' > /dev/null
