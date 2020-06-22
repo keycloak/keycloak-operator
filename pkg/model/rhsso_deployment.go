@@ -88,7 +88,7 @@ func getRHSSOEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 		},
 		{
 			Name:  "X509_CA_BUNDLE",
-			Value: "/var/run/secrets/kubernetes.io/serviceaccount/ca.crt",
+			Value: "/var/run/secrets/kubernetes.io/serviceaccount/*.crt",
 		},
 	}
 
