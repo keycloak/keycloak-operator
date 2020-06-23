@@ -72,7 +72,7 @@ type KeycloakAPIClient struct {
 	StandardFlowEnabled bool `json:"standardFlowEnabled"`
 	// True if Implicit flow is enabled.
 	// +optional
-	ImplicitFlowEnabled bool `json:"implicitFlowEnabled,omitempty"`
+	ImplicitFlowEnabled bool `json:"implicitFlowEnabled"`
 	// True if Direct Grant is enabled.
 	// +optional
 	DirectAccessGrantsEnabled bool `json:"directAccessGrantsEnabled"`
