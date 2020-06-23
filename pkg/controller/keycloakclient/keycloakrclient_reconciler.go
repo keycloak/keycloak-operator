@@ -64,14 +64,14 @@ func (i *KeycloakClientReconciler) getCreatedClientState(state *common.ClientSta
 	return common.CreateClientAction{
 		Ref:   cr,
 		Realm: state.Realm.Spec.Realm.Realm,
-		Msg:   fmt.Sprintf("create client %v/%v", cr.Namespace, cr.Spec.Client.ID),
+		Msg:   fmt.Sprintf("create client %v/%v", cr.Namespace, cr.Spec.Client.ClientID),
 	}
 }
 
 func (i *KeycloakClientReconciler) getUpdatedClientSecretState(state *common.ClientState, cr *kc.KeycloakClient) common.ClusterAction {
 	return common.GenericUpdateAction{
 		Ref: model.ClientSecretReconciled(cr, state.ClientSecret),
-		Msg: fmt.Sprintf("update client secret %v/%v", cr.Namespace, cr.Spec.Client.ID),
+		Msg: fmt.Sprintf("update client secret %v/%v", cr.Namespace, cr.Spec.Client.ClientID),
 	}
 }
 
@@ -79,13 +79,13 @@ func (i *KeycloakClientReconciler) getUpdatedClientState(state *common.ClientSta
 	return common.UpdateClientAction{
 		Ref:   cr,
 		Realm: state.Realm.Spec.Realm.Realm,
-		Msg:   fmt.Sprintf("update client %v/%v", cr.Namespace, cr.Spec.Client.ID),
+		Msg:   fmt.Sprintf("update client %v/%v", cr.Namespace, cr.Spec.Client.ClientID),
 	}
 }
 
 func (i *KeycloakClientReconciler) getCreatedClientSecretState(state *common.ClientState, cr *kc.KeycloakClient) common.ClusterAction {
 	return common.GenericCreateAction{
 		Ref: model.ClientSecret(cr),
-		Msg: fmt.Sprintf("create client secret %v/%v", cr.Namespace, cr.Spec.Client.ID),
+		Msg: fmt.Sprintf("create client secret %v/%v", cr.Namespace, cr.Spec.Client.ClientID),
 	}
 }
