@@ -169,3 +169,43 @@ test/goveralls: test/coverage/prepare
 	go get -u github.com/mattn/goveralls
 	@echo "Running goveralls"
 	@goveralls -v -coverprofile=cover-all.coverprofile -service=travis-ci
+
+##### COGITO BUILD #####
+REPOSITORY = docker.cogitocorp.us
+IMAGE = keycloak-operator
+SEMVER=$(shell grep "Version =" version/version.go | cut -d \" -f 2)
+GITSHA=$(shell git rev-parse --short HEAD)
+
+.PHONY: display-image-name
+display-image-name:
+	@echo ${IMAGE}
+
+.PHONY: display-repo-name
+display-repo-name:
+	@echo ${REPOSITORY}
+
+.PHONY: display-git-sha
+display-git-sha:
+	@echo ${GITSHA}
+
+.PHONY: display-jenkins-build_number
+display-jenkins-build_number:
+	@echo "b${BUILD_NUMBER}"
+
+.PHONY: display-semver
+display-semver:
+	@echo ${SEMVER}
+
+.PHONY: display-image-tag
+display-image-tag:
+	@echo ${SEMVER}-b${BUILD_NUMBER}-${GITSHA}
+
+.PHONY: display-image-string-full
+display-image-string-full:
+	@echo ${REPOSITORY}/${IMAGE}:${SEMVER}-b${BUILD_NUMBER}-${GITSHA}
+
+.PHONY: display-image-string-latest
+display-image-string-latest:
+	@echo ${REPOSITORY}/${IMAGE}:latest
+
+

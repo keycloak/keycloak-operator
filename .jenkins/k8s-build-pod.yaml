@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    iam.amazonaws.com/role: 'arn:aws:iam::885416879419:role/eks-general-jenkins-common-k2iam-role'
+  labels:
+    app: jenkins-agent
+  name: build-keycloak-operator
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: cogito.io/docker-bridge
+                operator: In
+                values:
+                  - 'true'
+  containers:
+    - name: build
+      command:
+        - tail
+        - '-f'
+        - /dev/null
+      env:
+        - name: DOCKER_HOST
+          value: 'tcp://localhost:2375'
+      image: 674283309737.dkr.ecr.us-east-1.amazonaws.com/jenkins-k8s-compute:latest
+      imagePullPolicy: Always
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 4096Mi
+        requests:
+          cpu: 1000m
+          memory: 2048Mi
+    - name: dind
+      env:
+        - name: DOCKER_TLS_CERTDIR
+          value: ''
+      image: 'docker:19.03.8-dind'
+      resources:
+        limits:
+          cpu: 1000m
+          memory: 2048Mi
+        requests:
+          cpu: 1000m
+          memory: 2048Mi
+      securityContext:
+        privileged: true
+      volumeMounts:
+        - mountPath: /var/lib/docker
+          name: dind-storage
+  tolerations:
+    - effect: NoSchedule
+      key: node-role.kubernetes.io/jenkins-worker
+      operator: Equal
+      value: 'true'
+  volumes:
+    - emptyDir: {}
+      name: dind-storage
