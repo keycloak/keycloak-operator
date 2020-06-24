@@ -226,7 +226,7 @@ func PostgresqlDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Dep
 			VolumeMounts: []v1.VolumeMount{
 				{
 					Name:      PostgresqlPersistentVolumeName,
-					MountPath: "/var/lib/postgresql/data",
+					MountPath: "/var/lib/pgsql/data",
 				},
 			},
 			Resources: getPostgresResources(cr),
