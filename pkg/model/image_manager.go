@@ -21,7 +21,7 @@ const (
 	DefaultKeycloakInitContainer = "quay.io/keycloak/keycloak-init-container:master"
 	DefaultRHSSOInitContainer    = "registry.redhat.io/rh-sso-7/sso74-init-container-rhel8:7.4"
 	DefaultRHMIBackupContainer   = "quay.io/integreatly/backup-container:1.0.14"
-	DefaultPostgresqlImage       = "registry.access.redhat.com/rhscl/postgresql-10-rhel7:1"
+	DefaultPostgresqlImage       = "registry.redhat.io/rhscl/postgresql-10-rhel7:1"
 )
 
 var Images = NewImageManager()
