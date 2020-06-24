@@ -424,6 +424,11 @@ func (in *KeycloakBackupSpec) DeepCopyInto(out *KeycloakBackupSpec) {
 		*out = new(v1.LabelSelector)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.StorageClassName != nil {
+		in, out := &in.StorageClassName, &out.StorageClassName
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
@@ -856,6 +861,11 @@ func (in *KeycloakSpec) DeepCopyInto(out *KeycloakSpec) {
 	in.KeycloakDeploymentSpec.DeepCopyInto(&out.KeycloakDeploymentSpec)
 	in.PostgresDeploymentSpec.DeepCopyInto(&out.PostgresDeploymentSpec)
 	out.Migration = in.Migration
+	if in.StorageClassName != nil {
+		in, out := &in.StorageClassName, &out.StorageClassName
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

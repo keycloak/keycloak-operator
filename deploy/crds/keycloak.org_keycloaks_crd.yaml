@@ -150,6 +150,10 @@ spec:
               description: Profile used for controlling Operator behavior. Default
                 is empty.
               type: string
+            storageClassName:
+              description: Name of the StorageClass for Postgresql Persistent Volume
+                Claim
+              type: string
           type: object
         status:
           description: KeycloakStatus defines the observed state of Keycloak.

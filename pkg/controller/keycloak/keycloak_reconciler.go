@@ -387,6 +387,7 @@ func (i *KeycloakReconciler) getKeycloakBackupDesiredState(clusterState *common.
 		MatchLabels: cr.Labels,
 	}
 	backupCr.Spec.InstanceSelector = &labelSelect
+	backupCr.Spec.StorageClassName = cr.Spec.StorageClassName
 
 	if clusterState.KeycloakBackup == nil {
 		// This happens before migration

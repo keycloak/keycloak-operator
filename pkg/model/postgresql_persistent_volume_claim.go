@@ -23,6 +23,7 @@ func PostgresqlPersistentVolumeClaim(cr *v1alpha1.Keycloak) *v1.PersistentVolume
 				Requests: v1.ResourceList{
 					v1.ResourceStorage: resource.MustParse(PostgresqlPersistentVolumeCapacity),
 				}},
+			StorageClassName: cr.Spec.StorageClassName,
 		},
 	}
 }
@@ -41,5 +42,8 @@ func PostgresqlPersistentVolumeClaimReconciled(cr *v1alpha1.Keycloak, currentSta
 		Requests: v1.ResourceList{
 			v1.ResourceStorage: resource.MustParse(PostgresqlPersistentVolumeCapacity),
 		}}
+	if cr.Spec.StorageClassName != nil {
+		reconciled.Spec.StorageClassName = cr.Spec.StorageClassName
+	}
 	return reconciled
 }

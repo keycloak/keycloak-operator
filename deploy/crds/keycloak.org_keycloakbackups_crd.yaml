@@ -112,6 +112,10 @@ spec:
                 flag to true. Potentially, it will be possible to restore a single
                 backup multiple times."
               type: boolean
+            storageClassName:
+              description: Name of the StorageClass for Postgresql Backup Persistent
+                Volume Claim
+              type: string
           type: object
         status:
           description: KeycloakBackupStatus defines the observed state of KeycloakBackup.

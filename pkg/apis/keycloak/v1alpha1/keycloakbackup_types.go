@@ -25,6 +25,9 @@ type KeycloakBackupSpec struct {
 	// Selector for looking up Keycloak Custom Resources.
 	// +kubebuilder:validation:Required
 	InstanceSelector *metav1.LabelSelector `json:"instanceSelector,omitempty"`
+	// Name of the StorageClass for Postgresql Backup Persistent Volume Claim
+	// +optional
+	StorageClassName *string `json:"storageClassName,omitempty"`
 }
 
 // KeycloakAWSSpec defines the desired state of KeycloakBackupSpec.

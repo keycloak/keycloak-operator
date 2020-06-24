@@ -524,6 +524,7 @@ func (i *ClusterState) readKeycloakBackupCurrentState(context context.Context, c
 	backupCr.Namespace = cr.Namespace
 	backupCr.Name = model.MigrateBackupName + "-" + BackupTime
 	backupCr.Spec.InstanceSelector = &labelSelect
+	backupCr.Spec.StorageClassName = cr.Spec.StorageClassName
 
 	KeycloakBackup := model.KeycloakMigrationOneTimeBackup(backupCr)
 	KeycloakBackupSelector := model.KeycloakMigrationOneTimeBackupSelector(backupCr)
