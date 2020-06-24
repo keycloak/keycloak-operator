@@ -88,6 +88,7 @@ func oneTimeLocalBackup(cr *v1alpha1.Keycloak, currentState *common.ClusterState
 			MatchLabels: cr.Labels,
 		}
 		backupCr.Spec.InstanceSelector = &labelSelect
+		backupCr.Spec.StorageClassName = cr.Spec.StorageClassName
 
 		migrationBackupCR := common.GenericCreateAction{
 			Ref: model.KeycloakMigrationOneTimeBackup(backupCr),

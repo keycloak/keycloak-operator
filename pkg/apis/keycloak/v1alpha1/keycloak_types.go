@@ -61,6 +61,9 @@ type KeycloakSpec struct {
 	// Specify Migration configuration
 	// +optional
 	Migration MigrateConfig `json:"migration,omitempty"`
+	// Name of the StorageClass for Postgresql Persistent Volume Claim
+	// +optional
+	StorageClassName *string `json:"storageClassName,omitempty"`
 }
 
 type DeploymentSpec struct {

@@ -24,6 +24,7 @@ func PostgresqlBackupPersistentVolumeClaim(cr *v1alpha1.KeycloakBackup) *v1.Pers
 				Requests: v1.ResourceList{
 					v1.ResourceStorage: resource.MustParse(PostgresqlPersistentVolumeCapacity),
 				}},
+			StorageClassName: cr.Spec.StorageClassName,
 		},
 	}
 }
@@ -42,5 +43,8 @@ func PostgresqlBackupPersistentVolumeClaimReconciled(cr *v1alpha1.KeycloakBackup
 		Requests: v1.ResourceList{
 			v1.ResourceStorage: resource.MustParse(PostgresqlPersistentVolumeCapacity),
 		}}
+	if cr.Spec.StorageClassName != nil {
+		reconciled.Spec.StorageClassName = cr.Spec.StorageClassName
+	}
 	return reconciled
 }
