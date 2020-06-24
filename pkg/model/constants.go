@@ -19,6 +19,7 @@ const (
 	PostgresqlUsername                   = ApplicationName
 	PostgresqlPasswordLength             = 32
 	PostgresqlPersistentVolumeCapacity   = "1Gi"
+	PostgresqlPersistentVolumeMountPath  = "/var/lib/pgsql/data"
 	DatabaseSecretUsernameProperty       = "POSTGRES_USERNAME" // nolint
 	DatabaseSecretPasswordProperty       = "POSTGRES_PASSWORD" // nolint
 	// Required by the Integreately Backup Image
