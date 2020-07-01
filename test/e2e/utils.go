@@ -41,7 +41,7 @@ func WaitForCondition(t *testing.T, c kubernetes.Interface, cond Condition) erro
 func WaitForStatefulSetReplicasReady(t *testing.T, c kubernetes.Interface, statefulSetName, ns string) error {
 	t.Logf("waiting up to %v for StatefulSet %s to have all replicas ready", pollTimeout, statefulSetName)
 	return WaitForCondition(t, c, func(t *testing.T, c kubernetes.Interface) error {
-		sts, err := c.AppsV1().StatefulSets(ns).Get(statefulSetName, metav1.GetOptions{})
+		sts, err := c.AppsV1().StatefulSets(ns).Get(context.TODO(), statefulSetName, metav1.GetOptions{})
 		if err != nil {
 			return errors.Errorf("get StatefulSet %s failed, ignoring for %v: %v", statefulSetName, pollRetryInterval, err)
 		}
@@ -56,7 +56,7 @@ func WaitForStatefulSetReplicasReady(t *testing.T, c kubernetes.Interface, state
 func WaitForPersistentVolumeClaimCreated(t *testing.T, c kubernetes.Interface, persistentVolumeClaimName, ns string) error {
 	t.Logf("waiting up to %v for PersistentVolumeClaim %s to be created", pollTimeout, persistentVolumeClaimName)
 	return WaitForCondition(t, c, func(t *testing.T, c kubernetes.Interface) error {
-		pvc, err := c.CoreV1().PersistentVolumeClaims(ns).Get(persistentVolumeClaimName, metav1.GetOptions{})
+		pvc, err := c.CoreV1().PersistentVolumeClaims(ns).Get(context.TODO(), persistentVolumeClaimName, metav1.GetOptions{})
 		if err != nil {
 			return errors.Errorf("get PersistentVolumeClaim %s failed, ignoring for %v: %v", persistentVolumeClaimName, pollRetryInterval, err)
 		}
@@ -158,7 +158,7 @@ func WaitForSuccessResponseToContain(t *testing.T, framework *framework.Framewor
 	})
 }
 
-func Create(f *framework.Framework, obj runtime.Object, ctx *framework.TestCtx) error {
+func Create(f *framework.Framework, obj runtime.Object, ctx *framework.Context) error {
 	return f.Client.Create(context.TODO(), obj, &framework.CleanupOptions{TestContext: ctx, Timeout: cleanupTimeout, RetryInterval: cleanupRetryInterval})
 }
 

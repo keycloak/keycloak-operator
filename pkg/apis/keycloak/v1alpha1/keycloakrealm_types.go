@@ -14,7 +14,6 @@ type KeycloakRealmSpec struct {
 	// +kubebuilder:validation:Required
 	Realm *KeycloakAPIRealm `json:"realm"`
 	// A list of overrides to the default Realm behavior.
-	// +listType=map
 	RealmOverrides []*RedirectorIdentityProviderOverride `json:"realmOverrides,omitempty"`
 }
 

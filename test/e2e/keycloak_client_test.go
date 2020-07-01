@@ -67,11 +67,11 @@ func getKeycloakClientCR(namespace string) *keycloakv1alpha1.KeycloakClient {
 	}
 }
 
-func prepareKeycloakClientCR(t *testing.T, framework *test.Framework, ctx *test.TestCtx, namespace string) error {
+func prepareKeycloakClientCR(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	keycloakClientCR := getKeycloakClientCR(namespace)
 	return Create(framework, keycloakClientCR, ctx)
 }
 
-func keycloakClientBasicTest(t *testing.T, framework *test.Framework, ctx *test.TestCtx, namespace string) error {
+func keycloakClientBasicTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	return WaitForClientToBeReady(t, framework, namespace)
 }

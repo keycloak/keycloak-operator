@@ -49,7 +49,7 @@ func getDeployedKeycloakCR(framework *framework.Framework, namespace string) key
 	return keycloakCR
 }
 
-func prepareKeycloaksCR(t *testing.T, f *framework.Framework, ctx *framework.TestCtx, namespace string) error {
+func prepareKeycloaksCR(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
 	err := doWorkaroundIfNecessary(f, ctx, namespace)
 	if err != nil {
 		return err
@@ -69,7 +69,7 @@ func prepareKeycloaksCR(t *testing.T, f *framework.Framework, ctx *framework.Tes
 	return err
 }
 
-func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework.TestCtx, namespace string) error {
+func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
 	keycloakCR := getDeployedKeycloakCR(f, namespace)
 	keycloakInternalURL := keycloakCR.Status.InternalURL
 	assert.NotEmpty(t, keycloakInternalURL)
