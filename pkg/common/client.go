@@ -2,6 +2,7 @@ package common
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -805,7 +806,7 @@ func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (
 		return nil, err
 	}
 
-	adminCreds, err := secretClient.CoreV1().Secrets(kc.Namespace).Get(kc.Status.CredentialSecret, v12.GetOptions{})
+	adminCreds, err := secretClient.CoreV1().Secrets(kc.Namespace).Get(context.TODO(), kc.Status.CredentialSecret, v12.GetOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get the admin credentials")
 	}

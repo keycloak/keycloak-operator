@@ -55,16 +55,16 @@ func getKeycloakRealmCR(namespace string) *keycloakv1alpha1.KeycloakRealm {
 	}
 }
 
-func prepareKeycloakRealmCR(t *testing.T, framework *test.Framework, ctx *test.TestCtx, namespace string) error {
+func prepareKeycloakRealmCR(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	keycloakRealmCR := getKeycloakRealmCR(namespace)
 	return Create(framework, keycloakRealmCR, ctx)
 }
 
-func keycloakRealmBasicTest(t *testing.T, framework *test.Framework, ctx *test.TestCtx, namespace string) error {
+func keycloakRealmBasicTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	return WaitForRealmToBeReady(t, framework, namespace)
 }
 
-func keycloakRealmWithIdentityProviderTest(t *testing.T, framework *test.Framework, ctx *test.TestCtx, namespace string) error {
+func keycloakRealmWithIdentityProviderTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	keycloakRealmCR := getKeycloakRealmCR(namespace)
 
 	identityProvider := &keycloakv1alpha1.KeycloakIdentityProvider{

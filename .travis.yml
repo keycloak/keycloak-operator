@@ -13,9 +13,9 @@ env:
     - KUBECONFIG=$HOME/.kube/config
 
   matrix:
-    - TESTS=test/unit NAMESPACE=default
-    - TESTS=test/e2e NAMESPACE=default
-    - TESTS=test/e2e-local-image test/goveralls NAMESPACE=default
+    - TESTS=test/unit test/goveralls
+    - TESTS=test/e2e test/goveralls
+    - TESTS=test/e2e-local-image
 
 before_install:
   - go get github.com/mattn/goveralls
@@ -24,8 +24,7 @@ before_install:
   - sudo apt-get install -y conntrack
   - make setup/travis
 
-# Since there's no persistence sharing, we need to run everything in a single stage
-install: make $TESTS
+install: make ${TESTS} NAMESPACE=default
 
 after_failure:
   - echo "---- Keycloak Server logs ----"

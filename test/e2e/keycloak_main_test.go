@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"context"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,10 +14,10 @@ import (
 
 type deployedOperatorTestStep struct {
 	prepareTestEnvironmentSteps []environmentInitializationStep
-	testFunction                func(*testing.T, *framework.Framework, *framework.TestCtx, string) error
+	testFunction                func(*testing.T, *framework.Framework, *framework.Context, string) error
 }
 
-type environmentInitializationStep func(*testing.T, *framework.Framework, *framework.TestCtx, string) error
+type environmentInitializationStep func(*testing.T, *framework.Framework, *framework.Context, string) error
 
 type CRDTestStruct struct {
 	prepareEnvironmentSteps []environmentInitializationStep
@@ -48,7 +49,7 @@ func TestKeycloakCRDS(t *testing.T) {
 }
 
 func runTestsFromCRDInterface(t *testing.T, crd *CRDTestStruct) {
-	globalCTX := framework.NewTestCtx(t)
+	globalCTX := framework.NewContext(t)
 	defer globalCTX.Cleanup()
 
 	err := globalCTX.InitializeClusterResources(&framework.CleanupOptions{TestContext: globalCTX, Timeout: cleanupTimeout, RetryInterval: cleanupRetryInterval})
@@ -56,7 +57,7 @@ func runTestsFromCRDInterface(t *testing.T, crd *CRDTestStruct) {
 		t.Fatalf("failed to initialize cluster resources: %v", err)
 	}
 	t.Log("initialized cluster resources")
-	namespace, err := globalCTX.GetNamespace()
+	namespace, err := globalCTX.GetOperatorNamespace()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +71,7 @@ func runTestsFromCRDInterface(t *testing.T, crd *CRDTestStruct) {
 	}
 
 	if !f.LocalOperator {
-		deployment, err := f.KubeClient.AppsV1().Deployments(namespace).Get(operatorCRName, metav1.GetOptions{})
+		deployment, err := f.KubeClient.AppsV1().Deployments(namespace).Get(context.TODO(), operatorCRName, metav1.GetOptions{})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -91,7 +92,7 @@ func runTestsFromCRDInterface(t *testing.T, crd *CRDTestStruct) {
 		testStep := testStep
 		t.Run(testName, func(t *testing.T) {
 			t.Logf("test %s started", testName)
-			testCTX := framework.NewTestCtx(t)
+			testCTX := framework.NewContext(t)
 
 			t.Logf("prepare test environment for test %s", testName)
 			for _, prepareEnvironmentFunction := range testStep.prepareTestEnvironmentSteps {
