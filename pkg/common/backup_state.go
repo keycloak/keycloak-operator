@@ -55,6 +55,11 @@ func (i *BackupState) Read(context context.Context, cr *kc.KeycloakBackup, contr
 }
 
 func (i *BackupState) readLocalBackupJob(context context.Context, cr *kc.KeycloakBackup, controllerClient client.Client) error {
+	// decide Job type first
+	if cr.Spec.AWS.CredentialsSecretName != "" {
+		return nil
+	}
+
 	localBackupJob := model.PostgresqlBackup(cr)
 	localBackupJobSelector := model.PostgresqlBackupSelector(cr)
 
@@ -87,6 +92,10 @@ func (i *BackupState) readLocalBackupPersistentVolumeClaim(context context.Conte
 }
 
 func (i *BackupState) readAwsBackupJob(context context.Context, cr *kc.KeycloakBackup, controllerClient client.Client) error {
+	if cr.Spec.AWS.CredentialsSecretName == "" {
+		return nil
+	}
+
 	awsBackupJob := model.PostgresqlAWSBackup(cr)
 	awsBackupJobSelector := model.PostgresqlAWSBackupSelector(cr)
 
@@ -119,11 +128,15 @@ func (i *BackupState) readAwsPeriodicBackupJob(context context.Context, cr *kc.K
 }
 
 func (i *BackupState) IsResourcesReady() (bool, error) {
-	if i.AwsJob != nil {
+	switch {
+	case i.AwsJob != nil:
 		return IsJobReady(i.AwsJob)
-	} else if i.LocalPersistentVolumeJob != nil {
+	case i.LocalPersistentVolumeJob != nil:
 		return IsJobReady(i.LocalPersistentVolumeJob)
+	case i.AwsPeriodicJob != nil:
+		// We don't manage readiness check for CronJobs
+		return true, nil
+	default:
+		return false, nil
 	}
-	// We don't manage readiness check for CronJobs
-	return true, nil
 }
