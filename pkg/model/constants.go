@@ -47,7 +47,7 @@ const (
 	ClientSecretName                      = ApplicationName + "-client-secret"
 	ClientSecretClientIDProperty          = "CLIENT_ID"
 	ClientSecretClientSecretProperty      = "CLIENT_SECRET"
-	MaxUnavailableNumberOfPods            = 1
+	MaxUnavailableNumberOfPods            = 2
 	PodMonitorName                        = ApplicationName + "-pod-monitor"
 	ServiceMonitorName                    = ApplicationName + "-service-monitor"
 	MigrateBackupName                     = "migrate-backup"
