@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	LivenessProbeInitialDelay  = 30
-	ReadinessProbeInitialDelay = 40
+	LivenessProbeInitialDelay  = 400
+	ReadinessProbeInitialDelay = 200
 	//10s (curl) + 10s (curl) + 2s (just in case)
 	ProbeTimeoutSeconds         = 22
 	ProbeTimeBetweenRunsSeconds = 30
