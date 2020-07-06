@@ -76,7 +76,8 @@ Deploy the operator into the running cluster
 | ---------------------------- | ----------------------------------------------------------- |
 | `make test/unit`             | Runs unit tests                                             |
 | `make test/e2e`              | Runs e2e tests with operator ran locally                    |
-| `make test/e2e-image`        | Runs e2e tests with operator ran as an image in the cluster |
+| `make test/e2e-latest-image` | Runs e2e tests with latest available operator image running in the cluster |
+| `make test/e2e-local-image`  | Runs e2e tests with local operator image running in the cluster |
 | `make test/coverage/prepare` | Prepares coverage report from unit and e2e test results     |
 | `make test/coverage`         | Generates coverage report                                   |
 
