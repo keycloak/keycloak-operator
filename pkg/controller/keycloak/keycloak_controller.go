@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/keycloak/keycloak-operator/version"
+
 	v1beta12 "k8s.io/api/policy/v1beta1"
 
 	"github.com/keycloak/keycloak-operator/pkg/model"
@@ -206,6 +208,8 @@ func (r *ReconcileKeycloak) ManageError(instance *v1alpha1.Keycloak, issue error
 	instance.Status.Ready = false
 	instance.Status.Phase = v1alpha1.PhaseFailing
 
+	r.setVersion(instance)
+
 	err := r.client.Status().Update(r.context, instance)
 	if err != nil {
 		log.Error(err, "unable to update status")
@@ -251,6 +255,8 @@ func (r *ReconcileKeycloak) ManageSuccess(instance *v1alpha1.Keycloak, currentSt
 		instance.Status.CredentialSecret = currentState.KeycloakAdminSecret.Name
 	}
 
+	r.setVersion(instance)
+
 	err = r.client.Status().Update(r.context, instance)
 	if err != nil {
 		log.Error(err, "unable to update status")
@@ -262,4 +268,8 @@ func (r *ReconcileKeycloak) ManageSuccess(instance *v1alpha1.Keycloak, currentSt
 
 	log.Info("desired cluster state met")
 	return reconcile.Result{RequeueAfter: RequeueDelay}, nil
+}
+
+func (r *ReconcileKeycloak) setVersion(instance *v1alpha1.Keycloak) {
+	instance.Status.Version = version.Version
 }
