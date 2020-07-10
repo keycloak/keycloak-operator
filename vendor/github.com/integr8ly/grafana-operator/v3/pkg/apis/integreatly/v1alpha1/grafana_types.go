@@ -3,6 +3,7 @@ package v1alpha1
 import (
 	v12 "github.com/openshift/api/route/v1"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -17,18 +18,20 @@ var (
 // GrafanaSpec defines the desired state of Grafana
 // +k8s:openapi-gen=true
 type GrafanaSpec struct {
-	Config                 GrafanaConfig            `json:"config"`
-	Containers             []v1.Container           `json:"containers,omitempty"`
-	DashboardLabelSelector []*metav1.LabelSelector  `json:"dashboardLabelSelector,omitempty"`
-	Ingress                *GrafanaIngress          `json:"ingress,omitempty"`
-	Secrets                []string                 `json:"secrets,omitempty"`
-	ConfigMaps             []string                 `json:"configMaps,omitempty"`
-	Service                *GrafanaService          `json:"service,omitempty"`
-	Deployment             *GrafanaDeployment       `json:"deployment,omitempty"`
-	Resources              *v1.ResourceRequirements `json:"resources,omitempty"`
-	ServiceAccount         *GrafanaServiceAccount   `json:"serviceAccount,omitempty"`
-	Client                 *GrafanaClient           `json:"client,omitempty"`
-	Compat                 *GrafanaCompat           `json:"compat"`
+	Config                     GrafanaConfig            `json:"config"`
+	Containers                 []v1.Container           `json:"containers,omitempty"`
+	DashboardLabelSelector     []*metav1.LabelSelector  `json:"dashboardLabelSelector,omitempty"`
+	Ingress                    *GrafanaIngress          `json:"ingress,omitempty"`
+	Secrets                    []string                 `json:"secrets,omitempty"`
+	ConfigMaps                 []string                 `json:"configMaps,omitempty"`
+	Service                    *GrafanaService          `json:"service,omitempty"`
+	Deployment                 *GrafanaDeployment       `json:"deployment,omitempty"`
+	Resources                  *v1.ResourceRequirements `json:"resources,omitempty"`
+	ServiceAccount             *GrafanaServiceAccount   `json:"serviceAccount,omitempty"`
+	Client                     *GrafanaClient           `json:"client,omitempty"`
+	Compat                     *GrafanaCompat           `json:"compat"`
+	DashboardNamespaceSelector *metav1.LabelSelector    `json:"dashboardNamespaceSelector,omitempty"`
+	DataStorage                *GrafanaDataStorage      `json:"dataStorage,omitempty"`
 }
 
 // Backwards compatibility switches
@@ -51,6 +54,15 @@ type GrafanaService struct {
 	Ports       []v1.ServicePort  `json:"ports,omitempty"`
 }
 
+// GrafanaDataStorage provides a means to configure the grafana data storage
+type GrafanaDataStorage struct {
+	Annotations map[string]string               `json:"annotations,omitempty"`
+	Labels      map[string]string               `json:"labels,omitempty"`
+	AccessModes []v1.PersistentVolumeAccessMode `json:"accessModes,omitempty"`
+	Size        resource.Quantity               `json:"size"`
+	Class       string                          `json:"class"`
+}
+
 type GrafanaServiceAccount struct {
 	Annotations map[string]string `json:"annotations,omitempty"`
 	Labels      map[string]string `json:"labels,omitempty"`
@@ -58,9 +70,15 @@ type GrafanaServiceAccount struct {
 
 // GrafanaDeployment provides a means to configure the deployment
 type GrafanaDeployment struct {
-	Annotations map[string]string `json:"annotations,omitempty"`
-	Labels      map[string]string `json:"labels,omitempty"`
-	Replicas    int32             `json:"replicas"`
+	Annotations                   map[string]string      `json:"annotations,omitempty"`
+	Labels                        map[string]string      `json:"labels,omitempty"`
+	Replicas                      int32                  `json:"replicas"`
+	NodeSelector                  map[string]string      `json:"nodeSelector,omitempty"`
+	Tolerations                   []v1.Toleration        `json:"tolerations,omitempty"`
+	Affinity                      *v1.Affinity           `json:"affinity,omitempty"`
+	SecurityContext               *v1.PodSecurityContext `json:"securityContext,omitempty"`
+	ContainerSecurityContext      *v1.SecurityContext    `json:"containerSecurityContext,omitempty"`
+	TerminationGracePeriodSeconds int64                  `json:"terminationGracePeriodSeconds"`
 }
 
 // GrafanaIngress provides a means to configure the ingress created
@@ -89,6 +107,7 @@ type GrafanaConfig struct {
 	AuthAnonymous                 *GrafanaConfigAuthAnonymous                 `json:"auth.anonymous,omitempty" ini:"auth.anonymous,omitempty"`
 	AuthGoogle                    *GrafanaConfigAuthGoogle                    `json:"auth.google,omitempty" ini:"auth.google,omitempty"`
 	AuthGithub                    *GrafanaConfigAuthGithub                    `json:"auth.github,omitempty" ini:"auth.github,omitempty"`
+	AuthGitlab                    *GrafanaConfigAuthGitlab                    `json:"auth.gitlab,omitempty" ini:"auth.gitlab,omitempty"`
 	AuthGenericOauth              *GrafanaConfigAuthGenericOauth              `json:"auth.generic_oauth,omitempty" ini:"auth.generic_oauth,omitempty"`
 	AuthLdap                      *GrafanaConfigAuthLdap                      `json:"auth.ldap,omitempty" ini:"auth.ldap,omitempty"`
 	AuthProxy                     *GrafanaConfigAuthProxy                     `json:"auth.proxy,omitempty" ini:"auth.proxy,omitempty"`
@@ -243,15 +262,17 @@ type GrafanaConfigAuthGitlab struct {
 }
 
 type GrafanaConfigAuthGenericOauth struct {
-	Enabled        *bool  `json:"enabled,omitempty" ini:"enabled"`
-	AllowSignUp    *bool  `json:"allow_sign_up,omitempty" ini:"allow_sign_up"`
-	ClientId       string `json:"client_id,omitempty" ini:"client_id,omitempty"`
-	ClientSecret   string `json:"client_secret,omitempty" ini:"client_secret,omitempty"`
-	Scopes         string `json:"scopes,omitempty" ini:"scopes,omitempty"`
-	AuthUrl        string `json:"auth_url,omitempty" ini:"auth_url,omitempty"`
-	TokenUrl       string `json:"token_url,omitempty" ini:"token_url,omitempty"`
-	ApiUrl         string `json:"api_url,omitempty" ini:"api_url,omitempty"`
-	AllowedDomains string `json:"allowed_domains,omitempty" ini:"allowed_domains,omitempty"`
+	Enabled            *bool  `json:"enabled,omitempty" ini:"enabled"`
+	AllowSignUp        *bool  `json:"allow_sign_up,omitempty" ini:"allow_sign_up"`
+	ClientId           string `json:"client_id,omitempty" ini:"client_id,omitempty"`
+	ClientSecret       string `json:"client_secret,omitempty" ini:"client_secret,omitempty"`
+	Scopes             string `json:"scopes,omitempty" ini:"scopes,omitempty"`
+	AuthUrl            string `json:"auth_url,omitempty" ini:"auth_url,omitempty"`
+	TokenUrl           string `json:"token_url,omitempty" ini:"token_url,omitempty"`
+	ApiUrl             string `json:"api_url,omitempty" ini:"api_url,omitempty"`
+	AllowedDomains     string `json:"allowed_domains,omitempty" ini:"allowed_domains,omitempty"`
+	RoleAttributePath  string `json:"role_attribute_path,omitempty" ini:"role_attribute_path,omitempty"`
+	EmailAttributePath string `json:"email_attribute_path,omitempty" ini:"email_attribute_path,omitempty"`
 }
 
 type GrafanaConfigAuthLdap struct {

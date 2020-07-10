@@ -87,7 +87,8 @@ func GetDisplayName(name string) string {
 		for j, r := range word {
 			if unicode.IsUpper(r) {
 				if j > 0 && !unicode.IsUpper(rune(word[j-1])) {
-					temp = temp[0:j+o] + " " + temp[j+o:len(temp)]
+					index := j + o
+					temp = temp[0:index] + " " + temp[index:]
 					o++
 				}
 			}
@@ -126,4 +127,13 @@ func FormatOperatorNameDNS1123(name string) string {
 		return dns1123LabelRegexp.ReplaceAllString(name, "-")
 	}
 	return name
+}
+
+// TrimDNS1123Label trims a label to meet the DNS 1123 label length requirement
+// by removing characters from the beginning of label such that len(label) <= 63.
+func TrimDNS1123Label(label string) string {
+	if len(label) > validation.DNS1123LabelMaxLength {
+		return label[len(label)-validation.DNS1123LabelMaxLength:]
+	}
+	return label
 }
