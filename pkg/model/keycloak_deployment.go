@@ -147,6 +147,18 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 			Name:  "PROXY_ADDRESS_FORWARDING",
 			Value: "true",
 		},
+    {
+     Name: "KEYCLOAK_HTTP_PORT",
+     Value: "80",
+    },
+    {
+     Name: "KEYCLOAK_HTTPS_PORT",
+     Value: "443",
+    },
+    {
+     Name: "KEYCLOAK_HOSTNAME",
+     Value: "keycloak.mini",
+    },
 	}
 
 	if cr.Spec.ExternalDatabase.Enabled {
