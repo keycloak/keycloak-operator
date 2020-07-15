@@ -154,6 +154,9 @@ spec:
               description: Name of the StorageClass for Postgresql Persistent Volume
                 Claim
               type: string
+            env:
+              description: Environment variables to add or overwrite the hard-coded
+              type: object
           type: object
         status:
           description: KeycloakStatus defines the observed state of Keycloak.
