@@ -159,6 +159,12 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 			Value: fmt.Sprintf("%v", GetExternalDatabasePort(dbSecret)),
 		})
 	}
+	
+	if len(cr.Spec.Env) > 0 {
+		for _, e := range cr.Spec.Env {
+			env = append(env, e)
+		}
+	}
 
 	return env
 }
