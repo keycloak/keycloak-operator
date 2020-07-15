@@ -54,6 +54,83 @@ type KeycloakAPIRealm struct {
 	// TODO: change to values and use kubebuilder default annotation once supported
 	// +optional
 	AdminEventsDetailsEnabled *bool `json:"adminEventsDetailsEnabled,omitempty"`
+
+	// Authentication flows
+	// +optional
+	AuthenticationFlows []KeycloakAPIAuthenticationFlow `json:"authenticationFlows,omitempty"`
+
+	// Authenticator config
+	// +optional
+	AuthenticatorConfig []KeycloakAPIAuthenticatorConfig `json:"authenticatorConfig,omitempty"`
+}
+
+type KeycloakAPIAuthenticationFlow struct {
+	// Alias
+	Alias string `json:"alias"`
+
+	// Authentication executions
+	AuthenticationExecutions []KeycloakAPIAuthenticationExecution `json:"authenticationExecutions"`
+
+	// Built in
+	// +optional
+	BuiltIn bool `json:"builtIn,omitempty"`
+
+	// Description
+	// +optional
+	Description string `json:"description,omitempty"`
+
+	// ID
+	// +optional
+	ID string `json:"id,omitempty"`
+
+	// Provider ID
+	// +optional
+	ProviderID string `json:"providerId,omitempty"`
+
+	// Top level
+	// +optional
+	TopLevel bool `json:"topLevel,omitempty"`
+}
+
+type KeycloakAPIAuthenticationExecution struct {
+	// Authenticator
+	Authenticator string `json:"authenticator,omitempty"`
+
+	// Authenticator Config
+	// +optional
+	AuthenticatorConfig string `json:"authenticatorConfig,omitempty"`
+
+	// Authenticator flow
+	// +optional
+	AuthenticatorFlow bool `json:"authenticatorFlow,omitempty"`
+
+	// Flow Alias
+	// +optional
+	FlowAlias string `json:"flowAlias,omitempty"`
+
+	// Priority
+	// +optional
+	Priority int32 `json:"priority,omitempty"`
+
+	// Requirement [REQUIRED, OPTIONAL, ALTERNATIVE, DISABLED]
+	Requirement string `json:"requirement,omitempty"`
+
+	// User setup allowed
+	// +optional
+	UserSetupAllowed bool `json:"userSetupAllowed,omitempty"`
+}
+
+type KeycloakAPIAuthenticatorConfig struct {
+	// Alias
+	Alias string `json:"alias"`
+
+	// Config
+	// +optional
+	Config map[string]string `json:"config,omitempty"`
+
+	// ID
+	// +optional
+	ID string `json:"id,omitempty"`
 }
 
 type RedirectorIdentityProviderOverride struct {

@@ -30,6 +30,9 @@ func NewKeycloakRealmsCRDTestStruct() *CRDTestStruct {
 			"keycloakRealmWithIdentityProviderTest": {
 				testFunction: keycloakRealmWithIdentityProviderTest,
 			},
+			"keycloakRealmWithAuthenticatorFlowTest": {
+				testFunction: keycloakRealmWithAuthenticatorFlowTest,
+			},
 		},
 	}
 }
@@ -90,6 +93,123 @@ func keycloakRealmWithIdentityProviderTest(t *testing.T, framework *test.Framewo
 			"allowedClockSkew": "5",
 		},
 	}
+
+	keycloakRealmCR.Spec.Realm.IdentityProviders = []*keycloakv1alpha1.KeycloakIdentityProvider{identityProvider}
+
+	err := Create(framework, keycloakRealmCR, ctx)
+	if err != nil {
+		return err
+	}
+
+	err = WaitForRealmToBeReady(t, framework, namespace)
+	if err != nil {
+		return err
+	}
+
+	keycloakCR := getDeployedKeycloakCR(framework, namespace)
+	keycloakInternalURL := keycloakCR.Status.InternalURL
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint
+	return WaitForSuccessResponseToContain(t, framework, keycloakInternalURL+"/auth/realms/"+realmName+"/account", testOperatorIDPDisplayName)
+}
+
+// These flows (by name, not the exact contents here) are built in and required to exist
+// See https://issues.redhat.com/browse/KEYCLOAK-14779
+func getBrowserFlow() keycloakv1alpha1.KeycloakAPIAuthenticationFlow {
+	return keycloakv1alpha1.KeycloakAPIAuthenticationFlow{
+		Alias:      "browser",
+		ProviderID: "basic-flow",
+		TopLevel:   true,
+		AuthenticationExecutions: []keycloakv1alpha1.KeycloakAPIAuthenticationExecution{
+			{
+				Authenticator: "auth-username-password-form",
+				Requirement:   "REQUIRED",
+			},
+		},
+	}
+}
+
+func getRegistrationFlow() keycloakv1alpha1.KeycloakAPIAuthenticationFlow {
+	return keycloakv1alpha1.KeycloakAPIAuthenticationFlow{
+		ID:         "d6a87b0e-dfe1-495b-af73-a056f8734b4d",
+		Alias:      "registration",
+		ProviderID: "basic-flow",
+		TopLevel:   true,
+		AuthenticationExecutions: []keycloakv1alpha1.KeycloakAPIAuthenticationExecution{
+			{
+				Authenticator:       "identity-provider-redirector",
+				AuthenticatorConfig: "oidc",
+				Requirement:         "ALTERNATIVE",
+			},
+		},
+	}
+}
+
+func getDirectGrantFlow() keycloakv1alpha1.KeycloakAPIAuthenticationFlow {
+	return keycloakv1alpha1.KeycloakAPIAuthenticationFlow{
+		Alias:                    "direct grant",
+		ProviderID:               "basic-flow",
+		TopLevel:                 true,
+		AuthenticationExecutions: []keycloakv1alpha1.KeycloakAPIAuthenticationExecution{},
+	}
+}
+
+func keycloakRealmWithAuthenticatorFlowTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	keycloakRealmCR := getKeycloakRealmCR(namespace)
+
+	identityProvider := &keycloakv1alpha1.KeycloakIdentityProvider{
+		Alias:                     "oidc",
+		DisplayName:               testOperatorIDPDisplayName,
+		InternalID:                "",
+		ProviderID:                "oidc",
+		Enabled:                   true,
+		TrustEmail:                false,
+		StoreToken:                false,
+		AddReadTokenRoleOnCreate:  false,
+		FirstBrokerLoginFlowAlias: "first broker login",
+		PostBrokerLoginFlowAlias:  "",
+		LinkOnly:                  false,
+		Config: map[string]string{
+			"useJwksUrl":       "true",
+			"loginHint":        "",
+			"authorizationUrl": "https://operator.test.url/authorization_url",
+			"tokenUrl":         "https://operator.test.url/token_url",
+			"clientAuthMethod": "client_secret_jwt",
+			"clientId":         "operator-idp",
+			"clientSecret":     "test",
+			"allowedClockSkew": "5",
+		},
+	}
+
+	keycloakRealmCR.Spec.Realm.AuthenticatorConfig = []keycloakv1alpha1.KeycloakAPIAuthenticatorConfig{
+		{
+			ID:    "ffe3bf1a-5ef0-41af-96b5-c02543dd787a",
+			Alias: "oidc",
+			Config: map[string]string{
+				"defaultProvider": "oidc",
+			},
+		},
+	}
+
+	var autoLinkFlow = keycloakv1alpha1.KeycloakAPIAuthenticationFlow{
+		Alias:      "Auto Link",
+		ProviderID: "basic-flow",
+		TopLevel:   true,
+		AuthenticationExecutions: []keycloakv1alpha1.KeycloakAPIAuthenticationExecution{
+			{
+				Authenticator: "idp-create-user-if-unique",
+				Requirement:   "ALTERNATIVE",
+				Priority:      0,
+			},
+			{
+				Authenticator: "idp-auto-link",
+				Requirement:   "ALTERNATIVE",
+				Priority:      1,
+			},
+		},
+	}
+
+	keycloakRealmCR.Spec.Realm.AuthenticationFlows = []keycloakv1alpha1.KeycloakAPIAuthenticationFlow{autoLinkFlow, getBrowserFlow(), getRegistrationFlow(), getDirectGrantFlow()}
 
 	keycloakRealmCR.Spec.Realm.IdentityProviders = []*keycloakv1alpha1.KeycloakIdentityProvider{identityProvider}
 

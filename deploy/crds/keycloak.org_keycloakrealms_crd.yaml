@@ -85,6 +85,81 @@ spec:
                   description: 'Enable events recording TODO: change to values and
                     use kubebuilder default annotation once supported'
                   type: boolean
+                authenticationFlows:
+                  description: Authentication flows
+                  items:
+                    properties:
+                      alias:
+                        description: Alias
+                        type: string
+                      authenticationExecutions:
+                        description: Authentication executions
+                        items:
+                          properties:
+                            authenticator:
+                              description: Authenticator
+                              type: string
+                            authenticatorConfig:
+                              description: Authenticator Config
+                              type: string
+                            authenticatorFlow:
+                              description: Authenticator flow
+                              type: boolean
+                            flowAlias:
+                              description: Flow Alias
+                              type: string
+                            priority:
+                              description: Priority
+                              format: int32
+                              type: integer
+                            requirement:
+                              description: Requirement [REQUIRED, OPTIONAL, ALTERNATIVE,
+                                DISABLED]
+                              type: string
+                            userSetupAllowed:
+                              description: User setup allowed
+                              type: boolean
+                          type: object
+                        type: array
+                      builtIn:
+                        description: Built in
+                        type: boolean
+                      description:
+                        description: Description
+                        type: string
+                      id:
+                        description: ID
+                        type: string
+                      providerId:
+                        description: Provider ID
+                        type: string
+                      topLevel:
+                        description: Top level
+                        type: boolean
+                    required:
+                    - alias
+                    - authenticationExecutions
+                    type: object
+                  type: array
+                authenticatorConfig:
+                  description: Authenticator config
+                  items:
+                    properties:
+                      alias:
+                        description: Alias
+                        type: string
+                      config:
+                        additionalProperties:
+                          type: string
+                        description: Config
+                        type: object
+                      id:
+                        description: ID
+                        type: string
+                    required:
+                    - alias
+                    type: object
+                  type: array
                 clients:
                   description: A set of Keycloak Clients.
                   items:
