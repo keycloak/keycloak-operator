@@ -64,6 +64,9 @@ type KeycloakSpec struct {
 	// Name of the StorageClass for Postgresql Persistent Volume Claim
 	// +optional
 	StorageClassName *string `json:"storageClassName,omitempty"`
+	
+	// Additional environment variables to overwrite hardcoded ones
+	Env []corev1.EnvVar `json:"env,omitempty"`
 }
 
 type DeploymentSpec struct {
