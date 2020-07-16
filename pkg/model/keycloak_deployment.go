@@ -155,10 +155,6 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
      Name: "KEYCLOAK_HTTPS_PORT",
      Value: "443",
     },
-    {
-     Name: "KEYCLOAK_HOSTNAME",
-     Value: "keycloak.mini",
-    },
 	}
 
 	if cr.Spec.ExternalDatabase.Enabled {
