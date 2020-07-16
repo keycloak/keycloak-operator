@@ -154,8 +154,11 @@ spec:
               description: Name of the StorageClass for Postgresql Persistent Volume
                 Claim
               type: string
+            envFrom:
+              description: Config- or secretMaps for additional environment variables (does not overwrite the directly set environment variables)
+              type: object
             env:
-              description: Environment variables to add or overwrite the hard-coded
+              description: Environment variables to add or overwrite the hard-coded ones
               type: object
           type: object
         status:
