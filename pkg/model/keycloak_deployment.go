@@ -161,6 +161,13 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 	}
 
 	if len(cr.Spec.Env) > 0 {
+		for _, c := range cr.Spec.Env {
+			for index, e := range env {
+				if c.Name == e.Name {
+					env = append(env[:index], env[index+1:]...)
+				}
+			}
+		}
 		env = append(env, cr.Spec.Env...)
 	}
 
@@ -219,6 +226,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 							LivenessProbe:  livenessProbe(),
 							ReadinessProbe: readinessProbe(),
 							Env:            getKeycloakEnv(cr, dbSecret),
+							EnvFrom:        cr.Spec.EnvFrom,
 							Resources:      getResources(cr),
 						},
 					},

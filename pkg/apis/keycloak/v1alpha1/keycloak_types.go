@@ -65,6 +65,9 @@ type KeycloakSpec struct {
 	// +optional
 	StorageClassName *string `json:"storageClassName,omitempty"`
 
+	// Additional configmaps
+	EnvFrom []corev1.EnvFromSource `json:"envFrom,omitempty" protobuf:"bytes,19,rep,name=envFrom"`
+
 	// Additional environment variables to overwrite hardcoded ones
 	Env []corev1.EnvVar `json:"env,omitempty"`
 }
