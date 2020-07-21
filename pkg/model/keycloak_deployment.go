@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	LivenessProbeInitialDelay  = 400
-	ReadinessProbeInitialDelay = 200
+	LivenessProbeInitialDelay  = 30
+	ReadinessProbeInitialDelay = 40
 	//10s (curl) + 10s (curl) + 2s (just in case)
 	ProbeTimeoutSeconds         = 22
 	ProbeTimeBetweenRunsSeconds = 30
@@ -147,15 +147,15 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 			Name:  "PROXY_ADDRESS_FORWARDING",
 			Value: "true",
 		},
-    {
-     Name: "KEYCLOAK_HTTP_PORT",
-     Value: "80",
-    },
-    {
-     Name: "KEYCLOAK_HTTPS_PORT",
-     Value: "443",
-    },
 	}
+
+	 //Add any optional env vars directly 
+	 for envKey, envValue := range cr.Spec.EnvVars {
+		 env = append(env, v1.EnvVar{
+			Name:  envKey,
+			Value: envValue,
+		})
+	 }
 
 	if cr.Spec.ExternalDatabase.Enabled {
 		env = append(env, v1.EnvVar{
@@ -169,6 +169,54 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 	}
 
 	return env
+}
+
+func getLivenessInitialDelay(cr *v1alpha1.Keycloak) int32 {
+	if (cr.Spec.LivenessProbe.InitialDelaySeconds != 0) {
+		return cr.Spec.LivenessProbe.InitialDelaySeconds
+	} else {
+		return LivenessProbeInitialDelay
+	}
+}
+
+func getLivenessPeriod(cr *v1alpha1.Keycloak) int32 {
+	if (cr.Spec.LivenessProbe.PeriodSeconds != 0) {
+		return cr.Spec.LivenessProbe.PeriodSeconds
+	} else {
+		return ProbeTimeBetweenRunsSeconds
+	}
+}
+
+func getLivenessTimeout(cr *v1alpha1.Keycloak) int32 {
+	if (cr.Spec.LivenessProbe.TimeoutSeconds != 0) {
+		return cr.Spec.LivenessProbe.TimeoutSeconds
+	} else {
+		return ProbeTimeoutSeconds
+	}
+}
+
+func getReadinessInitialDelay(cr *v1alpha1.Keycloak) int32 {
+	if (cr.Spec.ReadinessProbe.InitialDelaySeconds != 0) {
+		return cr.Spec.ReadinessProbe.InitialDelaySeconds
+	} else {
+		return ReadinessProbeInitialDelay
+	}
+}
+
+func getReadinessPeriod(cr *v1alpha1.Keycloak) int32 {
+	if (cr.Spec.ReadinessProbe.PeriodSeconds != 0) {
+		return cr.Spec.ReadinessProbe.PeriodSeconds
+	} else {
+		return ProbeTimeBetweenRunsSeconds
+	}
+}
+
+func getReadinessTimeout(cr *v1alpha1.Keycloak) int32 {
+	if (cr.Spec.ReadinessProbe.TimeoutSeconds != 0) {
+		return cr.Spec.ReadinessProbe.TimeoutSeconds
+	} else {
+		return ProbeTimeoutSeconds
+	}
 }
 
 func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
@@ -220,8 +268,8 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 								},
 							},
 							VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
-							LivenessProbe:  livenessProbe(),
-							ReadinessProbe: readinessProbe(),
+							LivenessProbe:  livenessProbe(cr),
+							ReadinessProbe: readinessProbe(cr),
 							Env:            getKeycloakEnv(cr, dbSecret),
 							Resources:      getResources(cr),
 						},
@@ -263,8 +311,8 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 				},
 			},
 			VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
-			LivenessProbe:  livenessProbe(),
-			ReadinessProbe: readinessProbe(),
+			LivenessProbe:  livenessProbe(cr),
+			ReadinessProbe: readinessProbe(cr),
 			Env:            getKeycloakEnv(cr, dbSecret),
 			Resources:      getResources(cr),
 		},
@@ -322,7 +370,7 @@ func KeycloakVolumes() []v1.Volume {
 	}
 }
 
-func livenessProbe() *v1.Probe {
+func livenessProbe(cr *v1alpha1.Keycloak) *v1.Probe {
 	return &v1.Probe{
 		Handler: v1.Handler{
 			Exec: &v1.ExecAction{
@@ -333,13 +381,13 @@ func livenessProbe() *v1.Probe {
 				},
 			},
 		},
-		InitialDelaySeconds: LivenessProbeInitialDelay,
-		TimeoutSeconds:      ProbeTimeoutSeconds,
-		PeriodSeconds:       ProbeTimeBetweenRunsSeconds,
+		InitialDelaySeconds: getLivenessInitialDelay(cr),
+		TimeoutSeconds:      getLivenessTimeout(cr),
+		PeriodSeconds:       getLivenessPeriod(cr),
 	}
 }
 
-func readinessProbe() *v1.Probe {
+func readinessProbe(cr *v1alpha1.Keycloak) *v1.Probe {
 	return &v1.Probe{
 		Handler: v1.Handler{
 			Exec: &v1.ExecAction{
@@ -350,8 +398,8 @@ func readinessProbe() *v1.Probe {
 				},
 			},
 		},
-		InitialDelaySeconds: ReadinessProbeInitialDelay,
-		TimeoutSeconds:      ProbeTimeoutSeconds,
-		PeriodSeconds:       ProbeTimeBetweenRunsSeconds,
+		InitialDelaySeconds: getReadinessInitialDelay(cr),
+		TimeoutSeconds:      getReadinessTimeout(cr),
+		PeriodSeconds:       getReadinessPeriod(cr),
 	}
 }
