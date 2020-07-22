@@ -8,6 +8,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+func GetServicePortName() string {
+  if (KeycloakServicePort == 80 || KeycloakServicePort == 8080) {
+    return "http"
+  } else {
+    return "https"
+  }
+}
+
 func KeycloakService(cr *v1alpha1.Keycloak) *v1.Service {
 	return &v1.Service{
 		ObjectMeta: v12.ObjectMeta{
@@ -30,7 +38,7 @@ func KeycloakService(cr *v1alpha1.Keycloak) *v1.Service {
 				{
 					Port:       KeycloakServicePort,
 					TargetPort: intstr.FromInt(KeycloakServicePort),
-					Name:       ApplicationName,
+					Name:       GetServicePortName(),
 					Protocol:   "TCP",
 				},
 			},
@@ -51,7 +59,7 @@ func KeycloakServiceReconciled(cr *v1alpha1.Keycloak, currentState *v1.Service) 
 		{
 			Port:       KeycloakServicePort,
 			TargetPort: intstr.FromInt(KeycloakServicePort),
-			Name:       ApplicationName,
+			Name:       GetServicePortName(),
 			Protocol:   "TCP",
 		},
 	}
