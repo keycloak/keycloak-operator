@@ -23,13 +23,12 @@ func getSpec(dbSecret *v1.Secret, serviceTypeExternal bool) v1.ServiceSpec {
 			"app":       ApplicationName,
 			"component": PostgresqlDeploymentComponent,
 		}
-	}
-
-	spec.Ports = []v1.ServicePort{
-		{
-			Port:       GetExternalDatabasePort(dbSecret),
-			TargetPort: intstr.Parse(fmt.Sprintf("%d", GetExternalDatabasePort(dbSecret))),
-		},
+		spec.Ports = []v1.ServicePort{
+			{
+				Port:       GetExternalDatabasePort(dbSecret),
+				TargetPort: intstr.Parse(fmt.Sprintf("%d", GetExternalDatabasePort(dbSecret))),
+			},
+		}
 	}
 
 	return spec
