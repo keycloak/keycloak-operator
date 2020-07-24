@@ -19,6 +19,7 @@ const (
 	//10s (curl) + 10s (curl) + 2s (just in case)
 	ProbeTimeoutSeconds         = 22
 	ProbeTimeBetweenRunsSeconds = 30
+	ProbeFailureThreshold       = 10
 )
 
 func GetServiceEnvVar(suffix string) string {
@@ -328,6 +329,7 @@ func livenessProbe() *v1.Probe {
 		InitialDelaySeconds: LivenessProbeInitialDelay,
 		TimeoutSeconds:      ProbeTimeoutSeconds,
 		PeriodSeconds:       ProbeTimeBetweenRunsSeconds,
+		FailureThreshold:    ProbeFailureThreshold,
 	}
 }
 
@@ -345,5 +347,6 @@ func readinessProbe() *v1.Probe {
 		InitialDelaySeconds: ReadinessProbeInitialDelay,
 		TimeoutSeconds:      ProbeTimeoutSeconds,
 		PeriodSeconds:       ProbeTimeBetweenRunsSeconds,
+		FailureThreshold:    ProbeFailureThreshold,
 	}
 }
