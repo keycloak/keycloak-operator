@@ -16,6 +16,17 @@ func GetServicePortName() string {
   }
 }
 
+func GetServiceAnnotations(cr *v1alpha1.Keycloak) map[string]string {
+	annotations := map[string]string{
+		"description": "The web server's https port.",
+		"service.alpha.openshift.io/serving-cert-secret-name": ServingCertSecretName,
+	}
+	for key, value := range cr.Spec.ServiceAnnotations {
+		annotations[key] = value
+	}
+	return annotations
+}
+
 func KeycloakService(cr *v1alpha1.Keycloak) *v1.Service {
 	return &v1.Service{
 		ObjectMeta: v12.ObjectMeta{
@@ -24,10 +35,7 @@ func KeycloakService(cr *v1alpha1.Keycloak) *v1.Service {
 			Labels: map[string]string{
 				"app": ApplicationName,
 			},
-			Annotations: map[string]string{
-				"description": "The web server's https port.",
-				"service.alpha.openshift.io/serving-cert-secret-name": ServingCertSecretName,
-			},
+			Annotations: GetServiceAnnotations(cr),
 		},
 		Spec: v1.ServiceSpec{
 			Selector: map[string]string{

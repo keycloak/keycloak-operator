@@ -68,6 +68,8 @@ type KeycloakSpec struct {
 	LivenessProbe ProbeSpec `json:"livenessProbe,omitempty"`
 	// Readiness Probe configuration
 	ReadinessProbe ProbeSpec `json:"readinessProbe,omitempty"`
+	// Service annotations
+	ServiceAnnotations map[string]string `json:"serviceAnnotations,omitempty"`
 }
 
 type DeploymentSpec struct {
