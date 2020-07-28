@@ -14,11 +14,13 @@ import (
 )
 
 const (
-	LivenessProbeInitialDelay  = 30
-	ReadinessProbeInitialDelay = 40
+	LivenessProbeInitialDelay	int32 = 30
+	ReadinessProbeInitialDelay	int32 = 40
 	//10s (curl) + 10s (curl) + 2s (just in case)
-	ProbeTimeoutSeconds         = 22
-	ProbeTimeBetweenRunsSeconds = 30
+	ProbeTimeoutSeconds		int32 = 22
+	ProbeTimeBetweenRunsSeconds	int32 = 30
+	SuccessThresholdCount	int32 = 1
+	FailureThresholdCount	int32 = 3
 )
 
 func GetServiceEnvVar(suffix string) string {
@@ -149,14 +151,6 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 		},
 	}
 
-	 //Add any optional env vars directly 
-	 for envKey, envValue := range cr.Spec.EnvVars {
-		 env = append(env, v1.EnvVar{
-			Name:  envKey,
-			Value: envValue,
-		})
-	 }
-
 	if cr.Spec.ExternalDatabase.Enabled {
 		env = append(env, v1.EnvVar{
 			Name:  GetServiceEnvVar("SERVICE_HOST"),
@@ -168,55 +162,14 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 		})
 	}
 
+	for envKey, envValue := range cr.Spec.KeycloakDeploymentSpec.EnvVars {
+		env = append(env, v1.EnvVar{
+			Name:  envKey,
+			Value: envValue,
+		})
+	}
+
 	return env
-}
-
-func getLivenessInitialDelay(cr *v1alpha1.Keycloak) int32 {
-	if (cr.Spec.LivenessProbe.InitialDelaySeconds != 0) {
-		return cr.Spec.LivenessProbe.InitialDelaySeconds
-	} else {
-		return LivenessProbeInitialDelay
-	}
-}
-
-func getLivenessPeriod(cr *v1alpha1.Keycloak) int32 {
-	if (cr.Spec.LivenessProbe.PeriodSeconds != 0) {
-		return cr.Spec.LivenessProbe.PeriodSeconds
-	} else {
-		return ProbeTimeBetweenRunsSeconds
-	}
-}
-
-func getLivenessTimeout(cr *v1alpha1.Keycloak) int32 {
-	if (cr.Spec.LivenessProbe.TimeoutSeconds != 0) {
-		return cr.Spec.LivenessProbe.TimeoutSeconds
-	} else {
-		return ProbeTimeoutSeconds
-	}
-}
-
-func getReadinessInitialDelay(cr *v1alpha1.Keycloak) int32 {
-	if (cr.Spec.ReadinessProbe.InitialDelaySeconds != 0) {
-		return cr.Spec.ReadinessProbe.InitialDelaySeconds
-	} else {
-		return ReadinessProbeInitialDelay
-	}
-}
-
-func getReadinessPeriod(cr *v1alpha1.Keycloak) int32 {
-	if (cr.Spec.ReadinessProbe.PeriodSeconds != 0) {
-		return cr.Spec.ReadinessProbe.PeriodSeconds
-	} else {
-		return ProbeTimeBetweenRunsSeconds
-	}
-}
-
-func getReadinessTimeout(cr *v1alpha1.Keycloak) int32 {
-	if (cr.Spec.ReadinessProbe.TimeoutSeconds != 0) {
-		return cr.Spec.ReadinessProbe.TimeoutSeconds
-	} else {
-		return ProbeTimeoutSeconds
-	}
 }
 
 func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
@@ -371,35 +324,105 @@ func KeycloakVolumes() []v1.Volume {
 }
 
 func livenessProbe(cr *v1alpha1.Keycloak) *v1.Probe {
-	return &v1.Probe{
-		Handler: v1.Handler{
-			Exec: &v1.ExecAction{
-				Command: []string{
-					"/bin/sh",
-					"-c",
-					"/probes/" + LivenessProbeProperty,
-				},
+	initialDelay := LivenessProbeInitialDelay
+	if (cr.Spec.KeycloakDeploymentSpec.LivenessProbe.InitialDelaySeconds != 0) {
+		initialDelay = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.InitialDelaySeconds
+	}
+
+	period := ProbeTimeBetweenRunsSeconds
+	if (cr.Spec.KeycloakDeploymentSpec.LivenessProbe.PeriodSeconds != 0) {
+		period = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.PeriodSeconds
+	}
+
+	timeout := ProbeTimeoutSeconds
+	if (cr.Spec.KeycloakDeploymentSpec.LivenessProbe.TimeoutSeconds != 0) {
+		timeout = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.TimeoutSeconds
+	}
+
+	successThreshold := SuccessThresholdCount
+	if (cr.Spec.KeycloakDeploymentSpec.LivenessProbe.SuccessThreshold != 0) {
+		successThreshold = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.SuccessThreshold
+	}
+
+	failureThreshold := FailureThresholdCount
+	if (cr.Spec.KeycloakDeploymentSpec.LivenessProbe.FailureThreshold != 0) {
+		failureThreshold = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.FailureThreshold
+	}
+
+	handler := v1.Handler{
+		Exec: &v1.ExecAction{
+			Command: []string{
+				"/bin/sh",
+				"-c",
+				"/probes/" + LivenessProbeProperty,
 			},
 		},
-		InitialDelaySeconds: getLivenessInitialDelay(cr),
-		TimeoutSeconds:      getLivenessTimeout(cr),
-		PeriodSeconds:       getLivenessPeriod(cr),
+	}
+
+	if (cr.Spec.KeycloakDeploymentSpec.LivenessProbe.Handler.Exec != nil ||
+		cr.Spec.KeycloakDeploymentSpec.LivenessProbe.Handler.HTTPGet != nil ||
+        cr.Spec.KeycloakDeploymentSpec.LivenessProbe.Handler.TCPSocket != nil) {
+		handler = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.Handler
+	}
+
+	return &v1.Probe{
+		Handler:		handler,
+		InitialDelaySeconds:	initialDelay,
+		TimeoutSeconds:     timeout,
+		PeriodSeconds:      period,
+		SuccessThreshold:	successThreshold,
+		FailureThreshold:	failureThreshold,
 	}
 }
 
 func readinessProbe(cr *v1alpha1.Keycloak) *v1.Probe {
-	return &v1.Probe{
-		Handler: v1.Handler{
-			Exec: &v1.ExecAction{
-				Command: []string{
-					"/bin/sh",
-					"-c",
-					"/probes/" + ReadinessProbeProperty,
-				},
+	initialDelay := ReadinessProbeInitialDelay
+	if (cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.InitialDelaySeconds != 0) {
+		initialDelay = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.InitialDelaySeconds
+	}
+
+	period := ProbeTimeBetweenRunsSeconds
+	if (cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.PeriodSeconds != 0) {
+		period = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.PeriodSeconds
+	}
+
+	timeout := ProbeTimeoutSeconds
+	if (cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.TimeoutSeconds != 0) {
+		timeout = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.TimeoutSeconds
+	}
+
+	successThreshold := SuccessThresholdCount
+	if (cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.SuccessThreshold != 0) {
+		successThreshold = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.SuccessThreshold
+	}
+
+	failureThreshold := FailureThresholdCount
+	if (cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.FailureThreshold != 0) {
+		failureThreshold = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.FailureThreshold
+	}
+
+	handler := v1.Handler{
+		Exec: &v1.ExecAction{
+			Command: []string{
+				"/bin/sh",
+				"-c",
+				"/probes/" + ReadinessProbeProperty,
 			},
 		},
-		InitialDelaySeconds: getReadinessInitialDelay(cr),
-		TimeoutSeconds:      getReadinessTimeout(cr),
-		PeriodSeconds:       getReadinessPeriod(cr),
+	}
+
+	if (cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.Handler.Exec != nil ||
+		cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.Handler.HTTPGet != nil ||
+        cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.Handler.TCPSocket != nil) {
+		handler = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.Handler
+	}
+
+	return &v1.Probe{
+		Handler:		handler,
+		InitialDelaySeconds:	initialDelay,
+		TimeoutSeconds:		timeout,
+		PeriodSeconds:		period,
+		SuccessThreshold:	successThreshold,
+		FailureThreshold:	failureThreshold,
 	}
 }

@@ -62,12 +62,6 @@ type KeycloakSpec struct {
 	// Specify Migration configuration
 	// +optional
 	Migration MigrateConfig `json:"migration,omitempty"`
-	// Optional environment variables
-	EnvVars map[string]string `json:"envVars,omitempty"`
-	// Liveness Probe configuration
-	LivenessProbe ProbeSpec `json:"livenessProbe,omitempty"`
-	// Readiness Probe configuration
-	ReadinessProbe ProbeSpec `json:"readinessProbe,omitempty"`
 	// Service annotations
 	ServiceAnnotations map[string]string `json:"serviceAnnotations,omitempty"`
 }
@@ -76,12 +70,13 @@ type DeploymentSpec struct {
 	// Resources (Requests and Limits) for the Pods
 	// +optional
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
-}
-
-type ProbeSpec struct {
-	InitialDelaySeconds int32 `json:"initialDelaySeconds,omitempty"`
-	PeriodSeconds int32 `json:"periodSeconds,omitempty"`
-	TimeoutSeconds int32 `json:"timeoutSeconds,omitempty"`
+	// Probes (Liveness and Readiness) for the Pods
+	// +optional
+	LivenessProbe corev1.Probe `json:"livenessProbe,omitempty"`
+	ReadinessProbe corev1.Probe `json:"readinessProbe,omitempty"`
+	// Container Environment variables
+	// +optional
+	EnvVars map[string]string `json:"envVars,omitempty"`
 }
 
 type TLSTerminationType string
