@@ -198,6 +198,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 						"app":       ApplicationName,
 						"component": KeycloakDeploymentComponent,
 					},
+					Annotations: cr.Spec.KeycloakDeploymentSpec.PodAnnotations,
 				},
 				Spec: v1.PodSpec{
 					InitContainers: KeycloakExtensionsInitContainers(cr),

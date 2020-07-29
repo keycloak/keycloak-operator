@@ -77,6 +77,9 @@ type DeploymentSpec struct {
 	// Container Environment variables
 	// +optional
 	EnvVars map[string]string `json:"envVars,omitempty"`
+	// Pod Annotations
+	// +optional
+	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
 }
 
 type TLSTerminationType string
