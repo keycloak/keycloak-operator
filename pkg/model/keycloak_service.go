@@ -16,6 +16,23 @@ func GetServicePortName() string {
   }
 }
 
+func GetServicePorts() []v1.ServicePort {
+	return []v1.ServicePort{
+		{
+			Port:       KeycloakServicePort,
+			TargetPort: intstr.FromInt(KeycloakServicePort),
+			Name:       GetServicePortName(),
+			Protocol:   "TCP",
+		},
+		{
+			Port:       KeycloakManagementPort,
+			TargetPort: intstr.FromInt(KeycloakManagementPort),
+			Name:       "http-management",
+			Protocol:   "TCP",
+		},
+	}
+}
+
 func GetServiceAnnotations(cr *v1alpha1.Keycloak) map[string]string {
 	annotations := map[string]string{
 		"description": "The web server's https port.",
@@ -42,14 +59,7 @@ func KeycloakService(cr *v1alpha1.Keycloak) *v1.Service {
 				"app":       ApplicationName,
 				"component": KeycloakDeploymentComponent,
 			},
-			Ports: []v1.ServicePort{
-				{
-					Port:       KeycloakServicePort,
-					TargetPort: intstr.FromInt(KeycloakServicePort),
-					Name:       GetServicePortName(),
-					Protocol:   "TCP",
-				},
-			},
+			Ports: GetServicePorts(),
 		},
 	}
 }
@@ -63,13 +73,6 @@ func KeycloakServiceSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 
 func KeycloakServiceReconciled(cr *v1alpha1.Keycloak, currentState *v1.Service) *v1.Service {
 	reconciled := currentState.DeepCopy()
-	reconciled.Spec.Ports = []v1.ServicePort{
-		{
-			Port:       KeycloakServicePort,
-			TargetPort: intstr.FromInt(KeycloakServicePort),
-			Name:       GetServicePortName(),
-			Protocol:   "TCP",
-		},
-	}
+	reconciled.Spec.Ports = GetServicePorts()
 	return reconciled
 }
