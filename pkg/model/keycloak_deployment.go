@@ -272,6 +272,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 		},
 	}
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
+	reconciled.Spec.Template.ObjectMeta.Annotations = cr.KeycloakDeploymentSpec.PodAnnotations
 	return reconciled
 }
 
