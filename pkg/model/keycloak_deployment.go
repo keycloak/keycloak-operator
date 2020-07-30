@@ -29,6 +29,26 @@ func GetServiceEnvVar(suffix string) string {
 	return fmt.Sprintf("%v_%v", serviceName, suffix)
 }
 
+func GetContainerPorts() []v1.ContainerPort {
+	return []v1.ContainerPort {
+		{
+			Name: "http",
+			ContainerPort: KeycloakServicePort,
+			Protocol:      "TCP",
+		},
+		{
+			Name: "http-management",
+			ContainerPort: KeycloakManagementPort,
+			Protocol:      "TCP",
+		},
+		{
+			Name: "http-monitoring",
+			ContainerPort: 8778,
+			Protocol:      "TCP",
+		},
+	}
+}
+
 func getResources(cr *v1alpha1.Keycloak) v1.ResourceRequirements {
 	requirements := v1.ResourceRequirements{}
 	requirements.Limits = v1.ResourceList{}
@@ -207,20 +227,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 						{
 							Name:  KeycloakDeploymentName,
 							Image: Images.Images[KeycloakImage],
-							Ports: []v1.ContainerPort{
-								{
-									ContainerPort: KeycloakServicePort,
-									Protocol:      "TCP",
-								},
-								{
-									ContainerPort: 9990,
-									Protocol:      "TCP",
-								},
-								{
-									ContainerPort: 8778,
-									Protocol:      "TCP",
-								},
-							},
+							Ports: GetContainerPorts(),
 							VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
 							LivenessProbe:  livenessProbe(cr),
 							ReadinessProbe: readinessProbe(cr),
@@ -250,20 +257,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 		{
 			Name:  KeycloakDeploymentName,
 			Image: Images.Images[KeycloakImage],
-			Ports: []v1.ContainerPort{
-				{
-					ContainerPort: KeycloakServicePort,
-					Protocol:      "TCP",
-				},
-				{
-					ContainerPort: 9990,
-					Protocol:      "TCP",
-				},
-				{
-					ContainerPort: 8778,
-					Protocol:      "TCP",
-				},
-			},
+			Ports: GetContainerPorts(),
 			VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
 			LivenessProbe:  livenessProbe(cr),
 			ReadinessProbe: readinessProbe(cr),

@@ -24,12 +24,6 @@ func GetServicePorts() []v1.ServicePort {
 			Name:       GetServicePortName(),
 			Protocol:   "TCP",
 		},
-		{
-			Port:       KeycloakManagementPort,
-			TargetPort: intstr.FromInt(KeycloakManagementPort),
-			Name:       "http-management",
-			Protocol:   "TCP",
-		},
 	}
 }
 
