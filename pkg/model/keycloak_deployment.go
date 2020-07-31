@@ -192,6 +192,14 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 	return env
 }
 
+func getCommand() []string {
+	command := make([]string, 3)
+	command[0] = "/bin/sh"
+	command[1] = "-c"
+	command[2] = "START=$(date +%s); while true; do STATUS=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:15020/healthz/ready); if [ ${STATUS} -eq 200 ]; then exec /opt/jboss/tools/docker-entrypoint.sh; break; else END=$(date +%s); DIFF=$(( $END - $START )); if [ ${DIFF} -gt 300 ]; then curl -X POST http://127.0.0.1:15000/quitquitquit; break; else sleep 1; fi; fi; done;"
+	return command
+}
+
 func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
 	return &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
@@ -233,6 +241,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 							ReadinessProbe: readinessProbe(cr),
 							Env:            getKeycloakEnv(cr, dbSecret),
 							Resources:      getResources(cr),
+							Command:		getCommand(),
 						},
 					},
 				},
@@ -263,6 +272,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 			ReadinessProbe: readinessProbe(cr),
 			Env:            getKeycloakEnv(cr, dbSecret),
 			Resources:      getResources(cr),
+			Command:		getCommand(),
 		},
 	}
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
