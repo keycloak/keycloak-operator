@@ -67,23 +67,25 @@ pipeline {
               withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GUSER', passwordVariable: 'GPASS'),
                                usernamePassword(credentialsId: 'artifactory', usernameVariable: 'ARTIFACTORY_CREDENTIALS_USR', passwordVariable: 'ARTIFACTORY_CREDENTIALS_PSW')]) {
                 withDockerRegistry([credentialsId: 'artifactory', url: constants.DOCKER_URL ]) {
-                  script {
-                    env.ImageLatest = prebuildResult.imageLatest
-                    env.ImageFull = prebuildResult.imageFull
-                    env.ImageTag = prebuildResult.imageTag
-                    env.artifactory_contextUrl = constants.ARTIFACTORY_INTERNAL_URL
+                  retry(3) {
+                    script {
+                      env.ImageLatest = prebuildResult.imageLatest
+                      env.ImageFull = prebuildResult.imageFull
+                      env.ImageTag = prebuildResult.imageTag
+                      env.artifactory_contextUrl = constants.ARTIFACTORY_INTERNAL_URL
 
-                    sh '''
-                      git config --global credential.username \${GUSER}
-                      git config --global credential.helper "!echo password=\${GPASS}; echo"
+                      sh '''
+                        git config --global credential.username \${GUSER}
+                        git config --global credential.helper "!echo password=\${GPASS}; echo"
 
-                      make code/compile
-                      make code/check
+                        make code/compile
+                        make code/check
 
-                      docker build --network=host --no-cache -t $ImageFull .
-                      docker tag $ImageFull $ImageLatest
-                    '''
-                  } // end of script
+                        docker build --network=host --no-cache -t $ImageFull .
+                        docker tag $ImageFull $ImageLatest
+                      '''
+                    } // end of script
+                  } // end of retry
                 } // end of withDockerRegistry
               } // end of withCredentials
             } // end of container
@@ -100,19 +102,21 @@ pipeline {
               withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GUSER', passwordVariable: 'GPASS'),
                                usernamePassword(credentialsId: 'artifactory', usernameVariable: 'ARTIFACTORY_CREDENTIALS_USR', passwordVariable: 'ARTIFACTORY_CREDENTIALS_PSW')]) {
                 withDockerRegistry([credentialsId: 'artifactory', url: constants.DOCKER_URL ]) {
-                  script {
-                    env.ImageLatest = prebuildResult.debugImageLatest
-                    env.ImageFull = prebuildResult.debugImageFull
-                    env.artifactory_contextUrl = constants.ARTIFACTORY_INTERNAL_URL
+                  retry(3) {
+                    script {
+                      env.ImageLatest = prebuildResult.debugImageLatest
+                      env.ImageFull = prebuildResult.debugImageFull
+                      env.artifactory_contextUrl = constants.ARTIFACTORY_INTERNAL_URL
 
-                    sh '''
-                      git config --global credential.username \${GUSER}
-                      git config --global credential.helper "!echo password=\${GPASS}; echo"
+                      sh '''
+                        git config --global credential.username \${GUSER}
+                        git config --global credential.helper "!echo password=\${GPASS}; echo"
 
-                      docker build --network=host --no-cache -t $ImageFull keycloak-debug/
-                      docker tag $ImageFull $ImageLatest
-                    '''
-                  } // end of script
+                        docker build --network=host --no-cache -t $ImageFull keycloak-debug/
+                        docker tag $ImageFull $ImageLatest
+                      '''
+                    } // end of script
+                  } // end of retry
                 } // end of withDockerRegistry
               } // end of withCredentials
             } // end of container
@@ -143,8 +147,10 @@ pipeline {
         stage('aqua') {
           steps {
             container('build') {
-              // Run the Aqua scan
-              aquaScan(prebuildResult.imageFull)
+              retry(3) {
+                // Run the Aqua scan
+                aquaScan(prebuildResult.imageFull)
+              }
             }
           }
         } // stage - aqua
