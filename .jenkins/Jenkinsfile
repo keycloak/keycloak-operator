@@ -37,9 +37,12 @@ pipeline {
             prebuildResult.imageFull = sh(script: 'make display-image-string-full', returnStdout: true).toString().trim()
             prebuildResult.imageLatest = sh(script: 'make display-image-string-latest', returnStdout: true).toString().trim()
             prebuildResult.imageTag = sh(script: 'make display-image-tag', returnStdout: true).toString().trim()
+            prebuildResult.debugImageFull = sh(script: 'make display-debug-image-string-full', returnStdout: true).toString().trim()
+            prebuildResult.debugImageLatest = sh(script: 'make display-debug-image-string-latest', returnStdout: true).toString().trim()
 
             // Check to see if a docker image with this tag already exists
             prebuildResult.imageExists = dockerImageExists(prebuildResult.imageFull)
+            prebuildResult.debugImageExists = dockerImageExists(prebuildResult.debugImageFull)
 
             // Write results to a file
             writeYaml(file: prebuildResultsFile, data: prebuildResult)
@@ -52,37 +55,70 @@ pipeline {
     } // stage - prebuild
 
     stage('build') {
+      parallel {
+        stage('build operator') {
+          when {
+            beforeAgent true
+            not { expression { prebuildResult.imageExists } }
+          }
 
-      when {
-        beforeAgent true
-        not { expression { prebuildResult.imageExists } }
-      }
+          steps {
+            container('build') {
+              withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GUSER', passwordVariable: 'GPASS'),
+                               usernamePassword(credentialsId: 'artifactory', usernameVariable: 'ARTIFACTORY_CREDENTIALS_USR', passwordVariable: 'ARTIFACTORY_CREDENTIALS_PSW')]) {
+                withDockerRegistry([credentialsId: 'artifactory', url: constants.DOCKER_URL ]) {
+                  script {
+                    env.ImageLatest = prebuildResult.imageLatest
+                    env.ImageFull = prebuildResult.imageFull
+                    env.ImageTag = prebuildResult.imageTag
+                    env.artifactory_contextUrl = constants.ARTIFACTORY_INTERNAL_URL
 
-      steps {
-        container('build') {
-          withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GUSER', passwordVariable: 'GPASS'),
-                           usernamePassword(credentialsId: 'artifactory', usernameVariable: 'ARTIFACTORY_CREDENTIALS_USR', passwordVariable: 'ARTIFACTORY_CREDENTIALS_PSW')]) {
-            withDockerRegistry([credentialsId: 'artifactory', url: constants.DOCKER_URL ]) {
-              script {
-                env.ImageLatest = prebuildResult.imageLatest
-                env.ImageFull = prebuildResult.imageFull
-                env.artifactory_contextUrl = constants.ARTIFACTORY_INTERNAL_URL
+                    sh '''
+                      git config --global credential.username \${GUSER}
+                      git config --global credential.helper "!echo password=\${GPASS}; echo"
 
-                sh '''
-                  git config --global credential.username \${GUSER}
-                  git config --global credential.helper "!echo password=\${GPASS}; echo"
+                      make code/compile
+                      make code/check
 
-                  make code/compile
-                  make code/check
+                      docker build --network=host --no-cache -t $ImageFull .
+                      docker tag $ImageFull $ImageLatest
+                    '''
+                  } // end of script
+                } // end of withDockerRegistry
+              } // end of withCredentials
+            } // end of container
+          } //end of steps
+        } // stage - build
+        stage('build debug image') {
+          when {
+            beforeAgent true
+            not { expression { prebuildResult.debugImageExists } }
+          }
 
-                  docker build --network=host --no-cache -t $ImageFull .
-                  docker tag $ImageFull $ImageLatest
-                '''
-              } // end of script
-            } // end of withDockerRegistry
-          } // end of withCredentials
-        } // end of container
-      } //end of steps
+          steps {
+            container('build') {
+              withCredentials([usernamePassword(credentialsId: 'github-token', usernameVariable: 'GUSER', passwordVariable: 'GPASS'),
+                               usernamePassword(credentialsId: 'artifactory', usernameVariable: 'ARTIFACTORY_CREDENTIALS_USR', passwordVariable: 'ARTIFACTORY_CREDENTIALS_PSW')]) {
+                withDockerRegistry([credentialsId: 'artifactory', url: constants.DOCKER_URL ]) {
+                  script {
+                    env.ImageLatest = prebuildResult.debugImageLatest
+                    env.ImageFull = prebuildResult.debugImageFull
+                    env.artifactory_contextUrl = constants.ARTIFACTORY_INTERNAL_URL
+
+                    sh '''
+                      git config --global credential.username \${GUSER}
+                      git config --global credential.helper "!echo password=\${GPASS}; echo"
+
+                      docker build --network=host --no-cache -t $ImageFull keycloak-debug/
+                      docker tag $ImageFull $ImageLatest
+                    '''
+                  } // end of script
+                } // end of withDockerRegistry
+              } // end of withCredentials
+            } // end of container
+          } //end of steps
+        } // stage - build debug
+      } // parallel 
     } // stage - build
 
     stage('test') {
@@ -116,23 +152,46 @@ pipeline {
     } // stage - security
 
     stage('publish') {
-      when {
-        allOf {
-          branch 'cogito-build'
-          not { expression { prebuildResult.imageExists } }
-        }
-        beforeAgent true
-      }
-      steps {
-        container('build') {
-          script {
-            withDockerRegistry([credentialsId: 'artifactory', url: constants.DOCKER_URL ]) {
-              sh "docker push ${prebuildResult.imageFull}"
-              sh "docker push ${prebuildResult.imageLatest}"
+      parallel {
+        stage('publish operator') {
+          when {
+            allOf {
+              branch 'cogito-build'
+              not { expression { prebuildResult.imageExists } }
+            }
+            beforeAgent true
+          }
+          steps {
+            container('build') {
+              script {
+                withDockerRegistry([credentialsId: 'artifactory', url: constants.DOCKER_URL ]) {
+                  sh "docker push ${prebuildResult.imageFull}"
+                  sh "docker push ${prebuildResult.imageLatest}"
+                }
+              }
             }
           }
-        }
-      }
+        } // stage - publish operator
+        stage('publish debug') {
+          when {
+            allOf {
+              branch 'cogito-build'
+              not { expression { prebuildResult.debugImageExists } }
+            }
+            beforeAgent true
+          }
+          steps {
+            container('build') {
+              script {
+                withDockerRegistry([credentialsId: 'artifactory', url: constants.DOCKER_URL ]) {
+                  sh "docker push ${prebuildResult.debugImageFull}"
+                  sh "docker push ${prebuildResult.debugImageLatest}"
+                }
+              }
+            }
+          }
+        } // stage - publish debug
+      } // parallel
     } // stage - publish
   } // stages
 }

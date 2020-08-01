@@ -173,7 +173,9 @@ test/goveralls: test/coverage/prepare
 ##### COGITO BUILD #####
 REPOSITORY = docker.cogitocorp.us
 IMAGE = keycloak-operator
+DEBUG_IMAGE = keycloak-debug
 SEMVER=$(shell grep "Version =" version/version.go | cut -d \" -f 2)
+SEMVER_DEBUG=$(shell grep "FROM" keycloak-debug/Dockerfile | cut -d : -f 2)
 GITSHA=$(shell git rev-parse --short HEAD)
 
 .PHONY: display-image-name
@@ -208,4 +210,14 @@ display-image-string-full:
 display-image-string-latest:
 	@echo ${REPOSITORY}/${IMAGE}:latest
 
+.PHONY: display-debug-image-tag
+display-debug-image-tag:
+	@echo ${SEMVER_DEBUG}
 
+.PHONY: display-debug-image-string-full
+display-debug-image-string-full:
+	@echo ${REPOSITORY}/${DEBUG_IMAGE}:${SEMVER_DEBUG}-b${BUILD_NUMBER}-${GITSHA}
+
+.PHONY: display-debug-image-string-latest
+display-debug-image-string-latest:
+	@echo ${REPOSITORY}/${DEBUG_IMAGE}:latest

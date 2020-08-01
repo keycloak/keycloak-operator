@@ -196,7 +196,7 @@ func getCommand() []string {
 	command := make([]string, 3)
 	command[0] = "/bin/sh"
 	command[1] = "-c"
-	command[2] = "START=$(date +%s); while true; do STATUS=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:15020/healthz/ready); if [ ${STATUS} -eq 200 ]; then exec /opt/jboss/tools/docker-entrypoint.sh; break; else END=$(date +%s); DIFF=$(( $END - $START )); if [ ${DIFF} -gt 300 ]; then curl -X POST http://127.0.0.1:15000/quitquitquit; break; else sleep 1; fi; fi; done;"
+	command[2] = "START=$(date +%s); while true; do STATUS=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:15020/healthz/ready); if [ ${STATUS} -eq 200 ]; then exec /opt/jboss/tools/docker-entrypoint.sh -b 0.0.0.0; break; else END=$(date +%s); DIFF=$(( $END - $START )); if [ ${DIFF} -gt 300 ]; then curl -X POST http://127.0.0.1:15000/quitquitquit; break; else sleep 1; fi; fi; done;"
 	return command
 }
 
