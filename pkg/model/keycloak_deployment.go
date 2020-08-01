@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"strings"
+	"os"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -200,6 +201,18 @@ func getCommand() []string {
 	return command
 }
 
+func getSecrets(cr *v1alpha1.Keycloak) []v1.LocalObjectReference {
+	secret := os.Getenv("RELATED_IMAGE_PULL_SECRET")
+	if secret == "" {
+		return []v1.LocalObjectReference{}
+	}
+	return []v1.LocalObjectReference{
+		{
+			Name: secret,
+		},
+	}
+}
+
 func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
 	return &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
@@ -244,6 +257,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 							Command:		getCommand(),
 						},
 					},
+					ImagePullSecrets: getSecrets(cr),
 				},
 			},
 		},
@@ -275,6 +289,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 			Command:		getCommand(),
 		},
 	}
+	reconciled.Spec.Template.Spec.ImagePullSecrets = getSecrets(cr)
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
 	reconciled.Spec.Template.ObjectMeta.Annotations = cr.Spec.KeycloakDeploymentSpec.PodAnnotations
 	return reconciled
