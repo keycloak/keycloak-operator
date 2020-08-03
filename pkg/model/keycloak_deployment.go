@@ -254,7 +254,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 							ReadinessProbe: readinessProbe(cr),
 							Env:            getKeycloakEnv(cr, dbSecret),
 							Resources:      getResources(cr),
-							Command:		getCommand(),
+							//Command:		getCommand(),
 						},
 					},
 					ImagePullSecrets: getSecrets(cr),
@@ -286,7 +286,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 			ReadinessProbe: readinessProbe(cr),
 			Env:            getKeycloakEnv(cr, dbSecret),
 			Resources:      getResources(cr),
-			Command:		getCommand(),
+			//Command:		getCommand(),
 		},
 	}
 	reconciled.Spec.Template.Spec.ImagePullSecrets = getSecrets(cr)
