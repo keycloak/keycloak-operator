@@ -62,6 +62,66 @@ type KeycloakAPIRealm struct {
 	// Authenticator config
 	// +optional
 	AuthenticatorConfig []KeycloakAPIAuthenticatorConfig `json:"authenticatorConfig,omitempty"`
+
+	// Point keycloak to an external user provider to validate
+	// credentials or pull in identity information.
+	// +optional
+	UserFederationProviders []KeycloakAPIUserFederationProvider `json:"userFederationProviders,omitempty"`
+
+	// User federation mappers are extension points triggered by the
+	// user federation at various points.
+	// +optional
+	UserFederationMappers []KeycloakAPIUserFederationMapper `json:"userFederationMappers,omitempty"`
+}
+
+// https://www.keycloak.org/docs-api/10.0/rest-api/index.html#_userfederationproviderrepresentation
+type KeycloakAPIUserFederationProvider struct {
+	// changedSyncPeriod optional integer(int32)
+	// lastSync int32
+
+	// User federation provider config.
+	// +optional
+	Config map[string]string `json:"config,omitempty"`
+
+	// The display name of this provider instance.
+	// +optional
+	DisplayName string `json:"displayName,omitempty"`
+
+	// +optional
+	FullSyncPeriod *int32 `json:"fullSyncPeriod,omitempty"`
+
+	// The ID of this provider
+	// +optional
+	ID string `json:"id,omitempty"`
+
+	// The priority of this provider when looking up users or adding a user.
+	// +optional
+	Priority *int32 `json:"priority,omitempty"`
+
+	// The name of the user provider, such as "ldap", "kerberos" or a custom SPI.
+	// +optional
+	ProviderName string `json:"providerName,omitempty"`
+}
+
+//
+// https://www.keycloak.org/docs/11.0/server_admin/#_ldap_mappers
+// https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_userfederationmapperrepresentation
+type KeycloakAPIUserFederationMapper struct {
+	// User federation mapper config.
+	// +optional
+	Config map[string]string `json:"config,omitempty"`
+
+	// +optional
+	Name string `json:"name,omitempty"`
+
+	// +optional
+	ID string `json:"id,omitempty"`
+
+	// +optional
+	FederationMapperType string `json:"federationMapperType,omitempty"`
+
+	// The displayName for the user federation provider this mapper applies to.
+	FederationProviderDisplayName string `json:"federationProviderDisplayName,omitempty"`
 }
 
 type KeycloakAPIAuthenticationFlow struct {
