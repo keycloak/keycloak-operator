@@ -33,6 +33,9 @@ func NewKeycloakRealmsCRDTestStruct() *CRDTestStruct {
 			"keycloakRealmWithAuthenticatorFlowTest": {
 				testFunction: keycloakRealmWithAuthenticatorFlowTest,
 			},
+			"keycloakRealmWithUserFederationTest": {
+				testFunction: keycloakRealmWithUserFederationTest,
+			},
 		},
 	}
 }
@@ -211,6 +214,83 @@ func keycloakRealmWithAuthenticatorFlowTest(t *testing.T, framework *test.Framew
 
 	keycloakRealmCR.Spec.Realm.AuthenticationFlows = []keycloakv1alpha1.KeycloakAPIAuthenticationFlow{autoLinkFlow, getBrowserFlow(), getRegistrationFlow(), getDirectGrantFlow()}
 
+	keycloakRealmCR.Spec.Realm.IdentityProviders = []*keycloakv1alpha1.KeycloakIdentityProvider{identityProvider}
+
+	err := Create(framework, keycloakRealmCR, ctx)
+	if err != nil {
+		return err
+	}
+
+	err = WaitForRealmToBeReady(t, framework, namespace)
+	if err != nil {
+		return err
+	}
+
+	keycloakCR := getDeployedKeycloakCR(framework, namespace)
+	keycloakInternalURL := keycloakCR.Status.InternalURL
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint
+	return WaitForSuccessResponseToContain(t, framework, keycloakInternalURL+"/auth/realms/"+realmName+"/account", testOperatorIDPDisplayName)
+}
+
+func keycloakRealmWithUserFederationTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	keycloakRealmCR := getKeycloakRealmCR(namespace)
+
+	identityProvider := &keycloakv1alpha1.KeycloakIdentityProvider{
+		Alias:                     "oidc",
+		DisplayName:               testOperatorIDPDisplayName,
+		InternalID:                "",
+		ProviderID:                "oidc",
+		Enabled:                   true,
+		TrustEmail:                false,
+		StoreToken:                false,
+		AddReadTokenRoleOnCreate:  false,
+		FirstBrokerLoginFlowAlias: "first broker login",
+		PostBrokerLoginFlowAlias:  "",
+		LinkOnly:                  false,
+		Config: map[string]string{
+			"useJwksUrl":       "true",
+			"loginHint":        "",
+			"authorizationUrl": "https://operator.test.url/authorization_url",
+			"tokenUrl":         "https://operator.test.url/token_url",
+			"clientAuthMethod": "client_secret_jwt",
+			"clientId":         "operator-idp",
+			"clientSecret":     "test",
+			"allowedClockSkew": "5",
+		},
+	}
+
+	userFederationMapper := keycloakv1alpha1.KeycloakAPIUserFederationMapper{
+		Config: map[string]string{
+			"groups.ldap.filter":                   "(|(CN=Role-*)(CN=Access-*))",
+			"groups.dn":                            "OU=groups,DC=example,DC=com",
+			"mode":                                 "READ_ONLY",
+			"preserve.group.inheritance":           "false",
+			"ignore.missing.groups":                "false",
+			"group.name.ldap.attribute":            "cn",
+			"drop.non.existing.groups.during.sync": "false",
+			"user.roles.retrieve.strategy":         "LOAD_GROUPS_BY_MEMBER_ATTRIBUTE_RECURSIVELY",
+		},
+		Name:                          "group-mapper",
+		FederationMapperType:          "group-ldap-mapper",
+		FederationProviderDisplayName: "ldap-provider",
+	}
+
+	userFederationProvider := keycloakv1alpha1.KeycloakAPIUserFederationProvider{
+		Config: map[string]string{
+			"vendor":           "ad",
+			"connectionUrl":    "ldap://127.0.0.1",
+			"bindDn":           "foo",
+			"bindCredential":   "p@ssword",
+			"useTruststoreSpi": "ldapsOnly",
+			"editMode":         "READ_ONLY",
+		},
+		DisplayName:  "ldap-provider",
+		ProviderName: "ldap",
+	}
+
+	keycloakRealmCR.Spec.Realm.UserFederationMappers = []keycloakv1alpha1.KeycloakAPIUserFederationMapper{userFederationMapper}
+	keycloakRealmCR.Spec.Realm.UserFederationProviders = []keycloakv1alpha1.KeycloakAPIUserFederationProvider{userFederationProvider}
 	keycloakRealmCR.Spec.Realm.IdentityProviders = []*keycloakv1alpha1.KeycloakIdentityProvider{identityProvider}
 
 	err := Create(framework, keycloakRealmCR, ctx)
