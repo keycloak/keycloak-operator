@@ -30,6 +30,9 @@ func NewKeycloakRealmsCRDTestStruct() *CRDTestStruct {
 			"keycloakRealmWithIdentityProviderTest": {
 				testFunction: keycloakRealmWithIdentityProviderTest,
 			},
+			"keycloakRealmWithClientScopesTest": {
+				testFunction: keycloakRealmWithClientScopesTest,
+			},
 			"keycloakRealmWithAuthenticatorFlowTest": {
 				testFunction: keycloakRealmWithAuthenticatorFlowTest,
 			},
@@ -95,6 +98,130 @@ func keycloakRealmWithIdentityProviderTest(t *testing.T, framework *test.Framewo
 	}
 
 	keycloakRealmCR.Spec.Realm.IdentityProviders = []*keycloakv1alpha1.KeycloakIdentityProvider{identityProvider}
+
+	err := Create(framework, keycloakRealmCR, ctx)
+	if err != nil {
+		return err
+	}
+
+	err = WaitForRealmToBeReady(t, framework, namespace)
+	if err != nil {
+		return err
+	}
+
+	keycloakCR := getDeployedKeycloakCR(framework, namespace)
+	keycloakInternalURL := keycloakCR.Status.InternalURL
+
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint
+	return WaitForSuccessResponseToContain(t, framework, keycloakInternalURL+"/auth/realms/"+realmName+"/account", testOperatorIDPDisplayName)
+}
+
+func keycloakRealmWithClientScopesTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	keycloakRealmCR := getKeycloakRealmCR(namespace)
+
+	identityProvider := &keycloakv1alpha1.KeycloakIdentityProvider{
+		Alias:                     "oidc",
+		DisplayName:               testOperatorIDPDisplayName,
+		InternalID:                "",
+		ProviderID:                "oidc",
+		Enabled:                   true,
+		TrustEmail:                false,
+		StoreToken:                false,
+		AddReadTokenRoleOnCreate:  false,
+		FirstBrokerLoginFlowAlias: "first broker login",
+		PostBrokerLoginFlowAlias:  "",
+		LinkOnly:                  false,
+		Config: map[string]string{
+			"useJwksUrl":       "true",
+			"loginHint":        "",
+			"authorizationUrl": "https://operator.test.url/authorization_url",
+			"tokenUrl":         "https://operator.test.url/token_url",
+			"clientAuthMethod": "client_secret_jwt",
+			"clientId":         "operator-idp",
+			"clientSecret":     "test",
+			"allowedClockSkew": "5",
+		},
+	}
+
+	keycloakRealmCR.Spec.Realm.IdentityProviders = []*keycloakv1alpha1.KeycloakIdentityProvider{identityProvider}
+	keycloakRealmCR.Spec.Realm.ClientScopes = []keycloakv1alpha1.KeycloakClientScope{
+		{
+			Name:        "profile",
+			Description: "subset of the built in profile scope, for e2e testing",
+			Protocol:    "openid-connect",
+			Attributes: map[string]string{
+				"include.in.token.scope":    "true",
+				"display.on.consent.screen": "false",
+			},
+			ProtocolMappers: []keycloakv1alpha1.KeycloakProtocolMapper{
+				{
+					Name:           "family name",
+					Protocol:       "openid-connect",
+					ProtocolMapper: "oidc-usermodel-property-mapper",
+					Config: map[string]string{
+						"access.token.claim":   "true",
+						"claim.name":           "family_name",
+						"id.token.claim":       "true",
+						"jsonType.label":       "String",
+						"user.attribute":       "lastName",
+						"userinfo.token.claim": "true",
+					},
+					ConsentRequired: false,
+				},
+				{
+					Name:           "given name",
+					Protocol:       "openid-connect",
+					ProtocolMapper: "oidc-usermodel-property-mapper",
+					Config: map[string]string{
+						"access.token.claim":   "true",
+						"claim.name":           "given_name",
+						"id.token.claim":       "true",
+						"jsonType.label":       "String",
+						"user.attribute":       "firstName",
+						"userinfo.token.claim": "true",
+					},
+					ConsentRequired: false,
+				},
+				{
+					Name:           "username",
+					Protocol:       "openid-connect",
+					ProtocolMapper: "oidc-usermodel-property-mapper",
+					Config: map[string]string{
+						"access.token.claim":   "true",
+						"claim.name":           "preferred_username",
+						"id.token.claim":       "true",
+						"jsonType.label":       "String",
+						"user.attribute":       "username",
+						"userinfo.token.claim": "true",
+					},
+					ConsentRequired: false,
+				},
+			},
+		},
+		{
+			Name:     "groups",
+			Protocol: "openid-connect",
+			Attributes: map[string]string{
+				"include.in.token.scope":    "true",
+				"display.on.consent.screen": "false",
+			},
+			ProtocolMappers: []keycloakv1alpha1.KeycloakProtocolMapper{
+				{
+					Name:            "groups",
+					Protocol:        "openid-connect",
+					ProtocolMapper:  "oidc-group-membership-mapper",
+					ConsentRequired: false,
+					Config: map[string]string{
+						"full.path":            "false",
+						"id.token.claim":       "true",
+						"access.token.claim":   "true",
+						"claim.name":           "groups",
+						"userinfo.token.claim": "true",
+					},
+				},
+			},
+		},
+	}
 
 	err := Create(framework, keycloakRealmCR, ctx)
 	if err != nil {

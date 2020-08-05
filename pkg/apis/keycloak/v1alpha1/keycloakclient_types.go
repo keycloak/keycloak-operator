@@ -112,6 +112,17 @@ type KeycloakAPIClient struct {
 	// Access options.
 	// +optional
 	Access map[string]bool `json:"access,omitempty"`
+	// A list of optional client scopes. Optional client scopes are
+	// applied when issuing tokens for this client, but only when they
+	// are requested by the scope parameter in the OpenID Connect
+	// authorization request.
+	// +optional
+	OptionalClientScopes []string `json:"optionalClientScopes,omitempty"`
+	// A list of default client scopes. Default client scopes are
+	// always applied when issuing OpenID Connect tokens or SAML
+	// assertions for this client.
+	// +optional
+	DefaultClientScopes []string `json:"defaultClientScopes,omitempty"`
 }
 
 type KeycloakProtocolMapper struct {

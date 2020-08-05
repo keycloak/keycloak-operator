@@ -62,6 +62,8 @@ func getKeycloakClientCR(namespace string) *keycloakv1alpha1.KeycloakClient {
 				Protocol:                  "openid-connect",
 				FullScopeAllowed:          true,
 				NodeReRegistrationTimeout: -1,
+				DefaultClientScopes:       []string{"profile"},
+				OptionalClientScopes:      []string{"microprofile-jwt"},
 			},
 		},
 	}

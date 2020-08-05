@@ -62,6 +62,13 @@ spec:
                 consentRequired:
                   description: True if Consent Screen is required.
                   type: boolean
+                defaultClientScopes:
+                  description: A list of default client scopes. Default client scopes
+                    are always applied when issuing OpenID Connect tokens or SAML
+                    assertions for this client.
+                  items:
+                    type: string
+                  type: array
                 defaultRoles:
                   description: Default Client roles.
                   items:
@@ -97,6 +104,14 @@ spec:
                 notBefore:
                   description: Not Before setting.
                   type: integer
+                optionalClientScopes:
+                  description: A list of optional client scopes. Optional client scopes
+                    are applied when issuing tokens for this client, but only when
+                    they are requested by the scope parameter in the OpenID Connect
+                    authorization request.
+                  items:
+                    type: string
+                  type: array
                 protocol:
                   description: Protocol used for this Client.
                   type: string
