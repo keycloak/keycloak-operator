@@ -55,6 +55,10 @@ type KeycloakAPIRealm struct {
 	// +optional
 	AdminEventsDetailsEnabled *bool `json:"adminEventsDetailsEnabled,omitempty"`
 
+	// Client scopes
+	// +optional
+	ClientScopes []KeycloakClientScope `json:"clientScopes,omitempty"`
+
 	// Authentication flows
 	// +optional
 	AuthenticationFlows []KeycloakAPIAuthenticationFlow `json:"authenticationFlows,omitempty"`
@@ -200,6 +204,22 @@ type RedirectorIdentityProviderOverride struct {
 	// Flow to be overridden.
 	// +optional
 	ForFlow string `json:"forFlow,omitempty"`
+}
+
+type KeycloakClientScope struct {
+	// +optional
+	Attributes map[string]string `json:"attributes,omitempty"`
+	// +optional
+	Description string `json:"description,omitempty"`
+	// +optional
+	ID string `json:"id,omitempty"`
+	// +optional
+	Name string `json:"name,omitempty"`
+	// +optional
+	Protocol string `json:"protocol,omitempty"`
+	// Protocol Mappers.
+	// +optional
+	ProtocolMappers []KeycloakProtocolMapper `json:"protocolMappers,omitempty"`
 }
 
 type KeycloakIdentityProvider struct {
