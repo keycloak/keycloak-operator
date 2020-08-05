@@ -1,4 +1,5 @@
-embed-server --server-config=standalone.xml --std-out=echo
+embed-server --server-config=standalone.xml --std-out=echo --timeout=30
 run-batch --file=/opt/jboss/tools/cli/loglevel.cli
 run-batch --file=/opt/jboss/tools/cli/databases/postgres/change-database.cli
 stop-embedded-server
+quit
