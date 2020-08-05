@@ -8,6 +8,6 @@ RUN microdnf update -y && \
 
 COPY jboss-cli-logging.properties /opt/jboss/keycloak/bin/jboss-cli-logging.properties
 COPY change-database.sh /opt/jboss/tools/databases/change-database.sh
-COPY standalone-configuration.cli /opt/jboss/tools/cli/standalone-configuration.cli
+COPY standalone-configuration.cli /opt/jboss/tools/cli/databases/postgres/standalone-configuration.cli
 
 USER 1000
