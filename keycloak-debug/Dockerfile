@@ -6,5 +6,6 @@ RUN microdnf update -y && \
     microdnf install -y net-tools procps findutils vim java-11-openjdk-devel.x86_64 && microdnf clean all
 
 COPY jboss-cli-logging.properties /opt/jboss/keycloak/bin/jboss-cli-logging.properties
+COPY change-database.sh /opt/jboss/tools/databases/change-database.sh
 
 USER 1000
