@@ -132,7 +132,7 @@ func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm s
 
 	obj.Spec.Client.ID = uid
 
-	return err
+	return i.client.Update(i.context, obj)
 }
 
 func (i *ClusterActionRunner) UpdateClient(obj *v1alpha1.KeycloakClient, realm string) error {

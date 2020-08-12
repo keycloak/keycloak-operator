@@ -20,8 +20,8 @@ const (
 	//10s (curl) + 10s (curl) + 2s (just in case)
 	ProbeTimeoutSeconds		int32 = 22
 	ProbeTimeBetweenRunsSeconds	int32 = 30
-	SuccessThresholdCount	int32 = 1
-	FailureThresholdCount	int32 = 3
+	ProbeSuccessThreshold	int32 = 1
+	ProbeFailureThreshold	int32 = 10
 )
 
 func GetServiceEnvVar(suffix string) string {
@@ -360,12 +360,12 @@ func livenessProbe(cr *v1alpha1.Keycloak) *v1.Probe {
 		timeout = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.TimeoutSeconds
 	}
 
-	successThreshold := SuccessThresholdCount
+	successThreshold := ProbeSuccessThreshold
 	if (cr.Spec.KeycloakDeploymentSpec.LivenessProbe.SuccessThreshold != 0) {
 		successThreshold = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.SuccessThreshold
 	}
 
-	failureThreshold := FailureThresholdCount
+	failureThreshold := ProbeFailureThreshold
 	if (cr.Spec.KeycloakDeploymentSpec.LivenessProbe.FailureThreshold != 0) {
 		failureThreshold = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.FailureThreshold
 	}
@@ -412,12 +412,12 @@ func readinessProbe(cr *v1alpha1.Keycloak) *v1.Probe {
 		timeout = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.TimeoutSeconds
 	}
 
-	successThreshold := SuccessThresholdCount
+	successThreshold := ProbeSuccessThreshold
 	if (cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.SuccessThreshold != 0) {
 		successThreshold = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.SuccessThreshold
 	}
 
-	failureThreshold := FailureThresholdCount
+	failureThreshold := ProbeFailureThreshold
 	if (cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.FailureThreshold != 0) {
 		failureThreshold = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.FailureThreshold
 	}

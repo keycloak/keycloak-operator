@@ -14,7 +14,7 @@ spec:
     status: {}
   validation:
     openAPIV3Schema:
-      description: KeycloakClient is the Schema for the keycloakclients API
+      description: KeycloakClient is the Schema for the keycloakclients API.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -29,7 +29,7 @@ spec:
         metadata:
           type: object
         spec:
-          description: KeycloakClientSpec defines the desired state of KeycloakClient
+          description: KeycloakClientSpec defines the desired state of KeycloakClient.
           properties:
             client:
               description: Keycloak Client REST object.
