@@ -121,11 +121,6 @@ func add(mgr manager.Manager, r reconcile.Reconciler, autodetectChannel chan sch
 				common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &monitoringv1.ServiceMonitor{}, &kc.Keycloak{}) // nolint
 			}
 
-			// Check if this channel event was for the PodMonitor resource type
-			if gvk.String() == monitoringv1.SchemeGroupVersion.WithKind(monitoringv1.PodMonitorsKind).String() {
-				common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &monitoringv1.PodMonitor{}, &kc.Keycloak{}) // nolint
-			}
-
 			// Check if this channel event was for the GrafanaDashboard resource type
 			if gvk.String() == grafanav1alpha1.SchemeGroupVersion.WithKind(grafanav1alpha1.GrafanaDashboardKind).String() {
 				common.WatchSecondaryResource(c, ControllerName, gvk.Kind, &grafanav1alpha1.GrafanaDashboard{}, &kc.Keycloak{}) // nolint
