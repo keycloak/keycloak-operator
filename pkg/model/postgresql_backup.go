@@ -174,5 +174,6 @@ func PostgresqlBackupReconciled(cr *v1alpha1.KeycloakBackup, currentState *v13.J
 	}
 	reconciled.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyNever
 	reconciled.Spec.Template.Spec.ServiceAccountName = PostgresqlBackupServiceAccountName
+	LogDiff(currentState, reconciled)
 	return reconciled
 }

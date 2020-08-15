@@ -57,5 +57,6 @@ func PostgresqlAWSPeriodicBackupReconciled(cr *v1alpha1.KeycloakBackup, currentS
 	reconciled.Spec.JobTemplate.Spec.Template.Spec.Containers = postgresqlAwsBackupCommonContainers(cr)
 	reconciled.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyNever
 	reconciled.Spec.JobTemplate.Spec.Template.Spec.ServiceAccountName = PostgresqlBackupServiceAccountName
+	LogDiff(currentState, reconciled)
 	return reconciled
 }

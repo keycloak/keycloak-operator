@@ -7,7 +7,7 @@ require (
 	github.com/go-openapi/spec v0.19.6
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/golangci/golangci-lint v1.27.0 // indirect
-	github.com/google/go-cmp v0.4.1 // indirect
+	github.com/google/go-cmp v0.4.1
 	github.com/integr8ly/grafana-operator/v3 v3.0.2-0.20200103111057-03d7fa884db4
 	github.com/json-iterator/go v1.1.9
 	github.com/kr/text v0.2.0 // indirect

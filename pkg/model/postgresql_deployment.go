@@ -12,158 +12,44 @@ import (
 
 func getPostgresResources(cr *v1alpha1.Keycloak) v1.ResourceRequirements {
 	requirements := v1.ResourceRequirements{}
-	requirements.Limits = v1.ResourceList{}
-	requirements.Requests = v1.ResourceList{}
+	requirements.Limits = nil
+	requirements.Requests = nil
 
 	cpu, err := resource.ParseQuantity(cr.Spec.PostgresDeploymentSpec.Resources.Requests.Cpu().String())
 	if err == nil && cpu.String() != "0" {
+		if requirements.Requests == nil {
+			requirements.Requests = v1.ResourceList{}
+		}
 		requirements.Requests[v1.ResourceCPU] = cpu
 	}
 	memory, err := resource.ParseQuantity(cr.Spec.PostgresDeploymentSpec.Resources.Requests.Memory().String())
 	if err == nil && memory.String() != "0" {
+		if requirements.Requests == nil {
+			requirements.Requests = v1.ResourceList{}
+		}
 		requirements.Requests[v1.ResourceMemory] = memory
 	}
 
 	cpu, err = resource.ParseQuantity(cr.Spec.PostgresDeploymentSpec.Resources.Limits.Cpu().String())
 	if err == nil && cpu.String() != "0" {
+		if requirements.Limits == nil {
+			requirements.Limits = v1.ResourceList{}
+		}
 		requirements.Limits[v1.ResourceCPU] = cpu
 	}
 	memory, err = resource.ParseQuantity(cr.Spec.PostgresDeploymentSpec.Resources.Limits.Memory().String())
 	if err == nil && memory.String() != "0" {
+		if requirements.Limits == nil {
+			requirements.Limits = v1.ResourceList{}
+		}
 		requirements.Limits[v1.ResourceMemory] = memory
 	}
+
 	return requirements
 }
 
-func PostgresqlDeployment(cr *v1alpha1.Keycloak) *v13.Deployment {
-	return &v13.Deployment{
-		ObjectMeta: v12.ObjectMeta{
-			Name:      PostgresqlDeploymentName,
-			Namespace: cr.Namespace,
-			Labels: map[string]string{
-				"app":       ApplicationName,
-				"component": PostgresqlDeploymentComponent,
-			},
-		},
-		Spec: v13.DeploymentSpec{
-			Selector: &v12.LabelSelector{
-				MatchLabels: map[string]string{
-					"app":       ApplicationName,
-					"component": PostgresqlDeploymentComponent,
-				},
-			},
-			Template: v1.PodTemplateSpec{
-				ObjectMeta: v12.ObjectMeta{
-					Name:      PostgresqlDeploymentName,
-					Namespace: cr.Namespace,
-					Labels: map[string]string{
-						"app":       ApplicationName,
-						"component": PostgresqlDeploymentComponent,
-					},
-				},
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{
-						{
-							Name:  PostgresqlDeploymentName,
-							Image: Images.Images[PostgresqlImage],
-							Ports: []v1.ContainerPort{
-								{
-									ContainerPort: 5432,
-									Protocol:      "TCP",
-								},
-							},
-							ReadinessProbe: &v1.Probe{
-								TimeoutSeconds:      1,
-								InitialDelaySeconds: 5,
-								Handler: v1.Handler{
-									Exec: &v1.ExecAction{
-										Command: []string{
-											"/bin/sh",
-											"-c",
-											"psql -h 127.0.0.1 -U $POSTGRESQL_USER -q -d $POSTGRESQL_DATABASE -c 'SELECT 1'",
-										},
-									},
-								},
-							},
-							LivenessProbe: &v1.Probe{
-								InitialDelaySeconds: 30,
-								TimeoutSeconds:      1,
-								Handler: v1.Handler{
-									TCPSocket: &v1.TCPSocketAction{
-										Port: intstr.FromInt(5432),
-									},
-								},
-							},
-							Env: []v1.EnvVar{
-								{
-									Name: "POSTGRESQL_USER",
-									ValueFrom: &v1.EnvVarSource{
-										SecretKeyRef: &v1.SecretKeySelector{
-											LocalObjectReference: v1.LocalObjectReference{
-												Name: DatabaseSecretName,
-											},
-											Key: DatabaseSecretUsernameProperty,
-										},
-									},
-								},
-								{
-									Name: "POSTGRESQL_PASSWORD",
-									ValueFrom: &v1.EnvVarSource{
-										SecretKeyRef: &v1.SecretKeySelector{
-											LocalObjectReference: v1.LocalObjectReference{
-												Name: DatabaseSecretName,
-											},
-											Key: DatabaseSecretPasswordProperty,
-										},
-									},
-								},
-								{
-									Name:  "POSTGRESQL_DATABASE",
-									Value: PostgresqlDatabase,
-								},
-							},
-							VolumeMounts: []v1.VolumeMount{
-								{
-									Name:      PostgresqlPersistentVolumeName,
-									MountPath: PostgresqlPersistentVolumeMountPath,
-								},
-							},
-							Resources: getPostgresResources(cr),
-						},
-					},
-					Volumes: []v1.Volume{
-						{
-							Name: PostgresqlPersistentVolumeName,
-							VolumeSource: v1.VolumeSource{
-								PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
-									ClaimName: PostgresqlPersistentVolumeName,
-								},
-							},
-						},
-					},
-				},
-			},
-			Strategy: v13.DeploymentStrategy{
-				Type: v13.RecreateDeploymentStrategyType,
-			},
-		},
-	}
-}
-
-func PostgresqlDeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
-	return client.ObjectKey{
-		Name:      PostgresqlDeploymentName,
-		Namespace: cr.Namespace,
-	}
-}
-
-func PostgresqlDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Deployment) *v13.Deployment {
-	reconciled := currentState.DeepCopy()
-	reconciled.ResourceVersion = currentState.ResourceVersion
-	reconciled.Spec.Strategy = v13.DeploymentStrategy{
-		Type: v13.RecreateDeploymentStrategyType,
-	}
-	reconciled.Spec.Template.Spec.Containers = []v1.Container{
+func getContainers(cr *v1alpha1.Keycloak) []v1.Container {
+	return []v1.Container{
 		{
 			Name:  PostgresqlDeploymentName,
 			Image: Images.Images[PostgresqlImage],
@@ -176,6 +62,9 @@ func PostgresqlDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Dep
 			ReadinessProbe: &v1.Probe{
 				TimeoutSeconds:      1,
 				InitialDelaySeconds: 5,
+				PeriodSeconds:       10,
+				SuccessThreshold:    1,
+				FailureThreshold:    3,
 				Handler: v1.Handler{
 					Exec: &v1.ExecAction{
 						Command: []string{
@@ -189,6 +78,9 @@ func PostgresqlDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Dep
 			LivenessProbe: &v1.Probe{
 				InitialDelaySeconds: 30,
 				TimeoutSeconds:      1,
+				PeriodSeconds:       10,
+				SuccessThreshold:    1,
+				FailureThreshold:    3,
 				Handler: v1.Handler{
 					TCPSocket: &v1.TCPSocketAction{
 						Port: intstr.FromInt(5432),
@@ -229,9 +121,75 @@ func PostgresqlDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Dep
 					MountPath: PostgresqlPersistentVolumeMountPath,
 				},
 			},
-			Resources: getPostgresResources(cr),
+			Resources:                getPostgresResources(cr),
+			TerminationMessagePath:   "/dev/termination-log",
+			TerminationMessagePolicy: "File",
+			ImagePullPolicy:          "IfNotPresent",
 		},
 	}
+}
+
+func PostgresqlDeployment(cr *v1alpha1.Keycloak) *v13.Deployment {
+	return &v13.Deployment{
+		ObjectMeta: v12.ObjectMeta{
+			Name:      PostgresqlDeploymentName,
+			Namespace: cr.Namespace,
+			Labels: map[string]string{
+				"app":       ApplicationName,
+				"component": PostgresqlDeploymentComponent,
+			},
+		},
+		Spec: v13.DeploymentSpec{
+			Selector: &v12.LabelSelector{
+				MatchLabels: map[string]string{
+					"app":       ApplicationName,
+					"component": PostgresqlDeploymentComponent,
+				},
+			},
+			Template: v1.PodTemplateSpec{
+				ObjectMeta: v12.ObjectMeta{
+					Name:      PostgresqlDeploymentName,
+					Namespace: cr.Namespace,
+					Labels: map[string]string{
+						"app":       ApplicationName,
+						"component": PostgresqlDeploymentComponent,
+					},
+				},
+				Spec: v1.PodSpec{
+					Containers: getContainers(cr),
+					Volumes: []v1.Volume{
+						{
+							Name: PostgresqlPersistentVolumeName,
+							VolumeSource: v1.VolumeSource{
+								PersistentVolumeClaim: &v1.PersistentVolumeClaimVolumeSource{
+									ClaimName: PostgresqlPersistentVolumeName,
+								},
+							},
+						},
+					},
+				},
+			},
+			Strategy: v13.DeploymentStrategy{
+				Type: v13.RecreateDeploymentStrategyType,
+			},
+		},
+	}
+}
+
+func PostgresqlDeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
+	return client.ObjectKey{
+		Name:      PostgresqlDeploymentName,
+		Namespace: cr.Namespace,
+	}
+}
+
+func PostgresqlDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Deployment) *v13.Deployment {
+	reconciled := currentState.DeepCopy()
+	reconciled.ResourceVersion = currentState.ResourceVersion
+	reconciled.Spec.Strategy = v13.DeploymentStrategy{
+		Type: v13.RecreateDeploymentStrategyType,
+	}
+	reconciled.Spec.Template.Spec.Containers = getContainers(cr)
 	reconciled.Spec.Template.Spec.Volumes = []v1.Volume{
 		{
 			Name: PostgresqlPersistentVolumeName,
@@ -242,5 +200,6 @@ func PostgresqlDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Dep
 			},
 		},
 	}
+	LogDiff(currentState, reconciled)
 	return reconciled
 }

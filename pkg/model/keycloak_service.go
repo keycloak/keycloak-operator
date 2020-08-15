@@ -9,11 +9,11 @@ import (
 )
 
 func GetServicePortName() string {
-  if (KeycloakServicePort == 80 || KeycloakServicePort == 8080) {
-    return "http"
-  } else {
-    return "https"
-  }
+	if KeycloakServicePort == 80 || KeycloakServicePort == 8080 {
+		return "http"
+	} else {
+		return "https"
+	}
 }
 
 func GetServicePorts() []v1.ServicePort {
@@ -68,5 +68,6 @@ func KeycloakServiceSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 func KeycloakServiceReconciled(cr *v1alpha1.Keycloak, currentState *v1.Service) *v1.Service {
 	reconciled := currentState.DeepCopy()
 	reconciled.Spec.Ports = GetServicePorts()
+	LogDiff(currentState, reconciled)
 	return reconciled
 }

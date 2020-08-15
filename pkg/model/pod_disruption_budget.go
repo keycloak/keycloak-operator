@@ -32,6 +32,7 @@ func PodDisruptionBudgetReconciled(cr *v1alpha1.Keycloak, currentState *v1beta1.
 	reconciled.Spec.Selector = &v1.LabelSelector{
 		MatchLabels: map[string]string{"component": KeycloakDeploymentComponent},
 	}
+	LogDiff(currentState, reconciled)
 	return reconciled
 }
 

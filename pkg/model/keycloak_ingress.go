@@ -66,7 +66,7 @@ func KeycloakIngressReconciled(cr *kc.Keycloak, currentState *v1beta1.Ingress) *
 			},
 		},
 	}
-
+	LogDiff(currentState, reconciled)
 	return reconciled
 }
 

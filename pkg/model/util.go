@@ -5,11 +5,14 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net"
+	"runtime"
 	"strconv"
 	"strings"
 	"unicode"
 
+	"github.com/google/go-cmp/cmp"
 	v1 "k8s.io/api/core/v1"
+	logr "log"
 )
 
 // Copy pasted from https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/
@@ -126,4 +129,24 @@ func GetExternalDatabasePort(secret *v1.Secret) int32 {
 		return PostgresDefaultPort
 	}
 	return int32(parsed)
+}
+
+func GetCallerFunction(depth int) string {
+	pc := make([]uintptr, 15)
+	n := runtime.Callers(depth, pc)
+	frames := runtime.CallersFrames(pc[:n])
+	frame, _ := frames.Next()
+	return frame.Function
+}
+
+func LogDiff(was, now interface{}) {
+	if diff := cmp.Diff(was, now); diff != "" {
+		logr.Printf("%s made changes (-was, +now):\n%s\n", GetCallerFunction(3), diff)
+	}
+}
+
+func LogHasDiff(was, now interface{}) {
+	if !cmp.Equal(was, now) {
+		logr.Printf("%s has changes", GetCallerFunction(3))
+	}
 }

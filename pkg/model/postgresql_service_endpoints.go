@@ -70,5 +70,6 @@ func PostgresqlServiceEndpointsReconciled(cr *v1alpha1.Keycloak, currentState *v
 		}}
 	}
 
+	LogDiff(currentState, reconciled)
 	return reconciled
 }

@@ -46,5 +46,6 @@ func PostgresqlBackupPersistentVolumeClaimReconciled(cr *v1alpha1.KeycloakBackup
 	if cr.Spec.StorageClassName != nil {
 		reconciled.Spec.StorageClassName = cr.Spec.StorageClassName
 	}
+	LogDiff(currentState, reconciled)
 	return reconciled
 }

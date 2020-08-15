@@ -158,11 +158,11 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSe
 									Protocol:      "TCP",
 								},
 							},
-							LivenessProbe:  livenessProbe(cr),
-							ReadinessProbe: readinessProbe(cr),
-							Env:            getRHSSOEnv(cr, dbSecret),
-							VolumeMounts:   KeycloakVolumeMounts(RhssoExtensionPath),
-							Resources:      getResources(cr),
+							LivenessProbe:   livenessProbe(cr),
+							ReadinessProbe:  readinessProbe(cr),
+							Env:             getRHSSOEnv(cr, dbSecret),
+							VolumeMounts:    KeycloakVolumeMounts(RhssoExtensionPath),
+							Resources:       getResources(cr),
 							ImagePullPolicy: "Always",
 						},
 					},
@@ -206,15 +206,15 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 					Protocol:      "TCP",
 				},
 			},
-			VolumeMounts:   KeycloakVolumeMounts(RhssoExtensionPath),
-			LivenessProbe:  livenessProbe(cr),
-			ReadinessProbe: readinessProbe(cr),
-			Env:            getRHSSOEnv(cr, dbSecret),
-			Resources:      getResources(cr),
+			VolumeMounts:    KeycloakVolumeMounts(RhssoExtensionPath),
+			LivenessProbe:   livenessProbe(cr),
+			ReadinessProbe:  readinessProbe(cr),
+			Env:             getRHSSOEnv(cr, dbSecret),
+			Resources:       getResources(cr),
 			ImagePullPolicy: "Always",
 		},
 	}
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
-
+	LogDiff(currentState, reconciled)
 	return reconciled
 }

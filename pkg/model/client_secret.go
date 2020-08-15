@@ -38,5 +38,6 @@ func ClientSecretReconciled(cr *v1alpha1.KeycloakClient, currentState *v1.Secret
 		ClientSecretClientSecretProperty: cr.Spec.Client.Secret,
 	}
 	reconciled.Data = map[string][]byte{}
+	LogHasDiff(currentState, reconciled)
 	return reconciled
 }

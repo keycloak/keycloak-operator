@@ -74,7 +74,7 @@ type DeploymentSpec struct {
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 	// Probes (Liveness and Readiness) for the Pods
 	// +optional
-	LivenessProbe corev1.Probe `json:"livenessProbe,omitempty"`
+	LivenessProbe  corev1.Probe `json:"livenessProbe,omitempty"`
 	ReadinessProbe corev1.Probe `json:"readinessProbe,omitempty"`
 	// Container Environment variables
 	// +optional

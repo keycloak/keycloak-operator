@@ -49,7 +49,7 @@ func KeycloakRouteReconciled(cr *kc.Keycloak, currentState *v1.Route) *v1.Route 
 			Name: ApplicationName,
 		},
 	}
-
+	LogDiff(currentState, reconciled)
 	return reconciled
 }
 

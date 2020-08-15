@@ -2,8 +2,9 @@ package model
 
 import (
 	"fmt"
-	"strings"
 	"os"
+	"sort"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -15,13 +16,13 @@ import (
 )
 
 const (
-	LivenessProbeInitialDelay	int32 = 30
-	ReadinessProbeInitialDelay	int32 = 40
+	LivenessProbeInitialDelay  int32 = 30
+	ReadinessProbeInitialDelay int32 = 40
 	//10s (curl) + 10s (curl) + 2s (just in case)
-	ProbeTimeoutSeconds		int32 = 22
-	ProbeTimeBetweenRunsSeconds	int32 = 30
-	ProbeSuccessThreshold	int32 = 1
-	ProbeFailureThreshold	int32 = 10
+	ProbeTimeoutSeconds         int32 = 22
+	ProbeTimeBetweenRunsSeconds int32 = 30
+	ProbeSuccessThreshold       int32 = 1
+	ProbeFailureThreshold       int32 = 10
 )
 
 func GetServiceEnvVar(suffix string) string {
@@ -31,19 +32,19 @@ func GetServiceEnvVar(suffix string) string {
 }
 
 func GetContainerPorts() []v1.ContainerPort {
-	return []v1.ContainerPort {
+	return []v1.ContainerPort{
 		{
-			Name: "http",
+			Name:          "http",
 			ContainerPort: KeycloakServicePort,
 			Protocol:      "TCP",
 		},
 		{
-			Name: "http-management",
+			Name:          "http-management",
 			ContainerPort: KeycloakManagementPort,
 			Protocol:      "TCP",
 		},
 		{
-			Name: "http-monitoring",
+			Name:          "http-monitoring",
 			ContainerPort: 8778,
 			Protocol:      "TCP",
 		},
@@ -52,25 +53,37 @@ func GetContainerPorts() []v1.ContainerPort {
 
 func getResources(cr *v1alpha1.Keycloak) v1.ResourceRequirements {
 	requirements := v1.ResourceRequirements{}
-	requirements.Limits = v1.ResourceList{}
-	requirements.Requests = v1.ResourceList{}
+	requirements.Limits = nil
+	requirements.Requests = nil
 
 	cpu, err := resource.ParseQuantity(cr.Spec.KeycloakDeploymentSpec.Resources.Requests.Cpu().String())
 	if err == nil && cpu.String() != "0" {
+		if requirements.Requests == nil {
+			requirements.Requests = v1.ResourceList{}
+		}
 		requirements.Requests[v1.ResourceCPU] = cpu
 	}
 
 	memory, err := resource.ParseQuantity(cr.Spec.KeycloakDeploymentSpec.Resources.Requests.Memory().String())
 	if err == nil && memory.String() != "0" {
+		if requirements.Requests == nil {
+			requirements.Requests = v1.ResourceList{}
+		}
 		requirements.Requests[v1.ResourceMemory] = memory
 	}
 
 	cpu, err = resource.ParseQuantity(cr.Spec.KeycloakDeploymentSpec.Resources.Limits.Cpu().String())
 	if err == nil && cpu.String() != "0" {
+		if requirements.Limits == nil {
+			requirements.Limits = v1.ResourceList{}
+		}
 		requirements.Limits[v1.ResourceCPU] = cpu
 	}
 	memory, err = resource.ParseQuantity(cr.Spec.KeycloakDeploymentSpec.Resources.Limits.Memory().String())
 	if err == nil && memory.String() != "0" {
+		if requirements.Limits == nil {
+			requirements.Limits = v1.ResourceList{}
+		}
 		requirements.Limits[v1.ResourceMemory] = memory
 	}
 
@@ -183,10 +196,18 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 		})
 	}
 
-	for envKey, envValue := range cr.Spec.KeycloakDeploymentSpec.EnvVars {
+	// Go does not guarantee order when iterating over a map
+	// so sort the values so that we do not reorder environment variables
+	// and trigger a new PodSpec definition
+	keys := make([]string, 0)
+	for k, _ := range cr.Spec.KeycloakDeploymentSpec.EnvVars {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	for _, k := range keys {
 		env = append(env, v1.EnvVar{
-			Name:  envKey,
-			Value: envValue,
+			Name:  k,
+			Value: cr.Spec.KeycloakDeploymentSpec.EnvVars[k],
 		})
 	}
 
@@ -204,11 +225,30 @@ func getCommand() []string {
 func getSecrets(cr *v1alpha1.Keycloak) []v1.LocalObjectReference {
 	secret := os.Getenv("RELATED_IMAGE_PULL_SECRET")
 	if secret == "" {
-		return []v1.LocalObjectReference{}
+		return []v1.LocalObjectReference(nil)
 	}
 	return []v1.LocalObjectReference{
 		{
 			Name: secret,
+		},
+	}
+}
+
+func getContainerSpec(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.Container {
+	return []v1.Container{
+		{
+			Name:           KeycloakDeploymentName,
+			Image:          Images.Images[KeycloakImage],
+			Ports:          GetContainerPorts(),
+			VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
+			LivenessProbe:  livenessProbe(cr),
+			ReadinessProbe: readinessProbe(cr),
+			Env:            getKeycloakEnv(cr, dbSecret),
+			Resources:      getResources(cr),
+			//Command:		getCommand(),
+			TerminationMessagePath:   "/dev/termination-log",
+			TerminationMessagePolicy: "File",
+			ImagePullPolicy:          "IfNotPresent",
 		},
 	}
 }
@@ -242,21 +282,9 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 					Annotations: cr.Spec.KeycloakDeploymentSpec.PodAnnotations,
 				},
 				Spec: v1.PodSpec{
-					InitContainers: KeycloakExtensionsInitContainers(cr),
-					Volumes:        KeycloakVolumes(),
-					Containers: []v1.Container{
-						{
-							Name:  KeycloakDeploymentName,
-							Image: Images.Images[KeycloakImage],
-							Ports: GetContainerPorts(),
-							VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
-							LivenessProbe:  livenessProbe(cr),
-							ReadinessProbe: readinessProbe(cr),
-							Env:            getKeycloakEnv(cr, dbSecret),
-							Resources:      getResources(cr),
-							//Command:		getCommand(),
-						},
-					},
+					InitContainers:   KeycloakExtensionsInitContainers(cr),
+					Volumes:          KeycloakVolumes(),
+					Containers:       getContainerSpec(cr, dbSecret),
 					ImagePullSecrets: getSecrets(cr),
 				},
 			},
@@ -276,22 +304,11 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
 	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes()
-	reconciled.Spec.Template.Spec.Containers = []v1.Container{
-		{
-			Name:  KeycloakDeploymentName,
-			Image: Images.Images[KeycloakImage],
-			Ports: GetContainerPorts(),
-			VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
-			LivenessProbe:  livenessProbe(cr),
-			ReadinessProbe: readinessProbe(cr),
-			Env:            getKeycloakEnv(cr, dbSecret),
-			Resources:      getResources(cr),
-			//Command:		getCommand(),
-		},
-	}
+	reconciled.Spec.Template.Spec.Containers = getContainerSpec(cr, dbSecret)
 	reconciled.Spec.Template.Spec.ImagePullSecrets = getSecrets(cr)
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
 	reconciled.Spec.Template.ObjectMeta.Annotations = cr.Spec.KeycloakDeploymentSpec.PodAnnotations
+	LogDiff(currentState, reconciled)
 	return reconciled
 }
 
@@ -319,8 +336,9 @@ func KeycloakVolumes() []v1.Volume {
 			Name: ServingCertSecretName,
 			VolumeSource: v1.VolumeSource{
 				Secret: &v1.SecretVolumeSource{
-					SecretName: ServingCertSecretName,
-					Optional:   &[]bool{true}[0],
+					SecretName:  ServingCertSecretName,
+					Optional:    &[]bool{true}[0],
+					DefaultMode: &[]int32{0420}[0],
 				},
 			},
 		},
@@ -346,27 +364,27 @@ func KeycloakVolumes() []v1.Volume {
 
 func livenessProbe(cr *v1alpha1.Keycloak) *v1.Probe {
 	initialDelay := LivenessProbeInitialDelay
-	if (cr.Spec.KeycloakDeploymentSpec.LivenessProbe.InitialDelaySeconds != 0) {
+	if cr.Spec.KeycloakDeploymentSpec.LivenessProbe.InitialDelaySeconds != 0 {
 		initialDelay = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.InitialDelaySeconds
 	}
 
 	period := ProbeTimeBetweenRunsSeconds
-	if (cr.Spec.KeycloakDeploymentSpec.LivenessProbe.PeriodSeconds != 0) {
+	if cr.Spec.KeycloakDeploymentSpec.LivenessProbe.PeriodSeconds != 0 {
 		period = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.PeriodSeconds
 	}
 
 	timeout := ProbeTimeoutSeconds
-	if (cr.Spec.KeycloakDeploymentSpec.LivenessProbe.TimeoutSeconds != 0) {
+	if cr.Spec.KeycloakDeploymentSpec.LivenessProbe.TimeoutSeconds != 0 {
 		timeout = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.TimeoutSeconds
 	}
 
 	successThreshold := ProbeSuccessThreshold
-	if (cr.Spec.KeycloakDeploymentSpec.LivenessProbe.SuccessThreshold != 0) {
+	if cr.Spec.KeycloakDeploymentSpec.LivenessProbe.SuccessThreshold != 0 {
 		successThreshold = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.SuccessThreshold
 	}
 
 	failureThreshold := ProbeFailureThreshold
-	if (cr.Spec.KeycloakDeploymentSpec.LivenessProbe.FailureThreshold != 0) {
+	if cr.Spec.KeycloakDeploymentSpec.LivenessProbe.FailureThreshold != 0 {
 		failureThreshold = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.FailureThreshold
 	}
 
@@ -380,45 +398,45 @@ func livenessProbe(cr *v1alpha1.Keycloak) *v1.Probe {
 		},
 	}
 
-	if (cr.Spec.KeycloakDeploymentSpec.LivenessProbe.Handler.Exec != nil ||
+	if cr.Spec.KeycloakDeploymentSpec.LivenessProbe.Handler.Exec != nil ||
 		cr.Spec.KeycloakDeploymentSpec.LivenessProbe.Handler.HTTPGet != nil ||
-        cr.Spec.KeycloakDeploymentSpec.LivenessProbe.Handler.TCPSocket != nil) {
+		cr.Spec.KeycloakDeploymentSpec.LivenessProbe.Handler.TCPSocket != nil {
 		handler = cr.Spec.KeycloakDeploymentSpec.LivenessProbe.Handler
 	}
 
 	return &v1.Probe{
-		Handler:		handler,
-		InitialDelaySeconds:	initialDelay,
-		TimeoutSeconds:     timeout,
-		PeriodSeconds:      period,
-		SuccessThreshold:	successThreshold,
-		FailureThreshold:	failureThreshold,
+		Handler:             handler,
+		InitialDelaySeconds: initialDelay,
+		TimeoutSeconds:      timeout,
+		PeriodSeconds:       period,
+		SuccessThreshold:    successThreshold,
+		FailureThreshold:    failureThreshold,
 	}
 }
 
 func readinessProbe(cr *v1alpha1.Keycloak) *v1.Probe {
 	initialDelay := ReadinessProbeInitialDelay
-	if (cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.InitialDelaySeconds != 0) {
+	if cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.InitialDelaySeconds != 0 {
 		initialDelay = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.InitialDelaySeconds
 	}
 
 	period := ProbeTimeBetweenRunsSeconds
-	if (cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.PeriodSeconds != 0) {
+	if cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.PeriodSeconds != 0 {
 		period = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.PeriodSeconds
 	}
 
 	timeout := ProbeTimeoutSeconds
-	if (cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.TimeoutSeconds != 0) {
+	if cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.TimeoutSeconds != 0 {
 		timeout = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.TimeoutSeconds
 	}
 
 	successThreshold := ProbeSuccessThreshold
-	if (cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.SuccessThreshold != 0) {
+	if cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.SuccessThreshold != 0 {
 		successThreshold = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.SuccessThreshold
 	}
 
 	failureThreshold := ProbeFailureThreshold
-	if (cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.FailureThreshold != 0) {
+	if cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.FailureThreshold != 0 {
 		failureThreshold = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.FailureThreshold
 	}
 
@@ -432,18 +450,18 @@ func readinessProbe(cr *v1alpha1.Keycloak) *v1.Probe {
 		},
 	}
 
-	if (cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.Handler.Exec != nil ||
+	if cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.Handler.Exec != nil ||
 		cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.Handler.HTTPGet != nil ||
-        cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.Handler.TCPSocket != nil) {
+		cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.Handler.TCPSocket != nil {
 		handler = cr.Spec.KeycloakDeploymentSpec.ReadinessProbe.Handler
 	}
 
 	return &v1.Probe{
-		Handler:		handler,
-		InitialDelaySeconds:	initialDelay,
-		TimeoutSeconds:		timeout,
-		PeriodSeconds:		period,
-		SuccessThreshold:	successThreshold,
-		FailureThreshold:	failureThreshold,
+		Handler:             handler,
+		InitialDelaySeconds: initialDelay,
+		TimeoutSeconds:      timeout,
+		PeriodSeconds:       period,
+		SuccessThreshold:    successThreshold,
+		FailureThreshold:    failureThreshold,
 	}
 }

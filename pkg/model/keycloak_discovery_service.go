@@ -27,7 +27,7 @@ func KeycloakDiscoveryService(cr *v1alpha1.Keycloak) *v1.Service {
 					Port:       8080,
 					TargetPort: intstr.FromInt(8080),
 					Protocol:   v1.ProtocolTCP,
-					Name:		"tcp-discovery",
+					Name:       "tcp-discovery",
 				},
 			},
 			ClusterIP: "None",
@@ -49,8 +49,9 @@ func KeycloakDiscoveryServiceReconciled(cr *v1alpha1.Keycloak, currentState *v1.
 			Port:       8080,
 			TargetPort: intstr.FromInt(8080),
 			Protocol:   v1.ProtocolTCP,
-			Name:		"tcp-discovery",
+			Name:       "tcp-discovery",
 		},
 	}
+	LogDiff(currentState, reconciled)
 	return reconciled
 }

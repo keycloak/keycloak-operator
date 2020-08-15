@@ -52,5 +52,6 @@ func DatabaseSecretReconciled(cr *v1alpha1.Keycloak, currentState *v1.Secret) *v
 	if _, ok := reconciled.Data[DatabaseSecretVersionProperty]; !ok {
 		reconciled.StringData[DatabaseSecretVersionProperty] = "10"
 	}
+	LogHasDiff(currentState, reconciled)
 	return reconciled
 }

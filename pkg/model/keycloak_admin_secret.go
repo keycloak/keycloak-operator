@@ -41,5 +41,6 @@ func KeycloakAdminSecretReconciled(cr *v1alpha1.Keycloak, currentState *v1.Secre
 	if val, ok := reconciled.Data[AdminPasswordProperty]; !ok || len(val) == 0 {
 		reconciled.Data[AdminPasswordProperty] = []byte(GenerateRandomString(10))
 	}
+	LogHasDiff(currentState, reconciled)
 	return reconciled
 }

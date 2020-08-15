@@ -39,6 +39,7 @@ func GrafanaDashboardReconciled(cr *v1alpha1.Keycloak, currentState *grafanav1al
 			Version: "1.3.9",
 		},
 	}
+	LogDiff(currentState, reconciled)
 	return reconciled
 }
 
