@@ -200,7 +200,7 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 	// so sort the values so that we do not reorder environment variables
 	// and trigger a new PodSpec definition
 	keys := make([]string, 0)
-	for k, _ := range cr.Spec.KeycloakDeploymentSpec.EnvVars {
+	for k := range cr.Spec.KeycloakDeploymentSpec.EnvVars {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
@@ -212,14 +212,6 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 	}
 
 	return env
-}
-
-func getCommand() []string {
-	command := make([]string, 3)
-	command[0] = "/bin/sh"
-	command[1] = "-c"
-	command[2] = "START=$(date +%s); while true; do STATUS=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:15020/healthz/ready); if [ ${STATUS} -eq 200 ]; then exec /opt/jboss/tools/docker-entrypoint.sh -b 0.0.0.0; break; else END=$(date +%s); DIFF=$(( $END - $START )); if [ ${DIFF} -gt 300 ]; then curl -X POST http://127.0.0.1:15000/quitquitquit; break; else sleep 1; fi; fi; done;"
-	return command
 }
 
 func getSecrets(cr *v1alpha1.Keycloak) []v1.LocalObjectReference {
@@ -237,15 +229,14 @@ func getSecrets(cr *v1alpha1.Keycloak) []v1.LocalObjectReference {
 func getContainerSpec(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.Container {
 	return []v1.Container{
 		{
-			Name:           KeycloakDeploymentName,
-			Image:          Images.Images[KeycloakImage],
-			Ports:          GetContainerPorts(),
-			VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
-			LivenessProbe:  livenessProbe(cr),
-			ReadinessProbe: readinessProbe(cr),
-			Env:            getKeycloakEnv(cr, dbSecret),
-			Resources:      getResources(cr),
-			//Command:		getCommand(),
+			Name:                     KeycloakDeploymentName,
+			Image:                    Images.Images[KeycloakImage],
+			Ports:                    GetContainerPorts(),
+			VolumeMounts:             KeycloakVolumeMounts(KeycloakExtensionPath),
+			LivenessProbe:            livenessProbe(cr),
+			ReadinessProbe:           readinessProbe(cr),
+			Env:                      getKeycloakEnv(cr, dbSecret),
+			Resources:                getResources(cr),
 			TerminationMessagePath:   "/dev/termination-log",
 			TerminationMessagePolicy: "File",
 			ImagePullPolicy:          "IfNotPresent",

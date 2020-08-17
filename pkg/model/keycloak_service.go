@@ -11,9 +11,8 @@ import (
 func GetServicePortName() string {
 	if KeycloakServicePort == 80 {
 		return "http"
-	} else {
-		return "https"
 	}
+	return "https"
 }
 
 func GetServicePorts() []v1.ServicePort {
