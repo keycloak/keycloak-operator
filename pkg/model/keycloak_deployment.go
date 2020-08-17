@@ -35,7 +35,7 @@ func GetContainerPorts() []v1.ContainerPort {
 	return []v1.ContainerPort{
 		{
 			Name:          "http",
-			ContainerPort: KeycloakServicePort,
+			ContainerPort: KeycloakContainerPort,
 			Protocol:      "TCP",
 		},
 		{

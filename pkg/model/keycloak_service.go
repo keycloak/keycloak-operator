@@ -9,7 +9,7 @@ import (
 )
 
 func GetServicePortName() string {
-	if KeycloakServicePort == 80 || KeycloakServicePort == 8080 {
+	if KeycloakServicePort == 80 {
 		return "http"
 	} else {
 		return "https"
@@ -20,7 +20,7 @@ func GetServicePorts() []v1.ServicePort {
 	return []v1.ServicePort{
 		{
 			Port:       KeycloakServicePort,
-			TargetPort: intstr.FromInt(KeycloakServicePort),
+			TargetPort: intstr.FromInt(KeycloakContainerPort),
 			Name:       GetServicePortName(),
 			Protocol:   "TCP",
 		},

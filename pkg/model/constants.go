@@ -30,7 +30,8 @@ const (
 	DatabaseSecretVersionProperty         = "POSTGRES_VERSION"          // nolint
 	DatabaseSecretExternalAddressProperty = "POSTGRES_EXTERNAL_ADDRESS" // nolint
 	DatabaseSecretExternalPortProperty    = "POSTGRES_EXTERNAL_PORT"    // nolint
-	KeycloakServicePort                   = 8080
+	KeycloakServicePort                   = 80
+	KeycloakContainerPort                 = 8080
 	KeycloakManagementPort                = 9990
 	PostgresDefaultPort                   = 5432
 	AdminUsernameProperty                 = "ADMIN_USERNAME"

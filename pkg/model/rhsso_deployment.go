@@ -142,7 +142,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSe
 							Image: Images.Images[RHSSOImage],
 							Ports: []v1.ContainerPort{
 								{
-									ContainerPort: KeycloakServicePort,
+									ContainerPort: KeycloakContainerPort,
 									Protocol:      "TCP",
 								},
 								{
@@ -190,7 +190,7 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 			Image: Images.Images[RHSSOImage],
 			Ports: []v1.ContainerPort{
 				{
-					ContainerPort: KeycloakServicePort,
+					ContainerPort: KeycloakContainerPort,
 					Protocol:      "TCP",
 				},
 				{
