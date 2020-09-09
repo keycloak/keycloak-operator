@@ -4,14 +4,15 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"github.com/google/go-cmp/cmp"
-	v1 "k8s.io/api/core/v1"
 	logr "log"
 	"net"
 	"runtime"
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/google/go-cmp/cmp"
+	v1 "k8s.io/api/core/v1"
 )
 
 // Copy pasted from https://blog.questionable.services/article/generating-secure-random-numbers-crypto-rand/
