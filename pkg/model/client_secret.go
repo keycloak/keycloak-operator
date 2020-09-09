@@ -16,9 +16,9 @@ func ClientSecret(cr *v1alpha1.KeycloakClient) *v1.Secret {
 				"app": ApplicationName,
 			},
 		},
-		StringData: map[string]string{
-			ClientSecretClientIDProperty:     cr.Spec.Client.ClientID,
-			ClientSecretClientSecretProperty: cr.Spec.Client.Secret,
+		Data: map[string][]byte{
+			ClientSecretClientIDProperty:     []byte(cr.Spec.Client.ClientID),
+			ClientSecretClientSecretProperty: []byte(cr.Spec.Client.Secret),
 		},
 	}
 }
@@ -33,9 +33,9 @@ func ClientSecretSelector(cr *v1alpha1.KeycloakClient) client.ObjectKey {
 func ClientSecretReconciled(cr *v1alpha1.KeycloakClient, currentState *v1.Secret) *v1.Secret {
 	reconciled := currentState.DeepCopy()
 	// Since the client is synced upon update, we always override what's there...
-	reconciled.StringData = map[string]string{
-		ClientSecretClientIDProperty:     cr.Spec.Client.ClientID,
-		ClientSecretClientSecretProperty: cr.Spec.Client.Secret,
+	reconciled.Data = map[string][]byte{
+		ClientSecretClientIDProperty:     []byte(cr.Spec.Client.ClientID),
+		ClientSecretClientSecretProperty: []byte(cr.Spec.Client.Secret),
 	}
 	reconciled.Data = map[string][]byte{}
 	LogHasDiff(currentState, reconciled)

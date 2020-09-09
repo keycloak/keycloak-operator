@@ -42,7 +42,7 @@ func getKeycloakBackupCR(namespace string) *keycloakv1alpha1.KeycloakBackup {
 	}
 }
 
-func prepareKeycloakBackupCR(t *testing.T, f *framework.Framework, ctx *framework.TestCtx, namespace string) error {
+func prepareKeycloakBackupCR(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
 	keycloakBackupCR := getKeycloakBackupCR(namespace)
 
 	err := f.Client.Create(context.TODO(), keycloakBackupCR, &framework.CleanupOptions{TestContext: ctx, Timeout: cleanupTimeout, RetryInterval: cleanupRetryInterval})
@@ -53,7 +53,7 @@ func prepareKeycloakBackupCR(t *testing.T, f *framework.Framework, ctx *framewor
 	return err
 }
 
-func keycloakBackupTest(t *testing.T, f *framework.Framework, ctx *framework.TestCtx, namespace string) error {
+func keycloakBackupTest(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
 	err := WaitForPersistentVolumeClaimCreated(t, f.KubeClient, model.PostgresqlBackupPersistentVolumeName+"-"+testKeycloakCRName, namespace)
 	if err != nil {
 		return err

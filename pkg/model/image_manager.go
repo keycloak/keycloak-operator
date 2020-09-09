@@ -62,13 +62,9 @@ func (p *ImageManager) getDefaultRHSSOImageForCurrentArchitecture() string {
 	// Full list of archs might be found here:
 	// https://github.com/golang/go/blob/release-branch.go1.10/src/go/build/syslist.go#L8
 	switch arch := runtime.GOARCH; arch {
-	case "ppc64":
-	case "ppc64le":
-	case "s390x":
-	case "s390":
+	case "ppc64", "ppc64le", "s390x", "s390":
 		return p.getImage(RHSSOImageOpenJ9, DefaultRHSSOImageOpenJ9)
 	default:
 		return p.getImage(RHSSOImageOpenJDK, DefaultRHSSOImageOpenJDK)
 	}
-	panic("Unknown architecture")
 }

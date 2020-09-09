@@ -103,7 +103,7 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 		},
 		{
 			Name:  "DB_ADDR",
-			Value: PostgresqlServiceName + "." + cr.Namespace + ".svc.cluster.local",
+			Value: PostgresqlServiceName + "." + cr.Namespace,
 		},
 		{
 			Name:  "DB_DATABASE",
@@ -142,7 +142,7 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 		},
 		{
 			Name:  "JGROUPS_DISCOVERY_PROPERTIES",
-			Value: "dns_query=" + KeycloakDiscoveryServiceName + "." + cr.Namespace + ".svc.cluster.local",
+			Value: "dns_query=" + KeycloakDiscoveryServiceName + "." + cr.Namespace,
 		},
 		// Cache settings
 		{

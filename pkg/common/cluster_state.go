@@ -49,7 +49,6 @@ func (d *DesiredClusterState) AddActions(actions []ClusterAction) DesiredCluster
 
 type ClusterState struct {
 	KeycloakServiceMonitor          *monitoringv1.ServiceMonitor
-	KeycloakPodMonitor              *monitoringv1.PodMonitor
 	KeycloakPrometheusRule          *monitoringv1.PrometheusRule
 	KeycloakGrafanaDashboard        *grafanav1alpha1.GrafanaDashboard
 	DatabaseSecret                  *v1.Secret
@@ -78,11 +77,6 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 	}
 
 	err = i.readKeycloakServiceMonitorCurrentState(context, cr, controllerClient)
-	if err != nil {
-		return err
-	}
-
-	err = i.readKeycloakPodMonitorCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
 	}
@@ -293,27 +287,6 @@ func (i *ClusterState) readKeycloakServiceMonitorCurrentState(context context.Co
 	} else {
 		i.KeycloakServiceMonitor = keycloakServiceMonitor.DeepCopy()
 		cr.UpdateStatusSecondaryResources(i.KeycloakServiceMonitor.Kind, i.KeycloakServiceMonitor.Name)
-	}
-	return nil
-}
-
-// Keycloak Pod Monitor. Resource type provided by Prometheus operator
-func (i *ClusterState) readKeycloakPodMonitorCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
-	keycloakPodMonitor := model.PodMonitor(cr)
-	keycloakPodMonitorSelector := model.PodMonitorSelector(cr)
-
-	err := controllerClient.Get(context, keycloakPodMonitorSelector, keycloakPodMonitor)
-
-	if err != nil {
-		// If the resource type doesn't exist on the cluster or does exist but is not found
-		if meta.IsNoMatchError(err) || apiErrors.IsNotFound(err) {
-			i.KeycloakPodMonitor = nil
-		} else {
-			return err
-		}
-	} else {
-		i.KeycloakPodMonitor = keycloakPodMonitor.DeepCopy()
-		cr.UpdateStatusSecondaryResources(i.KeycloakPodMonitor.Kind, i.KeycloakPodMonitor.Name)
 	}
 	return nil
 }

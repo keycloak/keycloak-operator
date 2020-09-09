@@ -2,7 +2,7 @@
 NAMESPACE=keycloak
 PROJECT=keycloak-operator
 PKG=github.com/keycloak/keycloak-operator
-OPERATOR_SDK_VERSION=v0.15.1
+OPERATOR_SDK_VERSION=v0.18.2
 OPERATOR_SDK_DOWNLOAD_URL=https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk-$(OPERATOR_SDK_VERSION)-x86_64-linux-gnu
 MINIKUBE_DOWNLOAD_URL=https://github.com/kubernetes/minikube/releases/download/v1.9.2/minikube-linux-amd64
 KUBECTL_DOWNLOAD_URL=https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
@@ -29,11 +29,12 @@ cluster/prepare:
 
 .PHONY: cluster/clean
 cluster/clean:
-	# Remove all roles, rolebindings and service accounts with the name keycloak-operator
-	@kubectl get roles,rolebindings,serviceaccounts keycloak-operator -n $(NAMESPACE) --no-headers=true -o name | xargs kubectl delete -n $(NAMESPACE)
-	# Remove all CRDS with keycloak.org in the name 
-	@kubectl get crd --no-headers=true -o name | awk '/keycloak.org/{print $1}' | xargs kubectl delete
-	@kubectl delete namespace $(NAMESPACE)
+	@kubectl get all -n $(NAMESPACE) --no-headers=true -o name | xargs kubectl delete -n $(NAMESPACE) || true
+	@kubectl get roles,rolebindings,serviceaccounts keycloak-operator -n $(NAMESPACE) --no-headers=true -o name | xargs kubectl delete -n $(NAMESPACE) || true
+	@kubectl get pv,pvc -n $(NAMESPACE) --no-headers=true -o name | xargs kubectl delete -n $(NAMESPACE) || true
+	# Remove all CRDS with keycloak.org in the name
+	@kubectl get crd --no-headers=true -o name | awk '/keycloak.org/{print $1}' | xargs kubectl delete || true
+	@kubectl delete namespace $(NAMESPACE) || true
 
 .PHONY: cluster/create/examples
 cluster/create/examples:
@@ -49,28 +50,22 @@ test/unit:
 	@go test -v -tags=unit -coverpkg ./... -coverprofile cover-unit.coverprofile -covermode=count ./pkg/...
 
 .PHONY: test/e2e
-test/e2e: cluster/prepare
-	@echo Running tests:
-	@touch deploy/empty-init.yaml
-	# This is not recommended way or running the tests (see https://github.com/operator-framework/operator-sdk/blob/master/doc/test-framework/writing-e2e-tests.md#running-go-test-directly-not-recommended)
-	# However, this way we will have a consistent way of running tests on Travis and locally. The downside
-	# is that Operator testing harness downloads things manually using `go mod` when executing the tests.
-	# Here is a corresponding Operator SDK call:
-	# operator-sdk test  local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count" --namespace ${NAMESPACE} --up-local --debug --verbose ./test/e2e
-	go test -tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -mod=vendor ./test/e2e/... -root=$(PWD) -kubeconfig=$(HOME)/.kube/config -globalMan deploy/empty-init.yaml -namespacedMan deploy/empty-init.yaml -test.v -singleNamespace -parallel=1 -localOperator -test.timeout 0
+test/e2e: setup/operator-sdk
+	@echo Running e2e local tests:
+	operator-sdk test local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --operator-namespace $(NAMESPACE) --up-local --debug --verbose ./test/e2e
 
 .PHONY: test/e2e-latest-image
 test/e2e-latest-image:
-	@echo Running tests with operator as an image in the cluster:
+	@echo Running the latest operator image in the cluster:
 	# Doesn't need cluster/prepare as it's done by operator-sdk. Uses a randomly generated namespace (instead of keycloak namespace) to support parallel test runs.
-	operator-sdk test local ./test/e2e --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count" --debug --verbose
+	operator-sdk run local ./test/e2e --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count" --debug --verbose
 
 .PHONY: test/e2e-local-image cluster/prepare setup/operator-sdk
 test/e2e-local-image: cluster/prepare setup/operator-sdk
+	@echo Running e2e tests with a fresh built operator image in the cluster:
 	docker build . -t keycloak-operator:test
 	@echo Running tests:
-	@touch deploy/empty-init.yaml
-	operator-sdk test  local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --image="keycloak-operator:test" --namespace ${NAMESPACE} --up-local --debug --verbose ./test/e2e
+	operator-sdk test local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --image="keycloak-operator:test" --namespace $(NAMESPACE) --up-local --debug --verbose ./test/e2e
 
 .PHONY: test/coverage/prepare
 test/coverage/prepare:
@@ -121,7 +116,7 @@ setup/linter:
 
 .PHONY: code/run
 code/run:
-	@operator-sdk run --local --namespace=${NAMESPACE}
+	@operator-sdk run local --watch-namespace=${NAMESPACE}
 
 .PHONY: code/compile
 code/compile:
@@ -130,7 +125,7 @@ code/compile:
 .PHONY: code/gen
 code/gen:
 	operator-sdk generate k8s
-	operator-sdk generate crds
+	operator-sdk generate crds --crd-version v1beta1
 	# This is a copy-paste part of `operator-sdk generate openapi` command (suggested by the manual)
 	which ./bin/openapi-gen > /dev/null || go build -o ./bin/openapi-gen k8s.io/kube-openapi/cmd/openapi-gen
 	./bin/openapi-gen --logtostderr=true -o "" -i ./pkg/apis/keycloak/v1alpha1 -O zz_generated.openapi -p ./pkg/apis/keycloak/v1alpha1 -h ./hack/boilerplate.go.txt -r "-"

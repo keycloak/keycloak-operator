@@ -11,7 +11,7 @@ import (
 )
 
 // workaround for https://github.com/kubernetes/minikube/issues/3129
-func doWorkaroundIfNecessary(f *framework.Framework, ctx *framework.TestCtx, namespace string) error {
+func doWorkaroundIfNecessary(f *framework.Framework, ctx *framework.Context, namespace string) error {
 	resourceExists, _ := k8sutil.ResourceExists(f.KubeClient.Discovery(), routev1.SchemeGroupVersion.String(), "Route")
 
 	if !resourceExists {
