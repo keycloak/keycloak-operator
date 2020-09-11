@@ -63,7 +63,6 @@ func getDummyRealm() v1alpha1.KeycloakRealm {
 				DisplayName: "dummy",
 				Users: []*v1alpha1.KeycloakAPIUser{
 					{
-						ID:         "dummy",
 						UserName:   "dummy",
 						FirstName:  "dummy",
 						LastName:   "dummy",

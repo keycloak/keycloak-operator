@@ -35,7 +35,6 @@ func getDummyRealm() *v1alpha1.KeycloakRealm {
 				AdminEventsDetailsEnabled: &[]bool{true}[0],
 				Users: []*v1alpha1.KeycloakAPIUser{
 					{
-						ID:        "dummy",
 						UserName:  "dummy",
 						FirstName: "dummy",
 						LastName:  "dummy",

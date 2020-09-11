@@ -149,12 +149,12 @@ func (c *Client) DeleteUserRealmRole(role *v1alpha1.KeycloakUserRole, realmName,
 	return err
 }
 
-func (c *Client) UpdatePassword(user *v1alpha1.KeycloakAPIUser, realmName, newPass string) error {
+func (c *Client) UpdatePassword(user *v1alpha1.KeycloakAPIUser, realmName string, userID string, newPass string) error {
 	passReset := &v1alpha1.KeycloakAPIPasswordReset{}
 	passReset.Type = "password"
 	passReset.Temporary = false
 	passReset.Value = newPass
-	u := fmt.Sprintf("realms/%s/users/%s/reset-password", realmName, user.ID)
+	u := fmt.Sprintf("realms/%s/users/%s/reset-password", realmName, userID)
 	if err := c.update(passReset, u, "paswordreset"); err != nil {
 		return errors.Wrap(err, "error calling keycloak api ")
 	}
@@ -401,8 +401,8 @@ func (c *Client) UpdateClient(specClient *v1alpha1.KeycloakAPIClient, realmName 
 	return c.update(specClient, fmt.Sprintf("realms/%s/clients/%s", realmName, specClient.ID), "client")
 }
 
-func (c *Client) UpdateUser(specUser *v1alpha1.KeycloakAPIUser, realmName string) error {
-	return c.update(specUser, fmt.Sprintf("realms/%s/users/%s", realmName, specUser.ID), "user")
+func (c *Client) UpdateUser(specUser *v1alpha1.KeycloakAPIUser, realmName string, userID string) error {
+	return c.update(specUser, fmt.Sprintf("realms/%s/users/%s", realmName, userID), "user")
 }
 
 func (c *Client) UpdateIdentityProvider(specIdentityProvider *v1alpha1.KeycloakIdentityProvider, realmName string) error {
@@ -752,11 +752,11 @@ type KeycloakInterface interface {
 	CreateFederatedIdentity(fid v1alpha1.FederatedIdentity, userID string, realmName string) (string, error)
 	RemoveFederatedIdentity(fid v1alpha1.FederatedIdentity, userID string, realmName string) error
 	GetUserFederatedIdentities(userName string, realmName string) ([]v1alpha1.FederatedIdentity, error)
-	UpdatePassword(user *v1alpha1.KeycloakAPIUser, realmName, newPass string) error
+	UpdatePassword(user *v1alpha1.KeycloakAPIUser, realmName string, userID string, newPass string) error
 	FindUserByEmail(email, realm string) (*v1alpha1.KeycloakAPIUser, error)
 	FindUserByUsername(name, realm string) (*v1alpha1.KeycloakAPIUser, error)
 	GetUser(userID, realmName string) (*v1alpha1.KeycloakAPIUser, error)
-	UpdateUser(specUser *v1alpha1.KeycloakAPIUser, realmName string) error
+	UpdateUser(specUser *v1alpha1.KeycloakAPIUser, realmName string, userID string) error
 	DeleteUser(userID, realmName string) error
 	ListUsers(realmName string) ([]*v1alpha1.KeycloakAPIUser, error)
 

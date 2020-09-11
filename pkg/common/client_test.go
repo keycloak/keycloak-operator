@@ -21,6 +21,7 @@ const (
 	UserGetPath            = "/auth/admin/realms/%s/users/%s"
 	UserFindByUsernamePath = "/auth/admin/realms/%s/users?username=%s&max=-1"
 	TokenPath              = "/auth/realms/master/protocol/openid-connect/token" // nolint
+	DummyUserID            = "dummy-user-id"
 )
 
 func getDummyRealm() *v1alpha1.KeycloakRealm {
@@ -41,7 +42,6 @@ func getDummyRealm() *v1alpha1.KeycloakRealm {
 
 func getExistingDummyUser() *v1alpha1.KeycloakAPIUser {
 	return &v1alpha1.KeycloakAPIUser{
-		ID:            "existing-dummy-user",
 		UserName:      "existing-dummy-user",
 		FirstName:     "existing-dummy-user",
 		LastName:      "existing-dummy-user",
@@ -59,7 +59,6 @@ func getExistingDummyUser() *v1alpha1.KeycloakAPIUser {
 
 func getDummyUser() *v1alpha1.KeycloakAPIUser {
 	return &v1alpha1.KeycloakAPIUser{
-		ID:            "dummy",
 		UserName:      "dummy",
 		FirstName:     "dummy",
 		LastName:      "dummy",
@@ -123,12 +122,11 @@ func TestClient_CreateUser(t *testing.T) {
 	// given
 	user := getDummyUser()
 	realm := getDummyRealm()
-	dummyUserID := "dummy-user-id"
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		assert.Equal(t, fmt.Sprintf(UserCreatePath, realm.Spec.Realm.Realm), req.URL.Path)
 		locationURL := fmt.Sprintf("http://dummy-keycloak-host/%s", UserGetPath)
-		w.Header().Set("Location", fmt.Sprintf(locationURL, realm.Spec.Realm.Realm, dummyUserID))
+		w.Header().Set("Location", fmt.Sprintf(locationURL, realm.Spec.Realm.Realm, DummyUserID))
 		w.WriteHeader(201)
 	})
 	server := httptest.NewServer(handler)
@@ -146,16 +144,15 @@ func TestClient_CreateUser(t *testing.T) {
 	// then
 	// correct path expected on httptest server
 	assert.NoError(t, err)
-	assert.Equal(t, uid, dummyUserID)
+	assert.Equal(t, uid, DummyUserID)
 }
 
 func TestClient_DeleteUser(t *testing.T) {
 	// given
-	user := getDummyUser()
 	realm := getDummyRealm()
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		assert.Equal(t, fmt.Sprintf(UserDeletePath, realm.Spec.Realm.Realm, user.ID), req.URL.Path)
+		assert.Equal(t, fmt.Sprintf(UserDeletePath, realm.Spec.Realm.Realm, DummyUserID), req.URL.Path)
 		w.WriteHeader(204)
 	})
 	server := httptest.NewServer(handler)
@@ -168,7 +165,7 @@ func TestClient_DeleteUser(t *testing.T) {
 	}
 
 	// when
-	err := client.DeleteUser(user.ID, realm.Spec.Realm.Realm)
+	err := client.DeleteUser(DummyUserID, realm.Spec.Realm.Realm)
 
 	// then
 	// correct path expected on httptest server

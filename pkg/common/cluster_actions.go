@@ -169,7 +169,7 @@ func (i *ClusterActionRunner) CreateUser(obj *v1alpha1.KeycloakUser, realm strin
 	}
 
 	// Update newly created user with its uid
-	obj.Spec.User.ID = uid
+	obj.Status.RealmUserIds[realm] = uid
 	return i.client.Update(i.context, obj)
 }
 
@@ -178,7 +178,7 @@ func (i *ClusterActionRunner) UpdateUser(obj *v1alpha1.KeycloakUser, realm strin
 		return errors.Errorf("cannot perform user update when client is nil")
 	}
 
-	err := i.keycloakClient.UpdateUser(&obj.Spec.User, realm)
+	err := i.keycloakClient.UpdateUser(&obj.Spec.User, realm, obj.Status.RealmUserIds[realm])
 	if err != nil {
 		return err
 	}

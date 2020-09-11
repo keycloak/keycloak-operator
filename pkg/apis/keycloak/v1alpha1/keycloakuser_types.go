@@ -31,6 +31,8 @@ type KeycloakUserStatus struct {
 	Phase StatusPhase `json:"phase"`
 	// Human-readable message indicating details about current operator phase or error.
 	Message string `json:"message"`
+	// Map of realms to user ids for this user
+	RealmUserIds map[string]string `json:"realmUserIds,omitempty"`
 }
 
 // KeycloakUser is the Schema for the keycloakusers API.
@@ -46,9 +48,6 @@ type KeycloakUser struct {
 }
 
 type KeycloakAPIUser struct {
-	// User ID.
-	// +optional
-	ID string `json:"id,omitempty"`
 	// User Name.
 	// +optional
 	UserName string `json:"username,omitempty"`
