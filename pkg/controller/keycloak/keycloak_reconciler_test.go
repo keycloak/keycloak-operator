@@ -409,7 +409,6 @@ func TestKeycloakReconciler_Test_Updating_External_Database_URI_From_IP_To_Exter
 	assert.NotNil(t, service)
 	assert.Equal(t, service.Spec.Type, v1.ServiceTypeExternalName)
 	assert.Equal(t, service.Spec.ExternalName, string(currentState.DatabaseSecret.Data[model.DatabaseSecretExternalAddressProperty]))
-	assert.Equal(t, service.Spec.Ports[0].Port, int32(newPort))
 }
 
 func TestKeycloakReconciler_Test_Updating_External_Database_From_ExternalName_To_IP(t *testing.T) {
