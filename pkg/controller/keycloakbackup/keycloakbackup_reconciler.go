@@ -11,10 +11,10 @@ type Reconciler interface {
 }
 
 type KeycloakBackupReconciler struct { // nolint
-	Keycloak kc.Keycloak
+	Keycloak kc.KeycloakReference
 }
 
-func NewKeycloakBackupReconciler(keycloak kc.Keycloak) *KeycloakBackupReconciler {
+func NewKeycloakBackupReconciler(keycloak kc.KeycloakReference) *KeycloakBackupReconciler {
 	return &KeycloakBackupReconciler{
 		Keycloak: keycloak,
 	}

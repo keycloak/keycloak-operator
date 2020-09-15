@@ -13,10 +13,10 @@ type Reconciler interface {
 }
 
 type KeycloakClientReconciler struct { // nolint
-	Keycloak kc.Keycloak
+	Keycloak kc.KeycloakReference
 }
 
-func NewKeycloakClientReconciler(keycloak kc.Keycloak) *KeycloakClientReconciler {
+func NewKeycloakClientReconciler(keycloak kc.KeycloakReference) *KeycloakClientReconciler {
 	return &KeycloakClientReconciler{
 		Keycloak: keycloak,
 	}
@@ -55,7 +55,7 @@ func (i *KeycloakClientReconciler) pingKeycloak() common.ClusterAction {
 func (i *KeycloakClientReconciler) getDeletedClientState(state *common.ClientState, cr *kc.KeycloakClient) common.ClusterAction {
 	return common.DeleteClientAction{
 		Ref:   cr,
-		Realm: state.Realm.Spec.Realm.Realm,
+		Realm: state.Realm.Realm(),
 		Msg:   fmt.Sprintf("removing client %v/%v", cr.Namespace, cr.Spec.Client.ClientID),
 	}
 }
@@ -63,7 +63,7 @@ func (i *KeycloakClientReconciler) getDeletedClientState(state *common.ClientSta
 func (i *KeycloakClientReconciler) getCreatedClientState(state *common.ClientState, cr *kc.KeycloakClient) common.ClusterAction {
 	return common.CreateClientAction{
 		Ref:   cr,
-		Realm: state.Realm.Spec.Realm.Realm,
+		Realm: state.Realm.Realm(),
 		Msg:   fmt.Sprintf("create client %v/%v", cr.Namespace, cr.Spec.Client.ClientID),
 	}
 }
@@ -78,7 +78,7 @@ func (i *KeycloakClientReconciler) getUpdatedClientSecretState(state *common.Cli
 func (i *KeycloakClientReconciler) getUpdatedClientState(state *common.ClientState, cr *kc.KeycloakClient) common.ClusterAction {
 	return common.UpdateClientAction{
 		Ref:   cr,
-		Realm: state.Realm.Spec.Realm.Realm,
+		Realm: state.Realm.Realm(),
 		Msg:   fmt.Sprintf("update client %v/%v", cr.Namespace, cr.Spec.Client.ClientID),
 	}
 }

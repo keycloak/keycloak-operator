@@ -171,7 +171,8 @@ spec:
               - clientId
               type: object
             realmSelector:
-              description: Selector for looking up KeycloakRealm Custom Resources.
+              description: Selector for looking up KeycloakRealm or ExternalKeycloakRealm
+                Custom Resources.
               properties:
                 matchExpressions:
                   description: matchExpressions is a list of label selector requirements.

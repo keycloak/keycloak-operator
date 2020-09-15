@@ -1,20 +1,21 @@
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
-  name: keycloakusers.keycloak.org
+  name: externalkeycloakrealms.keycloak.org
 spec:
   group: keycloak.org
   names:
-    kind: KeycloakUser
-    listKind: KeycloakUserList
-    plural: keycloakusers
-    singular: keycloakuser
+    kind: ExternalKeycloakRealm
+    listKind: ExternalKeycloakRealmList
+    plural: externalkeycloakrealms
+    singular: externalkeycloakrealm
   scope: Namespaced
   subresources:
     status: {}
   validation:
     openAPIV3Schema:
-      description: KeycloakUser is the Schema for the keycloakusers API.
+      description: ExternalKeycloakRealm is the Schema for the externalkeycloakrealms
+        API.
       properties:
         apiVersion:
           description: 'APIVersion defines the versioned schema of this representation
@@ -29,11 +30,11 @@ spec:
         metadata:
           type: object
         spec:
-          description: KeycloakUserSpec defines the desired state of KeycloakUser.
+          description: ExternalKeycloakRealmSpec defines the desired state of ExternalKeycloakRealm.
           properties:
-            realmSelector:
-              description: Selector for looking up KeycloakRealm or ExternalKeycloakRealm
-                Custom Resources.
+            instanceSelector:
+              description: Selector for looking up Keycloak or ExternalKeycloak Custom
+                Resources.
               properties:
                 matchExpressions:
                   description: matchExpressions is a list of label selector requirements.
@@ -75,95 +76,14 @@ spec:
                     are ANDed.
                   type: object
               type: object
-            user:
-              description: Keycloak User REST object.
-              properties:
-                attributes:
-                  additionalProperties:
-                    items:
-                      type: string
-                    type: array
-                  description: A set of Attributes.
-                  type: object
-                clientRoles:
-                  additionalProperties:
-                    items:
-                      type: string
-                    type: array
-                  description: A set of Client Roles.
-                  type: object
-                credentials:
-                  description: A set of Credentials.
-                  items:
-                    properties:
-                      temporary:
-                        description: True if this credential object is temporary.
-                        type: boolean
-                      type:
-                        description: Credential Type.
-                        type: string
-                      value:
-                        description: Credential Value.
-                        type: string
-                    type: object
-                  type: array
-                email:
-                  description: Email.
-                  type: string
-                emailVerified:
-                  description: True if email has already been verified.
-                  type: boolean
-                enabled:
-                  description: User enabled flag.
-                  type: boolean
-                federatedIdentities:
-                  description: A set of Federated Identities.
-                  items:
-                    properties:
-                      identityProvider:
-                        description: Federated Identity Provider.
-                        type: string
-                      userId:
-                        description: Federated Identity User ID.
-                        type: string
-                      userName:
-                        description: Federated Identity User Name.
-                        type: string
-                    type: object
-                  type: array
-                firstName:
-                  description: First Name.
-                  type: string
-                groups:
-                  description: A set of Groups.
-                  items:
-                    type: string
-                  type: array
-                id:
-                  description: User ID.
-                  type: string
-                lastName:
-                  description: Last Name.
-                  type: string
-                realmRoles:
-                  description: A set of Realm Roles.
-                  items:
-                    type: string
-                  type: array
-                requiredActions:
-                  description: A set of Required Actions.
-                  items:
-                    type: string
-                  type: array
-                username:
-                  description: User Name.
-                  type: string
-              type: object
+            realm:
+              description: Realm name.
+              type: string
           required:
-          - user
+          - realm
           type: object
         status:
-          description: KeycloakUserStatus defines the observed state of KeycloakUser.
+          description: ExternalKeycloakStatus defines the observed state of KeycloakBackup.
           properties:
             message:
               description: Human-readable message indicating details about current
@@ -172,9 +92,14 @@ spec:
             phase:
               description: Current phase of the operator.
               type: string
+            ready:
+              description: True if all resources are in a ready state and all work
+                is done.
+              type: boolean
           required:
           - message
           - phase
+          - ready
           type: object
       type: object
   version: v1alpha1

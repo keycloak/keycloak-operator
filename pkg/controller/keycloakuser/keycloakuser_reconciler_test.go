@@ -12,7 +12,7 @@ import (
 )
 
 func getDummyState(keycloak v1alpha1.Keycloak) *common.UserState {
-	return common.NewUserState(keycloak)
+	return common.NewUserState(&keycloak)
 }
 
 func getDummyUser() *v1alpha1.KeycloakUser {
@@ -87,7 +87,7 @@ func TestKeycloakRealmReconciler_Reconcile(t *testing.T) {
 	// given
 	keycloak := v1alpha1.Keycloak{}
 	realm := getDummyRealm()
-	reconciler := NewKeycloakuserReconciler(keycloak, realm)
+	reconciler := NewKeycloakuserReconciler(&keycloak, &realm)
 	state := getDummyState(keycloak)
 	user := getDummyUser()
 

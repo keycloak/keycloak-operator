@@ -14,10 +14,10 @@ type ClientState struct {
 	Client       *kc.KeycloakAPIClient
 	ClientSecret *v1.Secret
 	Context      context.Context
-	Realm        *kc.KeycloakRealm
+	Realm        kc.KeycloakRealmReference
 }
 
-func NewClientState(context context.Context, realm *kc.KeycloakRealm) *ClientState {
+func NewClientState(context context.Context, realm kc.KeycloakRealmReference) *ClientState {
 	return &ClientState{
 		Context: context,
 		Realm:   realm,
@@ -26,7 +26,7 @@ func NewClientState(context context.Context, realm *kc.KeycloakRealm) *ClientSta
 
 func (i *ClientState) Read(context context.Context, cr *kc.KeycloakClient, realmClient KeycloakInterface, controllerClient client.Client) error {
 	if cr.Spec.Client.ID != "" {
-		client, err := realmClient.GetClient(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
+		client, err := realmClient.GetClient(cr.Spec.Client.ID, i.Realm.Realm())
 
 		if err != nil {
 			return err
@@ -34,7 +34,7 @@ func (i *ClientState) Read(context context.Context, cr *kc.KeycloakClient, realm
 
 		i.Client = client
 
-		clientSecret, err := realmClient.GetClientSecret(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
+		clientSecret, err := realmClient.GetClientSecret(cr.Spec.Client.ID, i.Realm.Realm())
 		if err != nil {
 			return err
 		}

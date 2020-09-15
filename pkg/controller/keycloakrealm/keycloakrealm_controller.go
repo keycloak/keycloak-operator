@@ -122,16 +122,16 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 		return reconcile.Result{Requeue: false}, nil
 	}
 
-	keycloaks, err := common.GetMatchingKeycloaks(r.context, r.client, instance.Spec.InstanceSelector)
+	keycloaks, err := common.GetAllMatchingKeycloaks(r.context, r.client, instance.Spec.InstanceSelector)
 	if err != nil {
 		return r.ManageError(instance, err)
 	}
 
-	log.Info(fmt.Sprintf("found %v matching keycloak(s) for realm %v/%v", len(keycloaks.Items), instance.Namespace, instance.Name))
+	log.Info(fmt.Sprintf("found %v matching keycloak(s) for realm %v/%v", len(keycloaks), instance.Namespace, instance.Name))
 
 	// The realm may be applicable to multiple keycloak instances,
 	// process all of them
-	for _, keycloak := range keycloaks.Items {
+	for _, keycloak := range keycloaks {
 		// Get an authenticated keycloak api client for the instance
 		keycloakFactory := common.LocalConfigKeycloakFactory{}
 		authenticated, err := keycloakFactory.AuthenticatedClient(keycloak)
@@ -141,12 +141,12 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 		}
 
 		// Compute the current state of the realm
-		log.Info(fmt.Sprintf("got authenticated client for keycloak at %v", keycloak.Status.InternalURL))
+		log.Info(fmt.Sprintf("got authenticated client for keycloak at %v", keycloak.Endpoint()))
 		realmState := common.NewRealmState(r.context, keycloak)
 
 		log.Info(fmt.Sprintf("read state for keycloak %v/%v, realm %v/%v",
-			keycloak.Namespace,
-			keycloak.Name,
+			keycloak.GetNamespace(),
+			keycloak.GetName(),
 			instance.Namespace,
 			instance.Spec.Realm.Realm))
 

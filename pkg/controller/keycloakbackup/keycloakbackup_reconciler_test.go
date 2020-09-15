@@ -17,10 +17,10 @@ func TestKeycloakBackupReconciler_Test_Creating_Local_Backup_Job(t *testing.T) {
 	cr := &v1alpha1.KeycloakBackup{}
 	keycloak := v1alpha1.Keycloak{}
 
-	currentState := common.NewBackupState(keycloak)
+	currentState := common.NewBackupState(&keycloak)
 
 	// when
-	reconciler := NewKeycloakBackupReconciler(keycloak)
+	reconciler := NewKeycloakBackupReconciler(&keycloak)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
@@ -41,7 +41,7 @@ func TestKeycloakBackupReconciler_Test_Updating_Local_Backup_Job(t *testing.T) {
 	}
 
 	// when
-	reconciler := NewKeycloakBackupReconciler(keycloak)
+	reconciler := NewKeycloakBackupReconciler(&keycloak)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
@@ -67,7 +67,7 @@ func TestKeycloakBackupReconciler_Test_Creating_AWS_Job(t *testing.T) {
 	}
 
 	// when
-	reconciler := NewKeycloakBackupReconciler(keycloak)
+	reconciler := NewKeycloakBackupReconciler(&keycloak)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
@@ -86,10 +86,10 @@ func TestKeycloakBackupReconciler_Test_Updating_AWS_Job(t *testing.T) {
 	}
 	keycloak := v1alpha1.Keycloak{}
 
-	currentState := common.NewBackupState(keycloak)
+	currentState := common.NewBackupState(&keycloak)
 
 	// when
-	reconciler := NewKeycloakBackupReconciler(keycloak)
+	reconciler := NewKeycloakBackupReconciler(&keycloak)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
@@ -109,10 +109,10 @@ func TestKeycloakBackupReconciler_Test_Creating_AWS_Periodic_Job(t *testing.T) {
 	}
 	keycloak := v1alpha1.Keycloak{}
 
-	currentState := common.NewBackupState(keycloak)
+	currentState := common.NewBackupState(&keycloak)
 
 	// when
-	reconciler := NewKeycloakBackupReconciler(keycloak)
+	reconciler := NewKeycloakBackupReconciler(&keycloak)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
@@ -137,7 +137,7 @@ func TestKeycloakBackupReconciler_Test_Updating_AWS_Periodic_Job(t *testing.T) {
 	}
 
 	// when
-	reconciler := NewKeycloakBackupReconciler(keycloak)
+	reconciler := NewKeycloakBackupReconciler(&keycloak)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then

@@ -795,7 +795,7 @@ type LocalConfigKeycloakFactory struct {
 }
 
 // AuthenticatedClient returns an authenticated client for requesting endpoints from the Keycloak api
-func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (KeycloakInterface, error) {
+func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.KeycloakReference) (KeycloakInterface, error) {
 	config, err := config2.GetConfig()
 	if err != nil {
 		return nil, err
@@ -806,13 +806,13 @@ func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (
 		return nil, err
 	}
 
-	adminCreds, err := secretClient.CoreV1().Secrets(kc.Namespace).Get(context.TODO(), kc.Status.CredentialSecret, v12.GetOptions{})
+	adminCreds, err := secretClient.CoreV1().Secrets(kc.GetNamespace()).Get(context.TODO(), kc.CredentialSecret(), v12.GetOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get the admin credentials")
 	}
 	user := string(adminCreds.Data[model.AdminUsernameProperty])
 	pass := string(adminCreds.Data[model.AdminPasswordProperty])
-	url := kc.Status.InternalURL
+	url := kc.Endpoint()
 	client := &Client{
 		URL:       url,
 		requester: defaultRequester(),

@@ -123,14 +123,14 @@ func (r *ReconcileKeycloakBackup) Reconcile(request reconcile.Request) (reconcil
 	}
 
 	// backups without instances to backup are treated as errors
-	if len(keycloaks.Items) == 0 {
+	if len(keycloaks) == 0 {
 		return r.ManageError(instance, errors.Errorf("no instance to backup for %v/%v", instance.Namespace, instance.Name))
 	}
 
-	log.Info(fmt.Sprintf("found %v matching keycloak(s) for backup %v/%v", len(keycloaks.Items), instance.Namespace, instance.Name))
+	log.Info(fmt.Sprintf("found %v matching keycloak(s) for backup %v/%v", len(keycloaks), instance.Namespace, instance.Name))
 
 	var currentState *common.BackupState
-	for _, keycloak := range keycloaks.Items {
+	for _, keycloak := range keycloaks {
 		currentState = common.NewBackupState(keycloak)
 		err = currentState.Read(r.context, instance, r.client)
 		if err != nil {

@@ -15,4 +15,5 @@ func TestApi_check_Runtime_Object_Assignment(t *testing.T) {
 	var _ runtime.Object = &v1alpha1.KeycloakClient{}
 	var _ runtime.Object = &v1alpha1.KeycloakBackup{}
 	var _ runtime.Object = &v1alpha1.KeycloakUser{}
+	var _ runtime.Object = &v1alpha1.ExternalKeycloak{}
 }

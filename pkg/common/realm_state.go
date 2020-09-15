@@ -14,13 +14,13 @@ type RealmState struct {
 	Realm            *kc.KeycloakRealm
 	RealmUserSecrets map[string]*v1.Secret
 	Context          context.Context
-	Keycloak         *kc.Keycloak
+	Keycloak         kc.KeycloakReference
 }
 
-func NewRealmState(context context.Context, keycloak kc.Keycloak) *RealmState {
+func NewRealmState(context context.Context, keycloak kc.KeycloakReference) *RealmState {
 	return &RealmState{
 		Context:  context,
-		Keycloak: &keycloak,
+		Keycloak: keycloak,
 	}
 }
 
@@ -45,7 +45,7 @@ func (i *RealmState) Read(cr *kc.KeycloakRealm, realmClient KeycloakInterface, c
 		}
 		i.RealmUserSecrets[user.UserName] = secret
 
-		cr.UpdateStatusSecondaryResources(SecretKind, model.GetRealmUserSecretName(i.Keycloak.Namespace, cr.Spec.Realm.Realm, user.UserName))
+		cr.UpdateStatusSecondaryResources(SecretKind, model.GetRealmUserSecretName(i.Keycloak.GetNamespace(), cr.Spec.Realm.Realm, user.UserName))
 	}
 
 	return nil

@@ -60,23 +60,83 @@ func GetStateFieldName(controllerName string, kind string) string {
 }
 
 // Try to get a list of keycloak instances that match the selector specified on the realm
-func GetMatchingKeycloaks(ctx context.Context, c client.Client, labelSelector *v1.LabelSelector) (v1alpha1.KeycloakList, error) {
+func GetMatchingKeycloaks(ctx context.Context, c client.Client, labelSelector *v1.LabelSelector) ([]v1alpha1.KeycloakReference, error) {
 	var list v1alpha1.KeycloakList
 	opts := []client.ListOption{
 		client.MatchingLabels(labelSelector.MatchLabels),
 	}
 
 	err := c.List(ctx, &list, opts...)
-	return list, err
+	results := make([]v1alpha1.KeycloakReference, len(list.Items))
+	for i, k := range list.Items {
+		results[i] = &k
+	}
+	return results, err
+}
+
+func GetMatchingExternalKeycloaks(ctx context.Context, c client.Client, labelSelector *v1.LabelSelector) ([]v1alpha1.KeycloakReference, error) {
+	var list v1alpha1.ExternalKeycloakList
+	opts := []client.ListOption{
+		client.MatchingLabels(labelSelector.MatchLabels),
+	}
+
+	err := c.List(ctx, &list, opts...)
+	results := make([]v1alpha1.KeycloakReference, len(list.Items))
+	for i, k := range list.Items {
+		results[i] = &k
+	}
+	return results, err
+}
+
+func GetAllMatchingKeycloaks(ctx context.Context, c client.Client, labelSelector *v1.LabelSelector) ([]v1alpha1.KeycloakReference, error) {
+	internal, err := GetMatchingKeycloaks(ctx, c, labelSelector)
+	if err != nil {
+		return nil, err
+	}
+	external, err := GetMatchingExternalKeycloaks(ctx, c, labelSelector)
+	if err != nil {
+		return nil, err
+	}
+	return append(internal, external...), nil
 }
 
 // Try to get a list of keycloak instances that match the selector specified on the realm
-func GetMatchingRealms(ctx context.Context, c client.Client, labelSelector *v1.LabelSelector) (v1alpha1.KeycloakRealmList, error) {
+func GetMatchingRealms(ctx context.Context, c client.Client, labelSelector *v1.LabelSelector) ([]v1alpha1.KeycloakRealmReference, error) {
 	var list v1alpha1.KeycloakRealmList
 	opts := []client.ListOption{
 		client.MatchingLabels(labelSelector.MatchLabels),
 	}
 
 	err := c.List(ctx, &list, opts...)
-	return list, err
+	results := make([]v1alpha1.KeycloakRealmReference, len(list.Items))
+	for i, k := range list.Items {
+		results[i] = &k
+	}
+	return results, err
+}
+
+func GetMatchingExternalRealms(ctx context.Context, c client.Client, labelSelector *v1.LabelSelector) ([]v1alpha1.KeycloakRealmReference, error) {
+	var list v1alpha1.ExternalKeycloakRealmList
+	opts := []client.ListOption{
+		client.MatchingLabels(labelSelector.MatchLabels),
+	}
+
+	err := c.List(ctx, &list, opts...)
+	results := make([]v1alpha1.KeycloakRealmReference, len(list.Items))
+	for i, k := range list.Items {
+		results[i] = &k
+	}
+	return results, err
+}
+
+func GetAllMatchingRealms(ctx context.Context, c client.Client, labelSelector *v1.LabelSelector) ([]v1alpha1.KeycloakRealmReference, error) {
+	internal, err := GetMatchingRealms(ctx, c, labelSelector)
+	if err != nil {
+		return nil, err
+	}
+	external, err := GetMatchingExternalRealms(ctx, c, labelSelector)
+	if err != nil {
+		return nil, err
+	}
+	return append(internal, external...), nil
 }

@@ -18,11 +18,11 @@ type UserState struct {
 	AvailableRealmRoles  []*v1alpha1.KeycloakUserRole
 	Clients              []*v1alpha1.KeycloakAPIClient
 	Secret               *v1.Secret
-	Keycloak             v1alpha1.Keycloak
+	Keycloak             v1alpha1.KeycloakReference
 	Context              context.Context
 }
 
-func NewUserState(keycloak v1alpha1.Keycloak) *UserState {
+func NewUserState(keycloak v1alpha1.KeycloakReference) *UserState {
 	return &UserState{
 		ClientRoles:          map[string][]*v1alpha1.KeycloakUserRole{},
 		AvailableClientRoles: map[string][]*v1alpha1.KeycloakUserRole{},
@@ -30,8 +30,8 @@ func NewUserState(keycloak v1alpha1.Keycloak) *UserState {
 	}
 }
 
-func (i *UserState) Read(keycloakClient KeycloakInterface, userClient client.Client, user *v1alpha1.KeycloakUser, realm v1alpha1.KeycloakRealm) error {
-	err := i.readUser(keycloakClient, user, realm.Spec.Realm.Realm)
+func (i *UserState) Read(keycloakClient KeycloakInterface, userClient client.Client, user *v1alpha1.KeycloakUser, realm v1alpha1.KeycloakRealmReference) error {
+	err := i.readUser(keycloakClient, user, realm.Realm())
 	if err != nil {
 		// If there was an error reading the user then don't attempt
 		// to read the roles. This user might not yet exist
@@ -43,17 +43,17 @@ func (i *UserState) Read(keycloakClient KeycloakInterface, userClient client.Cli
 		return nil
 	}
 
-	err = i.readRealmRoles(keycloakClient, user, realm.Spec.Realm.Realm)
+	err = i.readRealmRoles(keycloakClient, user, realm.Realm())
 	if err != nil {
 		return err
 	}
 
-	err = i.readClientRoles(keycloakClient, user, realm.Spec.Realm.Realm)
+	err = i.readClientRoles(keycloakClient, user, realm.Realm())
 	if err != nil {
 		return err
 	}
 
-	return i.readSecretState(userClient, user, &realm)
+	return i.readSecretState(userClient, user, realm)
 }
 
 func (i *UserState) readUser(client KeycloakInterface, user *v1alpha1.KeycloakUser, realm string) error {
@@ -110,8 +110,8 @@ func (i *UserState) readClientRoles(client KeycloakInterface, user *v1alpha1.Key
 	return nil
 }
 
-func (i *UserState) readSecretState(userClient client.Client, user *v1alpha1.KeycloakUser, realm *v1alpha1.KeycloakRealm) error {
-	key := model.RealmCredentialSecretSelector(realm, &user.Spec.User, &i.Keycloak)
+func (i *UserState) readSecretState(userClient client.Client, user *v1alpha1.KeycloakUser, realm v1alpha1.KeycloakRealmReference) error {
+	key := model.RealmCredentialSecretSelector(realm, &user.Spec.User, i.Keycloak)
 	secret := &v1.Secret{}
 
 	// Try to find the user credential secret

@@ -1,5 +1,9 @@
 package v1alpha1
 
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
 func UpdateStatusSecondaryResources(secondaryResources map[string][]string, kind string, resourceName string) map[string][]string {
 	// If the map is nil, instansiate it
 	if secondaryResources == nil {
@@ -17,4 +21,16 @@ func UpdateStatusSecondaryResources(secondaryResources map[string][]string, kind
 
 	// return new map
 	return secondaryResources
+}
+
+type KeycloakReference interface {
+	metav1.Object
+	Endpoint() string
+	CredentialSecret() string
+}
+
+type KeycloakRealmReference interface {
+	metav1.Object
+	Realm() string
+	InstanceSelector() *metav1.LabelSelector
 }

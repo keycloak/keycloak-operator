@@ -44,7 +44,7 @@ func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 	}
 
 	// when
-	reconciler := NewKeycloakClientReconciler(keycloakCr)
+	reconciler := NewKeycloakClientReconciler(&keycloakCr)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
@@ -87,7 +87,7 @@ func TestKeycloakClientReconciler_Test_PartialUpdate_Client(t *testing.T) {
 	}
 
 	// when
-	reconciler := NewKeycloakClientReconciler(keycloakCr)
+	reconciler := NewKeycloakClientReconciler(&keycloakCr)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
@@ -132,7 +132,7 @@ func TestKeycloakClientReconciler_Test_Delete_Client(t *testing.T) {
 	}
 
 	// when
-	reconciler := NewKeycloakClientReconciler(keycloakCr)
+	reconciler := NewKeycloakClientReconciler(&keycloakCr)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then
@@ -172,7 +172,7 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 	}
 
 	// when
-	reconciler := NewKeycloakClientReconciler(keycloakCr)
+	reconciler := NewKeycloakClientReconciler(&keycloakCr)
 	desiredState := reconciler.Reconcile(currentState, cr)
 
 	// then

@@ -1,0 +1,67 @@
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: externalkeycloaks.keycloak.org
+spec:
+  group: keycloak.org
+  names:
+    kind: ExternalKeycloak
+    listKind: ExternalKeycloakList
+    plural: externalkeycloaks
+    singular: externalkeycloak
+  scope: Namespaced
+  subresources:
+    status: {}
+  validation:
+    openAPIV3Schema:
+      description: ExternalKeycloak is the Schema for the externalkeycloaks API.
+      properties:
+        apiVersion:
+          description: 'APIVersion defines the versioned schema of this representation
+            of an object. Servers should convert recognized schemas to the latest
+            internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+          type: string
+        kind:
+          description: 'Kind is a string value representing the REST resource this
+            object represents. Servers may infer this from the endpoint the client
+            submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+          type: string
+        metadata:
+          type: object
+        spec:
+          description: ExternalKeycloakSpec defines the desired state of ExternalKeycloak.
+          properties:
+            credentialSecret:
+              description: References the secret that stores the credentials for keycloak.
+              type: string
+            endpoint:
+              description: The endpoint to contact the keycloak instance.
+              type: string
+          required:
+          - credentialSecret
+          type: object
+        status:
+          description: ExternalKeycloakStatus defines the observed state of KeycloakBackup.
+          properties:
+            message:
+              description: Human-readable message indicating details about current
+                operator phase or error.
+              type: string
+            phase:
+              description: Current phase of the operator.
+              type: string
+            ready:
+              description: True if all resources are in a ready state and all work
+                is done.
+              type: boolean
+          required:
+          - message
+          - phase
+          - ready
+          type: object
+      type: object
+  version: v1alpha1
+  versions:
+  - name: v1alpha1
+    served: true
+    storage: true

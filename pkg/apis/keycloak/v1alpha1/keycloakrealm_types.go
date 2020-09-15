@@ -7,7 +7,7 @@ import (
 // KeycloakRealmSpec defines the desired state of KeycloakRealm.
 // +k8s:openapi-gen=true
 type KeycloakRealmSpec struct {
-	// Selector for looking up Keycloak Custom Resources.
+	// Selector for looking up Keycloak or ExternalKeycloak Custom Resources.
 	// +kubebuilder:validation:Required
 	InstanceSelector *metav1.LabelSelector `json:"instanceSelector,omitempty"`
 	// Keycloak Realm REST object.
@@ -316,6 +316,14 @@ type KeycloakRealmList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 	Items           []KeycloakRealm `json:"items"`
+}
+
+func (i *KeycloakRealm) Realm() string {
+	return i.Spec.Realm.Realm
+}
+
+func (i *KeycloakRealm) InstanceSelector() *metav1.LabelSelector {
+	return i.Spec.InstanceSelector.DeepCopy()
 }
 
 func init() {

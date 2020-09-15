@@ -114,19 +114,19 @@ func (r *ReconcileKeycloakClient) Reconcile(request reconcile.Request) (reconcil
 
 	// The client may be applicable to multiple keycloak instances,
 	// process all of them
-	realms, err := common.GetMatchingRealms(r.context, r.client, instance.Spec.RealmSelector)
+	realms, err := common.GetAllMatchingRealms(r.context, r.client, instance.Spec.RealmSelector)
 	if err != nil {
 		return r.ManageError(instance, err)
 	}
-	log.Info(fmt.Sprintf("found %v matching realm(s) for client %v/%v", len(realms.Items), instance.Namespace, instance.Name))
-	for _, realm := range realms.Items {
-		keycloaks, err := common.GetMatchingKeycloaks(r.context, r.client, realm.Spec.InstanceSelector)
+	log.Info(fmt.Sprintf("found %v matching realm(s) for client %v/%v", len(realms), instance.Namespace, instance.Name))
+	for _, realm := range realms {
+		keycloaks, err := common.GetAllMatchingKeycloaks(r.context, r.client, realm.InstanceSelector())
 		if err != nil {
 			return r.ManageError(instance, err)
 		}
-		log.Info(fmt.Sprintf("found %v matching keycloak(s) for realm %v/%v", len(keycloaks.Items), realm.Namespace, realm.Name))
+		log.Info(fmt.Sprintf("found %v matching keycloak(s) for realm %v/%v", len(keycloaks), realm.GetNamespace(), realm.GetName()))
 
-		for _, keycloak := range keycloaks.Items {
+		for _, keycloak := range keycloaks {
 			// Get an authenticated keycloak api client for the instance
 			keycloakFactory := common.LocalConfigKeycloakFactory{}
 			authenticated, err := keycloakFactory.AuthenticatedClient(keycloak)
@@ -135,14 +135,14 @@ func (r *ReconcileKeycloakClient) Reconcile(request reconcile.Request) (reconcil
 			}
 
 			// Compute the current state of the realm
-			log.Info(fmt.Sprintf("got authenticated client for keycloak at %v", keycloak.Status.InternalURL))
-			clientState := common.NewClientState(r.context, realm.DeepCopy())
+			log.Info(fmt.Sprintf("got authenticated client for keycloak at %v", keycloak.Endpoint()))
+			clientState := common.NewClientState(r.context, realm)
 
 			log.Info(fmt.Sprintf("read client state for keycloak %v/%v, realm %v/%v, client %v/%v",
-				keycloak.Namespace,
-				keycloak.Name,
-				realm.Namespace,
-				realm.Name,
+				keycloak.GetNamespace(),
+				keycloak.GetName(),
+				realm.GetNamespace(),
+				realm.GetName(),
 				instance.Namespace,
 				instance.Name))
 

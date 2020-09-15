@@ -14,11 +14,11 @@ type Reconciler interface {
 }
 
 type KeycloakuserReconciler struct { // nolint
-	Realm    v1alpha1.KeycloakRealm
-	Keycloak v1alpha1.Keycloak
+	Realm    v1alpha1.KeycloakRealmReference
+	Keycloak v1alpha1.KeycloakReference
 }
 
-func NewKeycloakuserReconciler(keycloak v1alpha1.Keycloak, realm v1alpha1.KeycloakRealm) *KeycloakuserReconciler {
+func NewKeycloakuserReconciler(keycloak v1alpha1.KeycloakReference, realm v1alpha1.KeycloakRealmReference) *KeycloakuserReconciler {
 	return &KeycloakuserReconciler{
 		Realm:    realm,
 		Keycloak: keycloak,
@@ -53,7 +53,7 @@ func (i *KeycloakuserReconciler) reconcileUserDelete(state *common.UserState, cr
 	if state.User != nil {
 		desired.AddAction(&common.DeleteUserAction{
 			ID:    state.User.ID,
-			Realm: i.Realm.Spec.Realm.Realm,
+			Realm: i.Realm.Realm(),
 			Msg:   fmt.Sprintf("delete user %v", cr.Spec.User.UserName),
 		})
 	}
@@ -75,13 +75,13 @@ func (i *KeycloakuserReconciler) getKeycloakUserDesiredState(state *common.UserS
 	if state.User == nil {
 		actions = append(actions, &common.CreateUserAction{
 			Ref:   cr,
-			Realm: i.Realm.Spec.Realm.Realm,
+			Realm: i.Realm.Realm(),
 			Msg:   fmt.Sprintf("create user %v", cr.Spec.User.UserName),
 		})
 	} else {
 		actions = append(actions, &common.UpdateUserAction{
 			Ref:   cr,
-			Realm: i.Realm.Spec.Realm.Realm,
+			Realm: i.Realm.Realm(),
 			Msg:   fmt.Sprintf("update user %v", cr.Spec.User.UserName),
 		})
 
@@ -109,7 +109,7 @@ func (i *KeycloakuserReconciler) getUserRealmRolesDesiredState(state *common.Use
 			assignRoles = append(assignRoles, &common.AssignRealmRoleAction{
 				UserID: state.User.ID,
 				Ref:    roleRef,
-				Realm:  i.Realm.Spec.Realm.Realm,
+				Realm:  i.Realm.Realm(),
 				Msg:    fmt.Sprintf("assign realm role %v to user %v", role, state.User.UserName),
 			})
 		}
@@ -121,7 +121,7 @@ func (i *KeycloakuserReconciler) getUserRealmRolesDesiredState(state *common.Use
 			removeRoles = append(removeRoles, &common.RemoveRealmRoleAction{
 				UserID: state.User.ID,
 				Ref:    role,
-				Realm:  i.Realm.Spec.Realm.Realm,
+				Realm:  i.Realm.Realm(),
 				Msg:    fmt.Sprintf("remove realm role %v from user %v", role.Name, state.User.UserName),
 			})
 		}
@@ -147,11 +147,11 @@ func (i *KeycloakuserReconciler) getUserSecretDesiredState(state *common.UserSta
 	// deleted
 	if state.Secret == nil {
 		return &common.GenericCreateAction{
-			Ref: model.RealmCredentialSecret(&i.Realm, &cr.Spec.User, &i.Keycloak),
+			Ref: model.RealmCredentialSecret(i.Realm, &cr.Spec.User, i.Keycloak),
 			Msg: fmt.Sprintf("create credential secret for user %v in realm %v/%v",
 				cr.Spec.User.UserName,
 				cr.Namespace,
-				i.Realm.Spec.Realm.Realm),
+				i.Realm.Realm()),
 		}
 	}
 	return nil
@@ -180,7 +180,7 @@ func (i *KeycloakuserReconciler) syncRolesForClient(state *common.UserState, cr 
 				UserID:   state.User.ID,
 				ClientID: client.ID,
 				Ref:      roleRef,
-				Realm:    i.Realm.Spec.Realm.Realm,
+				Realm:    i.Realm.Realm(),
 				Msg:      fmt.Sprintf("assign role %v of client %v to user %v", role, clientID, state.User.UserName),
 			})
 		}
@@ -199,7 +199,7 @@ func (i *KeycloakuserReconciler) syncRolesForClient(state *common.UserState, cr 
 				UserID:   state.User.ID,
 				ClientID: client.ID,
 				Ref:      role,
-				Realm:    i.Realm.Spec.Realm.Realm,
+				Realm:    i.Realm.Realm(),
 				Msg:      fmt.Sprintf("remove role %v of client %v from user %v", role.Name, clientID, state.User.UserName),
 			})
 		}

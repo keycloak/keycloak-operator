@@ -32,7 +32,8 @@ spec:
           description: KeycloakRealmSpec defines the desired state of KeycloakRealm.
           properties:
             instanceSelector:
-              description: Selector for looking up Keycloak Custom Resources.
+              description: Selector for looking up Keycloak or ExternalKeycloak Custom
+                Resources.
               properties:
                 matchExpressions:
                   description: matchExpressions is a list of label selector requirements.

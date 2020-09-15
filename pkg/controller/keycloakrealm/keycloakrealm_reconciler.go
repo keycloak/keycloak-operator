@@ -13,10 +13,10 @@ type Reconciler interface {
 }
 
 type KeycloakRealmReconciler struct { // nolint
-	Keycloak kc.Keycloak
+	Keycloak kc.KeycloakReference
 }
 
-func NewKeycloakRealmReconciler(keycloak kc.Keycloak) *KeycloakRealmReconciler {
+func NewKeycloakRealmReconciler(keycloak kc.KeycloakReference) *KeycloakRealmReconciler {
 	return &KeycloakRealmReconciler{
 		Keycloak: keycloak,
 	}
@@ -97,7 +97,7 @@ func (i *KeycloakRealmReconciler) getDesiredUserSate(state *common.RealmState, c
 	val, ok := state.RealmUserSecrets[user.UserName]
 	if !ok || val == nil {
 		return &common.GenericCreateAction{
-			Ref: model.RealmCredentialSecret(cr, user, &i.Keycloak),
+			Ref: model.RealmCredentialSecret(cr, user, i.Keycloak),
 			Msg: fmt.Sprintf("create credential secret for user %v in realm %v/%v", user.UserName, cr.Namespace, cr.Spec.Realm.Realm),
 		}
 	}
