@@ -68,7 +68,8 @@ func GetMatchingKeycloaks(ctx context.Context, c client.Client, labelSelector *v
 
 	err := c.List(ctx, &list, opts...)
 	results := make([]v1alpha1.KeycloakReference, len(list.Items))
-	for i, k := range list.Items {
+	for i := range list.Items {
+		k := list.Items[i]
 		results[i] = &k
 	}
 	return results, err
@@ -82,7 +83,8 @@ func GetMatchingExternalKeycloaks(ctx context.Context, c client.Client, labelSel
 
 	err := c.List(ctx, &list, opts...)
 	results := make([]v1alpha1.KeycloakReference, len(list.Items))
-	for i, k := range list.Items {
+	for i := range list.Items {
+		k := list.Items[i]
 		results[i] = &k
 	}
 	return results, err
@@ -109,7 +111,8 @@ func GetMatchingRealms(ctx context.Context, c client.Client, labelSelector *v1.L
 
 	err := c.List(ctx, &list, opts...)
 	results := make([]v1alpha1.KeycloakRealmReference, len(list.Items))
-	for i, k := range list.Items {
+	for i := range list.Items {
+		k := list.Items[i]
 		results[i] = &k
 	}
 	return results, err
@@ -123,7 +126,8 @@ func GetMatchingExternalRealms(ctx context.Context, c client.Client, labelSelect
 
 	err := c.List(ctx, &list, opts...)
 	results := make([]v1alpha1.KeycloakRealmReference, len(list.Items))
-	for i, k := range list.Items {
+	for i := range list.Items {
+		k := list.Items[i]
 		results[i] = &k
 	}
 	return results, err

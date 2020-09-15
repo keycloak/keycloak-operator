@@ -164,18 +164,18 @@ type KeycloakList struct {
 	Items           []Keycloak `json:"items"`
 }
 
-func (i *Keycloak) Endpoint() string {
-	return i.Status.InternalURL
+func (in *Keycloak) Endpoint() string {
+	return in.Status.InternalURL
 }
 
-func (i *Keycloak) CredentialSecret() string {
-	return i.Status.CredentialSecret
+func (in *Keycloak) CredentialSecret() string {
+	return in.Status.CredentialSecret
 }
 
 func init() {
 	SchemeBuilder.Register(&Keycloak{}, &KeycloakList{})
 }
 
-func (i *Keycloak) UpdateStatusSecondaryResources(kind string, resourceName string) {
-	i.Status.SecondaryResources = UpdateStatusSecondaryResources(i.Status.SecondaryResources, kind, resourceName)
+func (in *Keycloak) UpdateStatusSecondaryResources(kind string, resourceName string) {
+	in.Status.SecondaryResources = UpdateStatusSecondaryResources(in.Status.SecondaryResources, kind, resourceName)
 }

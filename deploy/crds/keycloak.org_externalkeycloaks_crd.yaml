@@ -37,8 +37,6 @@ spec:
             endpoint:
               description: The endpoint to contact the keycloak instance.
               type: string
-          required:
-          - credentialSecret
           type: object
         status:
           description: ExternalKeycloakStatus defines the observed state of KeycloakBackup.

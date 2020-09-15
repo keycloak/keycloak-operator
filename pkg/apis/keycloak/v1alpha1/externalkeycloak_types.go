@@ -9,7 +9,7 @@ import (
 type ExternalKeycloakSpec struct {
 	// References the secret that stores the credentials for keycloak.
 	// +kubebuilder:validation:Required
-	CredentialSecret string `json:"credentialSecret,omitEmpty"`
+	CredentialSecret string `json:"credentialSecret,omitempty"`
 	// The endpoint to contact the keycloak instance.
 	// +kubebuilder:validation:Required
 	Endpoint string `json:"endpoint,omitempty"`
@@ -52,12 +52,12 @@ type ExternalKeycloakList struct {
 	Items           []ExternalKeycloak `json:"items"`
 }
 
-func (i *ExternalKeycloak) Endpoint() string {
-	return i.Spec.Endpoint
+func (in *ExternalKeycloak) Endpoint() string {
+	return in.Spec.Endpoint
 }
 
-func (i *ExternalKeycloak) CredentialSecret() string {
-	return i.Spec.CredentialSecret
+func (in *ExternalKeycloak) CredentialSecret() string {
+	return in.Spec.CredentialSecret
 }
 
 func init() {

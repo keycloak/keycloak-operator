@@ -212,7 +212,6 @@ func schema_pkg_apis_keycloak_v1alpha1_ExternalKeycloakSpec(ref common.Reference
 						},
 					},
 				},
-				Required: []string{"credentialSecret"},
 			},
 		},
 	}
