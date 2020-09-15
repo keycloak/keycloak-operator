@@ -80,6 +80,10 @@ func (c *Client) create(obj T, resourcePath, resourceName string) (string, error
 	return uid, nil
 }
 
+func (c *Client) Endpoint() string {
+	return c.URL
+}
+
 func (c *Client) CreateRealm(realm *v1alpha1.KeycloakRealm) (string, error) {
 	return c.create(realm.Spec.Realm, "realms", "realm")
 }
@@ -734,6 +738,8 @@ func defaultRequester() Requester {
 type KeycloakInterface interface {
 	Ping() error
 
+	Endpoint() string
+
 	CreateRealm(realm *v1alpha1.KeycloakRealm) (string, error)
 	GetRealm(realmName string) (*v1alpha1.KeycloakRealm, error)
 	UpdateRealm(specRealm *v1alpha1.KeycloakRealm) error
@@ -806,15 +812,23 @@ func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (
 		return nil, err
 	}
 
-	adminCreds, err := secretClient.CoreV1().Secrets(kc.Namespace).Get(context.TODO(), kc.Status.CredentialSecret, v12.GetOptions{})
+	var credentialSecret, endpoint string
+	if kc.Spec.External.Enabled {
+		credentialSecret = "credential-" + kc.Name
+		endpoint = kc.Spec.External.URL
+	} else {
+		credentialSecret = kc.Status.CredentialSecret
+		endpoint = kc.Status.InternalURL
+	}
+
+	adminCreds, err := secretClient.CoreV1().Secrets(kc.Namespace).Get(context.TODO(), credentialSecret, v12.GetOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get the admin credentials")
 	}
 	user := string(adminCreds.Data[model.AdminUsernameProperty])
 	pass := string(adminCreds.Data[model.AdminPasswordProperty])
-	url := kc.Status.InternalURL
 	client := &Client{
-		URL:       url,
+		URL:       endpoint,
 		requester: defaultRequester(),
 	}
 	if err := client.login(user, pass); err != nil {

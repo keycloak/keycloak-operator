@@ -9,13 +9,15 @@ import (
 )
 
 const (
-	clientName = "test-client"
+	clientName         = "test-client"
+	externalClientName = "test-client-external"
 )
 
 func NewKeycloakClientsCRDTestStruct() *CRDTestStruct {
 	return &CRDTestStruct{
 		prepareEnvironmentSteps: []environmentInitializationStep{
 			prepareKeycloaksCR,
+			prepareExternalKeycloaksCR,
 			prepareKeycloakRealmCR,
 		},
 		testSteps: map[string]deployedOperatorTestStep{
@@ -25,25 +27,41 @@ func NewKeycloakClientsCRDTestStruct() *CRDTestStruct {
 				},
 				testFunction: keycloakClientBasicTest,
 			},
+			"externalKeycloakClientBasicTest": {
+				prepareTestEnvironmentSteps: []environmentInitializationStep{
+					prepareExternalKeycloakClientCR,
+				},
+				testFunction: externalKeycloakClientBasicTest,
+			},
 		},
 	}
 }
 
-func getKeycloakClientCR(namespace string) *keycloakv1alpha1.KeycloakClient {
+func getKeycloakClientCR(namespace string, external bool) *keycloakv1alpha1.KeycloakClient {
+	k8sName := testKeycloakClientCRName
+	id := clientName
+	labels := CreateLabel(namespace)
+
+	if external {
+		k8sName = testExternalKeycloakClientCRName
+		id = externalClientName
+		labels = CreateExternalLabel(namespace)
+	}
+
 	return &keycloakv1alpha1.KeycloakClient{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      testKeycloakClientCRName,
+			Name:      k8sName,
 			Namespace: namespace,
-			Labels:    CreateLabel(namespace),
+			Labels:    labels,
 		},
 		Spec: keycloakv1alpha1.KeycloakClientSpec{
 			RealmSelector: &metav1.LabelSelector{
-				MatchLabels: CreateLabel(namespace),
+				MatchLabels: labels,
 			},
 			Client: &keycloakv1alpha1.KeycloakAPIClient{
-				ID:                        clientName,
-				ClientID:                  clientName,
-				Name:                      clientName,
+				ID:                        id,
+				ClientID:                  id,
+				Name:                      id,
 				SurrogateAuthRequired:     false,
 				Enabled:                   true,
 				BaseURL:                   "https://operator-test.url/client-base-url",
@@ -70,10 +88,19 @@ func getKeycloakClientCR(namespace string) *keycloakv1alpha1.KeycloakClient {
 }
 
 func prepareKeycloakClientCR(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
-	keycloakClientCR := getKeycloakClientCR(namespace)
+	keycloakClientCR := getKeycloakClientCR(namespace, false)
+	return Create(framework, keycloakClientCR, ctx)
+}
+
+func prepareExternalKeycloakClientCR(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	keycloakClientCR := getKeycloakClientCR(namespace, true)
 	return Create(framework, keycloakClientCR, ctx)
 }
 
 func keycloakClientBasicTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
-	return WaitForClientToBeReady(t, framework, namespace)
+	return WaitForClientToBeReady(t, framework, namespace, testKeycloakClientCRName)
+}
+
+func externalKeycloakClientBasicTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	return WaitForClientToBeReady(t, framework, namespace, testExternalKeycloakClientCRName)
 }

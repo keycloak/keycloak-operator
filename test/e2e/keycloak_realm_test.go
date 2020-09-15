@@ -39,6 +39,9 @@ func NewKeycloakRealmsCRDTestStruct() *CRDTestStruct {
 			"keycloakRealmWithUserFederationTest": {
 				testFunction: keycloakRealmWithUserFederationTest,
 			},
+			"unmanagedKeycloakRealmTest": {
+				testFunction: keycloakUnmanagedRealmTest,
+			},
 		},
 	}
 }
@@ -435,4 +438,21 @@ func keycloakRealmWithUserFederationTest(t *testing.T, framework *test.Framework
 
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint
 	return WaitForSuccessResponseToContain(t, framework, keycloakInternalURL+"/auth/realms/"+realmName+"/account", testOperatorIDPDisplayName)
+}
+
+func keycloakUnmanagedRealmTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	keycloakRealmCR := getKeycloakRealmCR(namespace)
+	keycloakRealmCR.Spec.Unmanaged = true
+
+	err := Create(framework, keycloakRealmCR, ctx)
+	if err != nil {
+		return err
+	}
+
+	err = WaitForRealmToBeReady(t, framework, namespace)
+	if err != nil {
+		return err
+	}
+
+	return err
 }
