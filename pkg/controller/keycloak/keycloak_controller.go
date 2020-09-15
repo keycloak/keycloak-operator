@@ -25,9 +25,10 @@ import (
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
+	"github.com/pkg/errors"
 
 	"k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	kubeerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
@@ -156,9 +157,10 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 
 	// Fetch the Keycloak instance
 	instance := &keycloakv1alpha1.Keycloak{}
+
 	err := r.client.Get(r.context, request.NamespacedName, instance)
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if kubeerrors.IsNotFound(err) {
 			// Request object not found, could have been deleted after reconcile request.
 			// Owned objects are automatically garbage collected. For additional cleanup logic use finalizers.
 			// Return and don't requeue
@@ -167,9 +169,17 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 		// Error reading the object - requeue the request.
 		return reconcile.Result{}, err
 	}
+	currentState := common.NewClusterState()
+
+	if instance.Spec.Unmanaged {
+		return r.ManageSuccess(instance, currentState)
+	}
+
+	if instance.Spec.External.Enabled {
+		return r.ManageError(instance, errors.Errorf("if external.enabled is true, unmanaged also needs to be true"))
+	}
 
 	// Read current state
-	currentState := common.NewClusterState()
 	err = currentState.Read(r.context, instance, r.client)
 	if err != nil {
 		return r.ManageError(instance, err)

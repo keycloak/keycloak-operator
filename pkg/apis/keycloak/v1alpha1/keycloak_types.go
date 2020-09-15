@@ -8,6 +8,13 @@ import (
 // KeycloakSpec defines the desired state of Keycloak.
 // +k8s:openapi-gen=true
 type KeycloakSpec struct {
+	// When set to true, this Keycloak will be marked as unmanaged and will not be managed by this operator.
+	// It can then be used for targeting purposes.
+	// +optional
+	Unmanaged bool `json:"unmanaged,omitempty"`
+	// Contains configuration for external Keycloak instances. Unmanaged needs to be set to true to use this.
+	// +optional
+	External KeycloakExternal `json:"external"`
 	// A list of extensions, where each one is a URL to a JAR files that will be deployed in Keycloak.
 	// +listType=set
 	// +optional
@@ -79,6 +86,15 @@ var (
 	ReencryptTLSTerminationType   TLSTerminationType = "reencrypt"
 	PassthroughTLSTerminationType TLSTerminationType = "passthrough"
 )
+
+type KeycloakExternal struct {
+	// If set to true, this Keycloak will be treated as an external instance.
+	// The unmanaged field also needs to be set to true if this field is true.
+	Enabled bool `json:"enabled,omitempty"`
+	// The URL to use for the keycloak admin API. Needs to be set if external is true.
+	// +optional
+	URL string `json:"url,omitempty"`
+}
 
 type KeycloakExternalAccess struct {
 	// If set to true, the Operator will create an Ingress or a Route

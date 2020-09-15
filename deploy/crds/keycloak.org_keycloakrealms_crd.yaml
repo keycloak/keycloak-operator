@@ -584,6 +584,11 @@ spec:
                     type: string
                 type: object
               type: array
+            unmanaged:
+              description: When set to true, this KeycloakRealm will be marked as
+                unmanaged and not be managed by this operator. It can then be used
+                for targeting purposes.
+              type: boolean
           required:
           - realm
           type: object

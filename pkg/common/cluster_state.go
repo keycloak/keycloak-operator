@@ -462,6 +462,10 @@ func (i *ClusterState) readPodDisruptionCurrentState(context context.Context, cr
 }
 
 func (i *ClusterState) IsResourcesReady(cr *kc.Keycloak) (bool, error) {
+	if cr.Spec.Unmanaged {
+		return true, nil
+	}
+
 	// Check keycloak statefulset is ready
 	keycloakDeploymentReady, _ := IsStatefulSetReady(i.KeycloakDeployment)
 	// Default Route ready to true in case we are running on native Kubernetes

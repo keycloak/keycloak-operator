@@ -38,6 +38,20 @@ spec:
                 type: string
               type: array
               x-kubernetes-list-type: set
+            external:
+              description: Contains configuration for external Keycloak instances.
+                Unmanaged needs to be set to true to use this.
+              properties:
+                enabled:
+                  description: If set to true, this Keycloak will be treated as an
+                    external instance. The unmanaged field also needs to be set to
+                    true if this field is true.
+                  type: boolean
+                url:
+                  description: The URL to use for the keycloak admin API. Needs to
+                    be set if external is true.
+                  type: string
+              type: object
             externalAccess:
               description: Controls external Ingress/Route settings.
               properties:
@@ -171,6 +185,11 @@ spec:
               description: Name of the StorageClass for Postgresql Persistent Volume
                 Claim
               type: string
+            unmanaged:
+              description: When set to true, this Keycloak will be marked as unmanaged
+                and will not be managed by this operator. It can then be used for
+                targeting purposes.
+              type: boolean
           type: object
         status:
           description: KeycloakStatus defines the observed state of Keycloak.

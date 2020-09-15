@@ -1,0 +1,11 @@
+apiVersion: keycloak.org/v1alpha1
+kind: Keycloak
+metadata:
+  name: example-external-keycloak
+  labels:
+    app: sso
+spec:
+  unmanaged: true
+  external:
+    enabled: true
+    url: https://some.external.keycloak
