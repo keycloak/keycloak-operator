@@ -48,6 +48,9 @@ type KeycloakUser struct {
 }
 
 type KeycloakAPIUser struct {
+	// User ID.
+	// +optional
+	ID string `json:"id,omitempty"`
 	// User Name.
 	// +optional
 	UserName string `json:"username,omitempty"`

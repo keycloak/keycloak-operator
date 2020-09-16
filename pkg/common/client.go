@@ -397,8 +397,8 @@ func (c *Client) UpdateRealm(realm *v1alpha1.KeycloakRealm) error {
 	return c.update(realm, fmt.Sprintf("realms/%s", realm.Spec.Realm.ID), "realm")
 }
 
-func (c *Client) UpdateClient(specClient *v1alpha1.KeycloakAPIClient, realmName string) error {
-	return c.update(specClient, fmt.Sprintf("realms/%s/clients/%s", realmName, specClient.ID), "client")
+func (c *Client) UpdateClient(specClient *v1alpha1.KeycloakAPIClient, realmName, clientID string) error {
+	return c.update(specClient, fmt.Sprintf("realms/%s/clients/%s", realmName, clientID), "client")
 }
 
 func (c *Client) UpdateUser(specUser *v1alpha1.KeycloakAPIUser, realmName string, userID string) error {
@@ -744,7 +744,7 @@ type KeycloakInterface interface {
 	GetClient(clientID, realmName string) (*v1alpha1.KeycloakAPIClient, error)
 	GetClientSecret(clientID, realmName string) (string, error)
 	GetClientInstall(clientID, realmName string) ([]byte, error)
-	UpdateClient(specClient *v1alpha1.KeycloakAPIClient, realmName string) error
+	UpdateClient(specClient *v1alpha1.KeycloakAPIClient, realmName, clientID string) error
 	DeleteClient(clientID, realmName string) error
 	ListClients(realmName string) ([]*v1alpha1.KeycloakAPIClient, error)
 

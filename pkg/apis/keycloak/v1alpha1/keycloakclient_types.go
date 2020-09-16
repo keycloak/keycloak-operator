@@ -13,6 +13,9 @@ type KeycloakClientSpec struct {
 	// Keycloak Client REST object.
 	// +kubebuilder:validation:Required
 	Client *KeycloakAPIClient `json:"client"`
+	// Service Account Roles
+	// +optional
+	ServiceAccountRoles KeycloakServiceAccountRoles `json:"serviceAccountRoles,omitempty"`
 }
 
 type KeycloakAPIClient struct {
@@ -114,6 +117,15 @@ type KeycloakAPIClient struct {
 	Access map[string]bool `json:"access,omitempty"`
 }
 
+type KeycloakServiceAccountRoles struct {
+	// A set of Realm Roles.
+	// +optional
+	RealmRoles []string `json:"realmRoles,omitempty"`
+	// A set of Client Roles.
+	// +optional
+	ClientRoles map[string][]string `json:"clientRoles,omitempty"`
+}
+
 type KeycloakProtocolMapper struct {
 	// Protocol Mapper ID.
 	// +optional
@@ -149,6 +161,10 @@ type KeycloakClientStatus struct {
 	Ready bool `json:"ready"`
 	// A map of all the secondary resources types and names created for this CR. e.g "Deployment": [ "DeploymentName1", "DeploymentName2" ]
 	SecondaryResources map[string][]string `json:"secondaryResources,omitempty"`
+	// Map of realms to client ids for this client
+	RealmClientIds map[string]string `json:"realmClientIds,omitempty"`
+	// Map of realms to service account user ids for this client
+	RealmServiceAccountIds map[string]string `json:"realmServiceAccountIds,omitempty"`
 }
 
 // KeycloakClient is the Schema for the keycloakclients API.

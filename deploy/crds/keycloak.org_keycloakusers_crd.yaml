@@ -171,6 +171,11 @@ spec:
             phase:
               description: Current phase of the operator.
               type: string
+            realmUserIds:
+              additionalProperties:
+                type: string
+              description: Map of realms to user ids for this user
+              type: object
           required:
           - message
           - phase

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
+	"github.com/keycloak/keycloak-operator/pkg/model"
 	"github.com/pkg/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -130,7 +131,17 @@ func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm s
 		return err
 	}
 
-	obj.Spec.Client.ID = uid
+	obj.Status.RealmClientIds = setStatusRealmID(obj.Status.RealmClientIds, realm, uid)
+
+	// If service account is enabled, lookup and store the user id
+	if obj.Spec.Client.ServiceAccountsEnabled {
+		name := model.GetServiceAccountUsername(obj.Spec.Client.ClientID)
+		user, err := i.keycloakClient.FindUserByUsername(name, realm)
+		if err != nil {
+			return errors.Errorf("failed to find service account %s in realm %s with err %v", name, realm, err)
+		}
+		obj.Status.RealmServiceAccountIds = setStatusRealmID(obj.Status.RealmServiceAccountIds, realm, user.ID)
+	}
 
 	return i.client.Update(i.context, obj)
 }
@@ -139,7 +150,19 @@ func (i *ClusterActionRunner) UpdateClient(obj *v1alpha1.KeycloakClient, realm s
 	if i.keycloakClient == nil {
 		return errors.Errorf("cannot perform client update when client is nil")
 	}
-	return i.keycloakClient.UpdateClient(obj.Spec.Client, realm)
+	err := i.keycloakClient.UpdateClient(obj.Spec.Client, realm, obj.Status.RealmClientIds[realm])
+
+	if err == nil && obj.Spec.Client.ServiceAccountsEnabled && (obj.Status.RealmServiceAccountIds == nil ||
+		obj.Status.RealmServiceAccountIds[realm] == "") {
+		name := model.GetServiceAccountUsername(obj.Spec.Client.ClientID)
+		user, err := i.keycloakClient.FindUserByUsername(name, realm)
+		if err != nil {
+			return errors.Errorf("failed to find service account %s in realm %s with err %v", name, realm, err)
+		}
+		obj.Status.RealmServiceAccountIds = setStatusRealmID(obj.Status.RealmServiceAccountIds, realm, user.ID)
+		return i.client.Update(i.context, obj)
+	}
+	return err
 }
 
 // Delete a realm using the keycloak api
@@ -154,7 +177,7 @@ func (i *ClusterActionRunner) DeleteClient(obj *v1alpha1.KeycloakClient, realm s
 	if i.keycloakClient == nil {
 		return errors.Errorf("cannot perform client delete when client is nil")
 	}
-	return i.keycloakClient.DeleteClient(obj.Spec.Client.ID, realm)
+	return i.keycloakClient.DeleteClient(obj.Status.RealmClientIds[realm], realm)
 }
 
 func (i *ClusterActionRunner) CreateUser(obj *v1alpha1.KeycloakUser, realm string) error {
@@ -169,7 +192,7 @@ func (i *ClusterActionRunner) CreateUser(obj *v1alpha1.KeycloakUser, realm strin
 	}
 
 	// Update newly created user with its uid
-	obj.Status.RealmUserIds[realm] = uid
+	obj.Status.RealmUserIds = setStatusRealmID(obj.Status.RealmUserIds, realm, uid)
 	return i.client.Update(i.context, obj)
 }
 
@@ -289,6 +312,16 @@ func (i *ClusterActionRunner) configureBrowserRedirector(provider, flow string, 
 	}
 
 	return nil
+}
+
+func setStatusRealmID(statusMap map[string]string, realm, id string) map[string]string {
+	// If the map is nil, instansiate it
+	if statusMap == nil {
+		statusMap = make(map[string]string)
+	}
+
+	statusMap[realm] = id
+	return statusMap
 }
 
 // An action to create generic kubernetes resources
