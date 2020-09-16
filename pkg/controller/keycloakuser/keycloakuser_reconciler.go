@@ -52,7 +52,7 @@ func (i *KeycloakuserReconciler) reconcileUserDelete(state *common.UserState, cr
 	// here
 	if state.User != nil {
 		desired.AddAction(&common.DeleteUserAction{
-			ID:    state.User.ID,
+			ID:    cr.Status.RealmUserIds[i.Realm.Spec.Realm.Realm],
 			Realm: i.Realm.Spec.Realm.Realm,
 			Msg:   fmt.Sprintf("delete user %v", cr.Spec.User.UserName),
 		})
@@ -107,7 +107,7 @@ func (i *KeycloakuserReconciler) getUserRealmRolesDesiredState(state *common.Use
 		// Role requested but not assigned?
 		if !containsRole(state.RealmRoles, role) {
 			assignRoles = append(assignRoles, &common.AssignRealmRoleAction{
-				UserID: state.User.ID,
+				UserID: cr.Status.RealmUserIds[i.Realm.Spec.Realm.Realm],
 				Ref:    roleRef,
 				Realm:  i.Realm.Spec.Realm.Realm,
 				Msg:    fmt.Sprintf("assign realm role %v to user %v", role, state.User.UserName),
@@ -119,7 +119,7 @@ func (i *KeycloakuserReconciler) getUserRealmRolesDesiredState(state *common.Use
 		// Role assigned but not requested?
 		if !containsRoleID(cr.Spec.User.RealmRoles, role.Name) {
 			removeRoles = append(removeRoles, &common.RemoveRealmRoleAction{
-				UserID: state.User.ID,
+				UserID: cr.Status.RealmUserIds[i.Realm.Spec.Realm.Realm],
 				Ref:    role,
 				Realm:  i.Realm.Spec.Realm.Realm,
 				Msg:    fmt.Sprintf("remove realm role %v from user %v", role.Name, state.User.UserName),
@@ -177,7 +177,7 @@ func (i *KeycloakuserReconciler) syncRolesForClient(state *common.UserState, cr 
 		// Role requested but not assigned?
 		if !containsRole(state.ClientRoles[clientID], role) {
 			assignRoles = append(assignRoles, &common.AssignClientRoleAction{
-				UserID:   state.User.ID,
+				UserID:   cr.Status.RealmUserIds[i.Realm.Spec.Realm.Realm],
 				ClientID: client.ID,
 				Ref:      roleRef,
 				Realm:    i.Realm.Spec.Realm.Realm,
@@ -196,7 +196,7 @@ func (i *KeycloakuserReconciler) syncRolesForClient(state *common.UserState, cr 
 		// Role assigned but not requested?
 		if !containsRoleID(cr.Spec.User.ClientRoles[clientID], role.Name) {
 			removeRoles = append(removeRoles, &common.RemoveClientRoleAction{
-				UserID:   state.User.ID,
+				UserID:   cr.Status.RealmUserIds[i.Realm.Spec.Realm.Realm],
 				ClientID: client.ID,
 				Ref:      role,
 				Realm:    i.Realm.Spec.Realm.Realm,

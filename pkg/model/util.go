@@ -150,3 +150,7 @@ func LogHasDiff(was, now interface{}) {
 		logr.Printf("%s has changes", GetCallerFunction(3))
 	}
 }
+
+func GetServiceAccountUsername(clientName string) string {
+	return fmt.Sprintf("service-account-%s", clientName)
+}

@@ -57,8 +57,8 @@ func (i *UserState) Read(keycloakClient KeycloakInterface, userClient client.Cli
 }
 
 func (i *UserState) readUser(client KeycloakInterface, user *v1alpha1.KeycloakUser, realm string) error {
-	if user.Spec.User.ID != "" {
-		keycloakUser, err := client.GetUser(user.Spec.User.ID, realm)
+	if user.Status.RealmUserIds[realm] != "" {
+		keycloakUser, err := client.GetUser(user.Status.RealmUserIds[realm], realm)
 		if err != nil {
 			return err
 		}
@@ -69,14 +69,14 @@ func (i *UserState) readUser(client KeycloakInterface, user *v1alpha1.KeycloakUs
 
 func (i *UserState) readRealmRoles(client KeycloakInterface, user *v1alpha1.KeycloakUser, realm string) error {
 	// Get all the realm roles of this user
-	roles, err := client.ListUserRealmRoles(realm, i.User.ID)
+	roles, err := client.ListUserRealmRoles(realm, user.Status.RealmUserIds[realm])
 	if err != nil {
 		return err
 	}
 	i.RealmRoles = roles
 
 	// Get the roles that are still available to this user
-	availableRoles, err := client.ListAvailableUserRealmRoles(realm, i.User.ID)
+	availableRoles, err := client.ListAvailableUserRealmRoles(realm, user.Status.RealmUserIds[realm])
 	if err != nil {
 		return err
 	}
@@ -94,14 +94,14 @@ func (i *UserState) readClientRoles(client KeycloakInterface, user *v1alpha1.Key
 
 	for _, c := range clients {
 		// Get all client roles of this user
-		roles, err := client.ListUserClientRoles(realm, c.ID, i.User.ID)
+		roles, err := client.ListUserClientRoles(realm, c.ID, user.Status.RealmUserIds[realm])
 		if err != nil {
 			return err
 		}
 		i.ClientRoles[c.ClientID] = roles
 
 		// Get the roles that are still available to this user
-		availableRoles, err := client.ListAvailableUserClientRoles(realm, c.ID, i.User.ID)
+		availableRoles, err := client.ListAvailableUserClientRoles(realm, c.ID, user.Status.RealmUserIds[realm])
 		if err != nil {
 			return err
 		}

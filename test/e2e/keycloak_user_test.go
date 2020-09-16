@@ -41,7 +41,6 @@ func getKeycloakUserCR(namespace string) *keycloakv1alpha1.KeycloakUser {
 				MatchLabels: CreateLabel(namespace),
 			},
 			User: keycloakv1alpha1.KeycloakAPIUser{
-				ID:            userID,
 				UserName:      userID,
 				FirstName:     "First name",
 				LastName:      "Last name",

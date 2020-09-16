@@ -213,6 +213,22 @@ spec:
                     are ANDed.
                   type: object
               type: object
+            serviceAccountRoles:
+              description: Service Account Roles
+              properties:
+                clientRoles:
+                  additionalProperties:
+                    items:
+                      type: string
+                    type: array
+                  description: A set of Client Roles.
+                  type: object
+                realmRoles:
+                  description: A set of Realm Roles.
+                  items:
+                    type: string
+                  type: array
+              type: object
           required:
           - client
           - realmSelector
@@ -231,6 +247,16 @@ spec:
               description: True if all resources are in a ready state and all work
                 is done.
               type: boolean
+            realmClientIds:
+              additionalProperties:
+                type: string
+              description: Map of realms to client ids for this client
+              type: object
+            realmServiceAccountIds:
+              additionalProperties:
+                type: string
+              description: Map of realms to service account user ids for this client
+              type: object
             secondaryResources:
               additionalProperties:
                 items:

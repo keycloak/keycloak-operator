@@ -3,8 +3,22 @@ NAMESPACE=keycloak
 PROJECT=keycloak-operator
 PKG=github.com/keycloak/keycloak-operator
 OPERATOR_SDK_VERSION=v0.18.2
-OPERATOR_SDK_DOWNLOAD_URL=https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk-$(OPERATOR_SDK_VERSION)-x86_64-linux-gnu
-MINIKUBE_DOWNLOAD_URL=https://github.com/kubernetes/minikube/releases/download/v1.9.2/minikube-linux-amd64
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Linux)
+		OPERATOR_SDK_OS=linux-gnu
+		MINIKUBE_OS=linux
+endif
+ifeq ($(UNAME_S),Darwin)
+		OPERATOR_SDK_OS=apple-darwin
+		MINIKUBE_OS=darwin
+endif
+UNAME_P := $(shell uname -m)
+ifeq ($(UNAME_P),x86_64)
+		OPERATOR_SDK_ARCH=x86_64
+		MINIKUBE_ARCH=amd64
+endif
+OPERATOR_SDK_DOWNLOAD_URL=https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk-$(OPERATOR_SDK_VERSION)-$(OPERATOR_SDK_ARCH)-$(OPERATOR_SDK_OS)
+MINIKUBE_DOWNLOAD_URL=https://github.com/kubernetes/minikube/releases/download/v1.9.2/minikube-$(MINIKUBE_OS)-$(MINIKUBE_ARCH)
 KUBECTL_DOWNLOAD_URL=https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
 
 # Compile constants
@@ -107,6 +121,7 @@ setup/mod/verify:
 .PHONY: setup/operator-sdk
 setup/operator-sdk:
 	@echo Installing Operator SDK
+	@echo ${OPERATOR_SDK_DOWNLOAD_URL}
 	@curl -Lo operator-sdk ${OPERATOR_SDK_DOWNLOAD_URL} && chmod +x operator-sdk && sudo mv operator-sdk /usr/local/bin/
 
 .PHONY: setup/linter
