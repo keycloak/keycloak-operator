@@ -22,9 +22,11 @@ require (
 // Pinned to kubernetes-1.18.2
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
+	github.com/openshift/api => github.com/openshift/api v0.0.0-20190924102528-32369d4db2ad
 	github.com/operator-framework/operator-sdk => github.com/operator-framework/operator-sdk v0.18.2
 	k8s.io/api => k8s.io/api v0.18.2
 	k8s.io/apimachinery => k8s.io/apimachinery v0.18.2
+	vbom.ml/util => github.com/fvbommel/util v0.0.0-20180919145318-efcd4e0f9787
 )
 
 replace k8s.io/client-go => k8s.io/client-go v0.18.2
