@@ -35,11 +35,24 @@ func (i *KeycloakuserReconciler) Reconcile(state *common.UserState, cr *v1alpha1
 func (i *KeycloakuserReconciler) reconcileUser(state *common.UserState, cr *v1alpha1.KeycloakUser) common.DesiredClusterState {
 	desired := common.DesiredClusterState{}
 
+	if cr.Spec.GeneratePassword && state.Secret == nil {
+		generateUserPassword(cr)
+	}
+
 	desired.AddAction(i.getKeycloakDesiredState())
 	desired.AddActions(i.getKeycloakUserDesiredState(state, cr))
 	desired.AddAction(i.getUserSecretDesiredState(state, cr))
 
 	return desired
+}
+
+func generateUserPassword(cr *v1alpha1.KeycloakUser) {
+	credentials := cr.Spec.User.Credentials
+	for i := range credentials {
+		if credentials[i].Type == "password" && credentials[i].Value == "" {
+			credentials[i].Value = model.GenerateRandomString(20)
+		}
+	}
 }
 
 func (i *KeycloakuserReconciler) reconcileUserDelete(state *common.UserState, cr *v1alpha1.KeycloakUser) common.DesiredClusterState {

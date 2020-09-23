@@ -21,7 +21,7 @@ func PostgresqlPersistentVolumeClaim(cr *v1alpha1.Keycloak) *v1.PersistentVolume
 			AccessModes: []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce},
 			Resources: v1.ResourceRequirements{
 				Requests: v1.ResourceList{
-					v1.ResourceStorage: resource.MustParse(PostgresqlPersistentVolumeCapacity),
+					v1.ResourceStorage: getPVCapacity(cr),
 				}},
 			StorageClassName: cr.Spec.StorageClassName,
 		},
@@ -40,11 +40,19 @@ func PostgresqlPersistentVolumeClaimReconciled(cr *v1alpha1.Keycloak, currentSta
 	reconciled.Spec.AccessModes = []v1.PersistentVolumeAccessMode{v1.ReadWriteOnce}
 	reconciled.Spec.Resources = v1.ResourceRequirements{
 		Requests: v1.ResourceList{
-			v1.ResourceStorage: resource.MustParse(PostgresqlPersistentVolumeCapacity),
+			v1.ResourceStorage: getPVCapacity(cr),
 		}}
 	if cr.Spec.StorageClassName != nil {
 		reconciled.Spec.StorageClassName = cr.Spec.StorageClassName
 	}
 	LogDiff(currentState, reconciled)
 	return reconciled
+}
+
+func getPVCapacity(cr *v1alpha1.Keycloak) resource.Quantity {
+	capacity := PostgresqlPersistentVolumeCapacity
+	if cr.Spec.StorageCapacity != "" {
+		capacity = cr.Spec.StorageCapacity
+	}
+	return resource.MustParse(capacity)
 }

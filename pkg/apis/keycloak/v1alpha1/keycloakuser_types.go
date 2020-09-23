@@ -22,6 +22,9 @@ type KeycloakUserSpec struct {
 	// Keycloak User REST object.
 	// +kubebuilder:validation:Required
 	User KeycloakAPIUser `json:"user"`
+	// True if password should be randomly generated
+	// +optional
+	GeneratePassword bool `json:"generatePassword,omitempty"`
 }
 
 // KeycloakUserStatus defines the observed state of KeycloakUser.

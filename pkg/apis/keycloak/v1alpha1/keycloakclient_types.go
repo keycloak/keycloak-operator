@@ -16,6 +16,9 @@ type KeycloakClientSpec struct {
 	// Service Account Roles
 	// +optional
 	ServiceAccountRoles KeycloakServiceAccountRoles `json:"serviceAccountRoles,omitempty"`
+	// True if Client Secret should be randomly generated
+	// +optional
+	GenerateClientSecret bool `json:"generateClientSecret,omitempty"`
 }
 
 type KeycloakAPIClient struct {

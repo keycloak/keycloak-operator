@@ -66,6 +66,9 @@ type KeycloakSpec struct {
 	// Name of the StorageClass for Postgresql Persistent Volume Claim
 	// +optional
 	StorageClassName *string `json:"storageClassName,omitempty"`
+	// Storage Size for Postgresql Persistent Volume Claim
+	// +optional
+	StorageCapacity string `json:"storageCapacity,omitempty"`
 }
 
 type DeploymentSpec struct {

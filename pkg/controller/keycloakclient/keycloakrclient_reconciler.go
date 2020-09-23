@@ -31,6 +31,10 @@ func (i *KeycloakClientReconciler) Reconcile(state *common.ClientState, cr *kc.K
 		return desired
 	}
 
+	if cr.Spec.GenerateClientSecret && state.ClientSecret == nil {
+		generateClientSecret(cr)
+	}
+
 	if state.Client == nil {
 		desired.AddAction(i.getCreatedClientState(state, cr))
 	} else {
@@ -44,6 +48,12 @@ func (i *KeycloakClientReconciler) Reconcile(state *common.ClientState, cr *kc.K
 	}
 
 	return desired
+}
+
+func generateClientSecret(cr *kc.KeycloakClient) {
+	if cr.Spec.Client.Secret == "" {
+		cr.Spec.Client.Secret = model.GenerateRandomString(20)
+	}
 }
 
 func (i *KeycloakClientReconciler) pingKeycloak() common.ClusterAction {

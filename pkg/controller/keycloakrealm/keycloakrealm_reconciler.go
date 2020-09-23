@@ -35,13 +35,25 @@ func (i *KeycloakRealmReconciler) ReconcileRealmCreate(state *common.RealmState,
 	desired.AddAction(i.getKeycloakDesiredState())
 	desired.AddAction(i.getDesiredRealmState(state, cr))
 
-	for _, user := range cr.Spec.Realm.Users {
-		desired.AddAction(i.getDesiredUserSate(state, cr, user))
+	users := cr.Spec.Realm.Users
+	for n := range users {
+		if cr.Spec.GenerateUserPasswords {
+			generateUserPassword(users[n])
+		}
+		desired.AddAction(i.getDesiredUserState(state, cr, users[n]))
 	}
 
 	desired.AddAction(i.getBrowserRedirectorDesiredState(state, cr))
 
 	return desired
+}
+
+func generateUserPassword(user *kc.KeycloakAPIUser) {
+	for i := range user.Credentials {
+		if user.Credentials[i].Type == "password" && user.Credentials[i].Value == "" {
+			user.Credentials[i].Value = model.GenerateRandomString(20)
+		}
+	}
 }
 
 func (i *KeycloakRealmReconciler) ReconcileRealmDelete(state *common.RealmState, cr *kc.KeycloakRealm) common.DesiredClusterState {
@@ -93,7 +105,7 @@ func (i *KeycloakRealmReconciler) getDesiredRealmState(state *common.RealmState,
 	return nil
 }
 
-func (i *KeycloakRealmReconciler) getDesiredUserSate(state *common.RealmState, cr *kc.KeycloakRealm, user *kc.KeycloakAPIUser) common.ClusterAction {
+func (i *KeycloakRealmReconciler) getDesiredUserState(state *common.RealmState, cr *kc.KeycloakRealm, user *kc.KeycloakAPIUser) common.ClusterAction {
 	val, ok := state.RealmUserSecrets[user.UserName]
 	if !ok || val == nil {
 		return &common.GenericCreateAction{
