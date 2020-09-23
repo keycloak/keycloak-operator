@@ -31,6 +31,9 @@ spec:
         spec:
           description: KeycloakUserSpec defines the desired state of KeycloakUser.
           properties:
+            generatePassword:
+              description: True if password should be randomly generated
+              type: boolean
             realmSelector:
               description: Selector for looking up KeycloakRealm Custom Resources.
               properties:

@@ -121,7 +121,6 @@ setup/mod/verify:
 .PHONY: setup/operator-sdk
 setup/operator-sdk:
 	@echo Installing Operator SDK
-	@echo ${OPERATOR_SDK_DOWNLOAD_URL}
 	@curl -Lo operator-sdk ${OPERATOR_SDK_DOWNLOAD_URL} && chmod +x operator-sdk && sudo mv operator-sdk /usr/local/bin/
 
 .PHONY: setup/linter

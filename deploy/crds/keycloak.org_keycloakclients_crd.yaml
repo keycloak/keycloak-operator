@@ -170,6 +170,9 @@ spec:
               required:
               - clientId
               type: object
+            generateClientSecret:
+              description: True if Client Secret should be randomly generated
+              type: boolean
             realmSelector:
               description: Selector for looking up KeycloakRealm Custom Resources.
               properties:

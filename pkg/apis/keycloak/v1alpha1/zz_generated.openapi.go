@@ -321,6 +321,13 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakClientSpec(ref common.ReferenceCa
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.KeycloakServiceAccountRoles"),
 						},
 					},
+					"generateClientSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "True if Client Secret should be randomly generated",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
 				},
 				Required: []string{"realmSelector", "client"},
 			},
@@ -498,6 +505,13 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmSpec(ref common.ReferenceCal
 							},
 						},
 					},
+					"generateUserPasswords": {
+						SchemaProps: spec.SchemaProps{
+							Description: "True if user passwords should be randomly generated",
+							Type:        []string{"boolean"},
+							Format:      "",
+						},
+					},
 				},
 				Required: []string{"realm"},
 			},
@@ -668,6 +682,13 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 							Format:      "",
 						},
 					},
+					"storageCapacity": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Storage Size for Postgresql Persistent Volume Claim",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 				},
 			},
 		},
@@ -815,6 +836,13 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakUserSpec(ref common.ReferenceCall
 						SchemaProps: spec.SchemaProps{
 							Description: "Keycloak User REST object.",
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.KeycloakAPIUser"),
+						},
+					},
+					"generatePassword": {
+						SchemaProps: spec.SchemaProps{
+							Description: "True if password should be randomly generated",
+							Type:        []string{"boolean"},
+							Format:      "",
 						},
 					},
 				},

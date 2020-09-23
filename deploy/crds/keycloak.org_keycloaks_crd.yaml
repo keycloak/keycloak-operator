@@ -640,6 +640,9 @@ spec:
                 type: string
               description: Service annotations
               type: object
+            storageCapacity:
+              description: Storage Size for Postgresql Persistent Volume Claim
+              type: string
             storageClassName:
               description: Name of the StorageClass for Postgresql Persistent Volume
                 Claim

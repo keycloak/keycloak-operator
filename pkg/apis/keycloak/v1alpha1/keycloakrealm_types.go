@@ -16,6 +16,9 @@ type KeycloakRealmSpec struct {
 	// A list of overrides to the default Realm behavior.
 	// +listType=set
 	RealmOverrides []*RedirectorIdentityProviderOverride `json:"realmOverrides,omitempty"`
+	// True if user passwords should be randomly generated
+	// +optional
+	GenerateUserPasswords bool `json:"generateUserPasswords,omitempty"`
 }
 
 type KeycloakAPIRealm struct {
