@@ -38,7 +38,6 @@ func (i *KeycloakuserReconciler) reconcileUser(state *common.UserState, cr *v1al
 	if cr.Spec.GeneratePassword && state.Secret == nil {
 		generateUserPassword(cr)
 	}
-	log.Info("reconcileUser", "user", cr.Spec.User)
 
 	desired.AddAction(i.getKeycloakDesiredState())
 	desired.AddActions(i.getKeycloakUserDesiredState(state, cr))
