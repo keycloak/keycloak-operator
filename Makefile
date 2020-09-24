@@ -47,7 +47,7 @@ cluster/create/examples:
 .PHONY: test/unit
 test/unit:
 	@echo Running tests:
-	@go test -v -tags=unit -coverpkg ./... -coverprofile cover-unit.coverprofile -covermode=count ./pkg/...
+	@go test -v -tags=unit -coverpkg ./... -coverprofile cover-unit.coverprofile -covermode=count -mod=vendor ./pkg/...
 
 .PHONY: test/e2e
 test/e2e: setup/operator-sdk
