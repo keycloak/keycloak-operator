@@ -15,9 +15,6 @@ pipeline {
   options {
     ansiColor('xterm')
 
-    // Disable concurrent builds
-    disableConcurrentBuilds()
-
     // Preserve stashes from the 20 latest builds
     preserveStashes(buildCount: 20)
 
