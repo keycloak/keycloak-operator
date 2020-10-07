@@ -200,5 +200,53 @@ pipeline {
         } // stage - publish debug
       } // parallel
     } // stage - publish
+
+    stage('dev deploy') {
+      agent {
+        label 'master'
+      }
+      when {
+        beforeAgent true
+        branch 'master'
+      }
+      steps {
+        milestone(ordinal: 1, label: 'deployment-dev')
+        build job: 'binnacle-apps-autoupdate', parameters: [
+            string(name: 'binnaclePath', value: 'aws/cogito2-saas-cogito-dev-001/us-east-1/saas'),
+            string(name: 'binnacleFile', value: 'cogito-saas-keycloak-operator.yaml'),
+            string(name: 'imageTag', value: prebuildResult.imageTag)
+        ]
+        build job: 'binnacle-aws-cogito2-saas-cogito-dev-001-us-east-1-saas-cogito-saas-keycloak-operator-poll', quietPeriod: 2
+      }
+    } // stage - dev deploy
+
+    stage("confirm promote to qua") {
+      when {
+        branch 'master'
+      }
+      agent none
+      steps {
+        milestone(ordinal: 2, label: 'promote-qua')
+        input(message: "Promote to Quality Assurance?")
+      }
+    } // stage - confirm promote to qua
+
+    stage('qua deploy') {
+      agent {
+        label 'master'
+      }
+      when {
+        beforeAgent true
+        branch 'master'
+      }
+      steps {
+        build job: 'binnacle-apps-autoupdate', parameters: [
+            string(name: 'binnaclePath', value: 'aws/cogito2-saas-cogito-qua-001/us-east-1/saas'),
+            string(name: 'binnacleFile', value: 'cogito-saas-keycloak-operator.yaml'),
+            string(name: 'imageTag', value: prebuildResult.imageTag)
+        ]
+        build job: 'binnacle-aws-cogito2-saas-cogito-qua-001-us-east-1-saas-cogito-saas-keycloak-operator-poll', quietPeriod: 2
+      }
+    } // stage - qua deploy 
   } // stages
 }
