@@ -133,6 +133,17 @@ Debug the e2e operator tests in [Goland](https://www.jetbrains.com/go/)
 | `make test/coverage/prepare` | Prepares coverage report from unit and e2e test results     |
 | `make test/coverage`         | Generates coverage report                                   |
 
+##### Running tests without cluster admin permissions
+It's possible to deploy CRDs, roles, role bindings, etc. separately from running the tests:
+1. Run `make cluster/prepare` as a cluster admin.
+2. Run `make test/ibm-validation` as a user. The user needs the following permissions to run te tests:
+```
+apiGroups: ["", "apps", "keycloak.org"]
+resources: ["persistentvolumeclaims", "deployments", "statefulsets", "keycloaks", "keycloakrealms", "keycloakusers", "keycloakclients", "keycloakbackups"]
+verbs: ["*"]
+```
+Please bear in mind this is intended to be used for internal purposes as there's no guarantee it'll work without any issues.
+
 #### Local Development
 | *Command*                 | *Description*                                                                    |
 | ------------------------- | -------------------------------------------------------------------------------- |
