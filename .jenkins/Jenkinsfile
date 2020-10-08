@@ -200,11 +200,11 @@ pipeline {
 
     stage('dev deploy') {
       agent {
-        label 'master'
+        label 'cogito-build'
       }
       when {
         beforeAgent true
-        branch 'master'
+        branch 'cogito-build'
       }
       steps {
         milestone(ordinal: 1, label: 'deployment-dev')
@@ -219,7 +219,7 @@ pipeline {
 
     stage("confirm promote to qua") {
       when {
-        branch 'master'
+        branch 'cogito-build'
       }
       agent none
       steps {
@@ -230,11 +230,11 @@ pipeline {
 
     stage('qua deploy') {
       agent {
-        label 'master'
+        label 'cogito-build'
       }
       when {
         beforeAgent true
-        branch 'master'
+        branch 'cogito-build'
       }
       steps {
         build job: 'binnacle-apps-autoupdate', parameters: [
