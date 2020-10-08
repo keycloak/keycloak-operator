@@ -60,6 +60,11 @@ test/e2e-latest-image:
 	# Doesn't need cluster/prepare as it's done by operator-sdk. Uses a randomly generated namespace (instead of keycloak namespace) to support parallel test runs.
 	operator-sdk run local ./test/e2e --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count" --debug --verbose
 
+.PHONY: test/ibm-validation
+test/ibm-validation:
+	@echo Running the operator image in the cluster
+	operator-sdk test local ./test/e2e --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --operator-namespace $(NAMESPACE) --debug --verbose --global-manifest=deploy/empty-init.yaml --namespaced-manifest=deploy/operator.yaml
+
 .PHONY: test/e2e-local-image cluster/prepare setup/operator-sdk
 test/e2e-local-image: cluster/prepare setup/operator-sdk
 	@echo Running e2e tests with a fresh built operator image in the cluster:
