@@ -5,11 +5,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/pkg/errors"
-
 	"github.com/stretchr/testify/assert"
-
-	"k8s.io/client-go/kubernetes"
 
 	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/model"
@@ -20,7 +16,7 @@ import (
 func NewKeycloaksCRDTestStruct() *CRDTestStruct {
 	return &CRDTestStruct{
 		prepareEnvironmentSteps: []environmentInitializationStep{
-			prepareKeycloaksCR,
+			prepareKeycloaksCRWithExtension,
 		},
 		testSteps: map[string]deployedOperatorTestStep{
 			"keycloakDeploymentTest": {testFunction: keycloakDeploymentTest},
@@ -50,12 +46,22 @@ func getDeployedKeycloakCR(framework *framework.Framework, namespace string) key
 }
 
 func prepareKeycloaksCR(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
+	return deployKeycloaksCR(t, f, ctx, namespace, getKeycloakCR(namespace))
+}
+
+func prepareKeycloaksCRWithExtension(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
+	keycloakCR := getKeycloakCR(namespace)
+	keycloakCR.Spec.Extensions = []string{"https://github.com/aerogear/keycloak-metrics-spi/releases/download/1.0.4/keycloak-metrics-spi-1.0.4.jar"}
+
+	return deployKeycloaksCR(t, f, ctx, namespace, keycloakCR)
+}
+
+func deployKeycloaksCR(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string, keycloakCR *keycloakv1alpha1.Keycloak) error {
 	err := doWorkaroundIfNecessary(f, ctx, namespace)
 	if err != nil {
 		return err
 	}
 
-	keycloakCR := getKeycloakCR(namespace)
 	err = Create(f, keycloakCR, ctx)
 	if err != nil {
 		return err
@@ -78,16 +84,12 @@ func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework
 	// manager installed, Keycloak will generate its own, self-signed cert. Of course
 	// we don't have a matching truststore for it, hence we need to skip TLS verification.
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint
-	err := WaitForCondition(t, f.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
-		response, err := http.Get(keycloakInternalURL + "/auth")
-		if err != nil {
-			return err
-		}
-		response.Body.Close()
-		if response.StatusCode == 200 {
-			return nil
-		}
-		return errors.Errorf("invalid response from Keycloak (%v)", response.Status)
-	})
+
+	err := WaitForSuccessResponse(t, f, keycloakInternalURL+"/auth")
+	if err != nil {
+		return err
+	}
+
+	err = WaitForSuccessResponse(t, f, keycloakInternalURL+"/auth/realms/master/metrics")
 	return err
 }

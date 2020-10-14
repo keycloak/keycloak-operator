@@ -24,6 +24,8 @@ import (
 
 type Condition func(t *testing.T, c kubernetes.Interface) error
 
+type ResponseCondition func(response *http.Response) error
+
 func WaitForCondition(t *testing.T, c kubernetes.Interface, cond Condition) error {
 	t.Logf("waiting up to %v for condition", pollTimeout)
 	var err error
@@ -134,7 +136,7 @@ func WaitForUserToBeReady(t *testing.T, framework *framework.Framework, namespac
 	})
 }
 
-func WaitForSuccessResponseToContain(t *testing.T, framework *framework.Framework, url string, expectedString string) error {
+func WaitForResponse(t *testing.T, framework *framework.Framework, url string, condition ResponseCondition) error {
 	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
 		response, err := http.Get(url) //nolint
 		if err != nil {
@@ -142,6 +144,17 @@ func WaitForSuccessResponseToContain(t *testing.T, framework *framework.Framewor
 		}
 		defer response.Body.Close()
 
+		err = condition(response)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func WaitForSuccessResponseToContain(t *testing.T, framework *framework.Framework, url string, expectedString string) error {
+	return WaitForResponse(t, framework, url, func(response *http.Response) error {
 		if response.StatusCode != 200 {
 			return errors.Errorf("invalid response from url %s (%v)", url, response.Status)
 		}
@@ -154,6 +167,15 @@ func WaitForSuccessResponseToContain(t *testing.T, framework *framework.Framewor
 
 		assert.Contains(t, responseString, expectedString)
 
+		return nil
+	})
+}
+
+func WaitForSuccessResponse(t *testing.T, framework *framework.Framework, url string) error {
+	return WaitForResponse(t, framework, url, func(response *http.Response) error {
+		if response.StatusCode != 200 {
+			return errors.Errorf("invalid response from url %s (%v)", url, response.Status)
+		}
 		return nil
 	})
 }
