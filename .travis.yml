@@ -12,11 +12,6 @@ env:
     - CHANGE_MINIKUBE_NONE_USER=true
     - KUBECONFIG=$HOME/.kube/config
 
-  matrix:
-    - TESTS=test/unit test/goveralls
-    - TESTS=test/e2e test/goveralls
-    - TESTS=test/e2e-local-image
-
 before_install:
   - go get github.com/mattn/goveralls
   - go get github.com/modocache/gover
@@ -24,7 +19,7 @@ before_install:
   - sudo apt-get install -y conntrack
   - make setup/travis
 
-install: make ${TESTS} NAMESPACE=default
+install: make test/e2e-local-image NAMESPACE=default
 
 after_failure:
   - echo "---- Keycloak Server logs ----"
