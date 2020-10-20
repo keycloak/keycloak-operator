@@ -19,7 +19,7 @@ before_install:
   - sudo apt-get install -y conntrack
   - make setup/travis
 
-install: make test/e2e-local-image NAMESPACE=default
+install: make test/e2e-local-image
 
 after_failure:
   - echo "---- Keycloak Server logs ----"
