@@ -75,6 +75,7 @@ test/e2e-local-image: setup/operator-sdk
 	@echo Backing up operator.yaml
 	@cp deploy/operator.yaml deploy/operator.yaml_bckp
 	@echo Building operator image:
+	eval $(minikube -p minikube docker-env); \
 	docker build . -t keycloak-operator:test
 	@echo Modifying operator.yaml
 	@sed -i 's/imagePullPolicy: Always/imagePullPolicy: Never/g' deploy/operator.yaml
@@ -177,10 +178,9 @@ setup/travis:
 	@echo Booting Minikube up, see Travis env. variables for more information
 	@mkdir -p $HOME/.kube $HOME/.minikube
 	@touch $KUBECONFIG
-	@sudo minikube start --vm-driver=none
-	@sudo chown -R travis: /home/travis/.minikube/
+	@minikube start --vm-driver=docker
 	sudo ./hack/modify_etc_hosts.sh "keycloak.local"
-	@sudo minikube addons enable ingress
+	@minikube addons enable ingress
 
 .PHONY: test/goveralls
 test/goveralls: test/coverage/prepare
