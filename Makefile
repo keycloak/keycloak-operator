@@ -74,13 +74,15 @@ test/ibm-validation:
 test/e2e-local-image: setup/operator-sdk
 	@echo Backing up operator.yaml
 	@cp deploy/operator.yaml deploy/operator.yaml_bckp
+	@echo Building operator image:
+	docker build . -t keycloak-operator:test
 	@echo Modifying operator.yaml
 	@sed -i 's/imagePullPolicy: Always/imagePullPolicy: Never/g' deploy/operator.yaml
+	@echo Creating namespace
+	@kubectl create namespace $(NAMESPACE) || true
 	@echo Running e2e tests with a fresh built operator image in the cluster:
-	docker build . -t keycloak-operator:test
-	@echo Running tests:
 	trap 'mv -f deploy/operator.yaml_bckp deploy/operator.yaml' EXIT; \
-	operator-sdk test local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --image="keycloak-operator:test" --debug --verbose --operator-namespace $(NAMESPACE) --up-local ./test/e2e
+	operator-sdk test local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --image="keycloak-operator:test" --debug --verbose --operator-namespace $(NAMESPACE) ./test/e2e
 
 .PHONY: test/coverage/prepare
 test/coverage/prepare:

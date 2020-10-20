@@ -19,7 +19,7 @@ spec:
           image: quay.io/keycloak/keycloak-operator:master
           command:
           - keycloak-operator
-          imagePullPolicy: Never
+          imagePullPolicy: Always
           env:
             - name: WATCH_NAMESPACE
               valueFrom:
