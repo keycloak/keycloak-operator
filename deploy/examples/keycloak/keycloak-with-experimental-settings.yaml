@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: test-config
+data:
+  test.properties: |
+    blah=true
+---
+apiVersion: keycloak.org/v1alpha1
+kind: Keycloak
+metadata:
+  name: example-keycloak
+  labels:
+    app: sso
+spec:
+  instances: 1
+  externalAccess:
+    enabled: True
+  keycloakDeploymentSpec:
+    experimental:
+      args:
+        - "-Djboss.as.management.blocking.timeout=600"
+      env:
+        - name: PROXY_ADDRESS_FORWARDING
+          value: "false"
+      volumes:
+        defaultMode: 0777
+        items:
+          - configMap:
+              name: test-config
+              mountPath: /test-config

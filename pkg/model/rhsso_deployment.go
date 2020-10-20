@@ -103,6 +103,11 @@ func getRHSSOEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 		})
 	}
 
+	if len(cr.Spec.KeycloakDeploymentSpec.Experimental.Env) > 0 {
+		// We override Keycloak pre-defined envs with what user specified. Not the other way around.
+		env = MergeEnvs(cr.Spec.KeycloakDeploymentSpec.Experimental.Env, env)
+	}
+
 	return env
 }
 
@@ -134,7 +139,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSe
 					},
 				},
 				Spec: v1.PodSpec{
-					Volumes:        KeycloakVolumes(),
+					Volumes:        KeycloakVolumes(cr),
 					InitContainers: KeycloakExtensionsInitContainers(cr),
 					Containers: []v1.Container{
 						{
@@ -161,7 +166,9 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSe
 							LivenessProbe:   livenessProbe(),
 							ReadinessProbe:  readinessProbe(),
 							Env:             getRHSSOEnv(cr, dbSecret),
-							VolumeMounts:    KeycloakVolumeMounts(RhssoExtensionPath),
+							Args:            cr.Spec.KeycloakDeploymentSpec.Experimental.Args,
+							Command:         cr.Spec.KeycloakDeploymentSpec.Experimental.Command,
+							VolumeMounts:    KeycloakVolumeMounts(cr, RhssoExtensionPath),
 							Resources:       getResources(cr),
 							ImagePullPolicy: "Always",
 						},
@@ -183,11 +190,13 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 	reconciled := currentState.DeepCopy()
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
-	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes()
+	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr)
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
-			Name:  KeycloakDeploymentName,
-			Image: Images.Images[RHSSOImage],
+			Name:    KeycloakDeploymentName,
+			Image:   Images.Images[RHSSOImage],
+			Args:    cr.Spec.KeycloakDeploymentSpec.Experimental.Args,
+			Command: cr.Spec.KeycloakDeploymentSpec.Experimental.Command,
 			Ports: []v1.ContainerPort{
 				{
 					ContainerPort: KeycloakServicePort,
@@ -206,7 +215,7 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 					Protocol:      "TCP",
 				},
 			},
-			VolumeMounts:    KeycloakVolumeMounts(RhssoExtensionPath),
+			VolumeMounts:    KeycloakVolumeMounts(cr, RhssoExtensionPath),
 			LivenessProbe:   livenessProbe(),
 			ReadinessProbe:  readinessProbe(),
 			Env:             getRHSSOEnv(cr, dbSecret),
