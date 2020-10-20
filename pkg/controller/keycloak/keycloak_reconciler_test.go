@@ -555,16 +555,20 @@ func TestKeycloakReconciler_Test_Setting_Resources(t *testing.T) {
 	resourceListPostgres[v1.ResourceCPU] = resource50m
 	resourceListPostgres[v1.ResourceMemory] = resource100Mi
 
-	cr.Spec.KeycloakDeploymentSpec = v1alpha1.DeploymentSpec{
-		Resources: v1.ResourceRequirements{
-			Requests: resourceListKeycloak,
-			Limits:   resourceListKeycloak,
+	cr.Spec.KeycloakDeploymentSpec = v1alpha1.KeycloakDeploymentSpec{
+		DeploymentSpec: v1alpha1.DeploymentSpec{
+			Resources: v1.ResourceRequirements{
+				Requests: resourceListKeycloak,
+				Limits:   resourceListKeycloak,
+			},
 		},
 	}
-	cr.Spec.PostgresDeploymentSpec = v1alpha1.DeploymentSpec{
-		Resources: v1.ResourceRequirements{
-			Requests: resourceListPostgres,
-			Limits:   resourceListPostgres,
+	cr.Spec.PostgresDeploymentSpec = v1alpha1.PostgresqlDeploymentSpec{
+		DeploymentSpec: v1alpha1.DeploymentSpec{
+			Resources: v1.ResourceRequirements{
+				Requests: resourceListPostgres,
+				Limits:   resourceListPostgres,
+			},
 		},
 	}
 

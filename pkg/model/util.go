@@ -127,3 +127,21 @@ func GetExternalDatabasePort(secret *v1.Secret) int32 {
 	}
 	return int32(parsed)
 }
+
+// This function favors values in "a".
+func MergeEnvs(a []v1.EnvVar, b []v1.EnvVar) []v1.EnvVar {
+	for _, bb := range b {
+		found := false
+		for _, aa := range a {
+			if aa.Name == bb.Name {
+				aa.Value = bb.Value
+				found = true
+				break
+			}
+		}
+		if !found {
+			a = append(a, bb)
+		}
+	}
+	return a
+}

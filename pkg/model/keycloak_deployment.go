@@ -161,6 +161,11 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 		})
 	}
 
+	if len(cr.Spec.KeycloakDeploymentSpec.Experimental.Env) > 0 {
+		// We override Keycloak pre-defined envs with what user specified. Not the other way around.
+		env = MergeEnvs(cr.Spec.KeycloakDeploymentSpec.Experimental.Env, env)
+	}
+
 	return env
 }
 
@@ -193,7 +198,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 				},
 				Spec: v1.PodSpec{
 					InitContainers: KeycloakExtensionsInitContainers(cr),
-					Volumes:        KeycloakVolumes(),
+					Volumes:        KeycloakVolumes(cr),
 					Containers: []v1.Container{
 						{
 							Name:  KeycloakDeploymentName,
@@ -212,10 +217,12 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 									Protocol:      "TCP",
 								},
 							},
-							VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
+							VolumeMounts:   KeycloakVolumeMounts(cr, KeycloakExtensionPath),
 							LivenessProbe:  livenessProbe(),
 							ReadinessProbe: readinessProbe(),
 							Env:            getKeycloakEnv(cr, dbSecret),
+							Args:           cr.Spec.KeycloakDeploymentSpec.Experimental.Args,
+							Command:        cr.Spec.KeycloakDeploymentSpec.Experimental.Command,
 							Resources:      getResources(cr),
 						},
 					},
@@ -236,11 +243,13 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	reconciled := currentState.DeepCopy()
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
-	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes()
+	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr)
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
-			Name:  KeycloakDeploymentName,
-			Image: Images.Images[KeycloakImage],
+			Name:    KeycloakDeploymentName,
+			Image:   Images.Images[KeycloakImage],
+			Args:    cr.Spec.KeycloakDeploymentSpec.Experimental.Args,
+			Command: cr.Spec.KeycloakDeploymentSpec.Experimental.Command,
 			Ports: []v1.ContainerPort{
 				{
 					ContainerPort: KeycloakServicePort,
@@ -255,7 +264,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 					Protocol:      "TCP",
 				},
 			},
-			VolumeMounts:   KeycloakVolumeMounts(KeycloakExtensionPath),
+			VolumeMounts:   KeycloakVolumeMounts(cr, KeycloakExtensionPath),
 			LivenessProbe:  livenessProbe(),
 			ReadinessProbe: readinessProbe(),
 			Env:            getKeycloakEnv(cr, dbSecret),
@@ -266,8 +275,8 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	return reconciled
 }
 
-func KeycloakVolumeMounts(extensionsPath string) []v1.VolumeMount {
-	return []v1.VolumeMount{
+func KeycloakVolumeMounts(cr *v1alpha1.Keycloak, extensionsPath string) []v1.VolumeMount {
+	mountedVolumes := []v1.VolumeMount{
 		{
 			Name:      ServingCertSecretName,
 			MountPath: "/etc/x509/https",
@@ -282,10 +291,29 @@ func KeycloakVolumeMounts(extensionsPath string) []v1.VolumeMount {
 			MountPath: "/probes",
 		},
 	}
+
+	mountedVolumes = addVolumeMountsFromKeycloakCR(cr, mountedVolumes)
+
+	return mountedVolumes
 }
 
-func KeycloakVolumes() []v1.Volume {
-	return []v1.Volume{
+func addVolumeMountsFromKeycloakCR(cr *v1alpha1.Keycloak, mountedVolumes []v1.VolumeMount) []v1.VolumeMount {
+	if cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.Items != nil {
+		for _, v := range cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.Items {
+			if v.ConfigMap != nil {
+				configMapMount := v1.VolumeMount{
+					Name:      v.ConfigMap.Name,
+					MountPath: v.ConfigMap.MountPath,
+				}
+				mountedVolumes = append(mountedVolumes, configMapMount)
+			}
+		}
+	}
+	return mountedVolumes
+}
+
+func KeycloakVolumes(cr *v1alpha1.Keycloak) []v1.Volume {
+	volumes := []v1.Volume{
 		{
 			Name: ServingCertSecretName,
 			VolumeSource: v1.VolumeSource{
@@ -313,6 +341,41 @@ func KeycloakVolumes() []v1.Volume {
 			},
 		},
 	}
+
+	volumes = addVolumesFromKeycloakCR(cr, volumes)
+
+	return volumes
+}
+
+func addVolumesFromKeycloakCR(cr *v1alpha1.Keycloak, volumes []v1.Volume) []v1.Volume {
+	if cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.Items != nil {
+		for _, v := range cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.Items {
+			// We could also add multiple ProjectedVolumeSources but then we lose the ability
+			// to specify different paths to mount them. This way it's more flexible.
+			if v.ConfigMap != nil {
+				configMapVolume := v1.Volume{
+					Name: v.ConfigMap.Name,
+					VolumeSource: v1.VolumeSource{
+						Projected: &v1.ProjectedVolumeSource{
+							Sources: []v1.VolumeProjection{
+								{
+									ConfigMap: &v1.ConfigMapProjection{
+										LocalObjectReference: v1.LocalObjectReference{
+											Name: v.ConfigMap.Name,
+										},
+										Items: v.ConfigMap.Items,
+									},
+								},
+							},
+							DefaultMode: cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.DefaultMode,
+						},
+					},
+				}
+				volumes = append(volumes, configMapVolume)
+			}
+		}
+	}
+	return volumes
 }
 
 func livenessProbe() *v1.Probe {
