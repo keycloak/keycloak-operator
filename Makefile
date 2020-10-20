@@ -80,8 +80,7 @@ test/e2e-local-image: setup/operator-sdk
 	docker build . -t keycloak-operator:test
 	@echo Running tests:
 	trap 'mv -f deploy/operator.yaml_bckp deploy/operator.yaml' EXIT; \
-	-operator-sdk test local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --image="keycloak-operator:test" --debug --verbose ./test/e2e
-	kubectl get pods --all-namespaces
+	operator-sdk test local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --image="keycloak-operator:test" --debug --verbose --up-local ./test/e2e
 
 .PHONY: test/coverage/prepare
 test/coverage/prepare:
