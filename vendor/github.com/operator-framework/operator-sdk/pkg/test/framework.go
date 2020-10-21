@@ -71,6 +71,7 @@ type Framework struct {
 	schemeMutex         sync.Mutex
 	LocalOperator       bool
 	singleNamespaceMode bool
+	skipCleanupOnError  bool
 }
 
 type frameworkOpts struct {
@@ -78,19 +79,21 @@ type frameworkOpts struct {
 	kubeconfigPath      string
 	globalManPath       string
 	namespacedManPath   string
+	localOperatorArgs   string
 	singleNamespaceMode bool
 	isLocalOperator     bool
-	localOperatorArgs   string
+	skipCleanupOnError  bool
 }
 
 const (
-	ProjRootFlag          = "root"
-	KubeConfigFlag        = "kubeconfig"
-	NamespacedManPathFlag = "namespacedMan"
-	GlobalManPathFlag     = "globalMan"
-	SingleNamespaceFlag   = "singleNamespace"
-	LocalOperatorFlag     = "localOperator"
-	LocalOperatorArgs     = "localOperatorArgs"
+	ProjRootFlag           = "root"
+	KubeConfigFlag         = "kubeconfig"
+	NamespacedManPathFlag  = "namespacedMan"
+	GlobalManPathFlag      = "globalMan"
+	SingleNamespaceFlag    = "singleNamespace"
+	LocalOperatorFlag      = "localOperator"
+	LocalOperatorArgs      = "localOperatorArgs"
+	SkipCleanupOnErrorFlag = "skipCleanupOnError"
 
 	TestNamespaceEnv = "TEST_NAMESPACE"
 )
@@ -98,11 +101,16 @@ const (
 func (opts *frameworkOpts) addToFlagSet(flagset *flag.FlagSet) {
 	flagset.StringVar(&opts.projectRoot, ProjRootFlag, "", "path to project root")
 	flagset.StringVar(&opts.namespacedManPath, NamespacedManPathFlag, "", "path to rbac manifest")
-	flagset.BoolVar(&opts.isLocalOperator, LocalOperatorFlag, false, "enable if operator is running locally (not in cluster)")
+	flagset.BoolVar(&opts.isLocalOperator, LocalOperatorFlag, false,
+		"enable if operator is running locally (not in cluster)")
 	flagset.StringVar(&opts.kubeconfigPath, KubeConfigFlag, "", "path to kubeconfig")
 	flagset.StringVar(&opts.globalManPath, GlobalManPathFlag, "", "path to operator manifest")
 	flagset.BoolVar(&opts.singleNamespaceMode, SingleNamespaceFlag, false, "enable single namespace mode")
-	flagset.StringVar(&opts.localOperatorArgs, LocalOperatorArgs, "", "flags that the operator needs (while using --up-local). example: \"--flag1 value1 --flag2=value2\"")
+	flagset.StringVar(&opts.localOperatorArgs, LocalOperatorArgs, "",
+		"flags that the operator needs (while using --up-local). example: \"--flag1 value1 --flag2=value2\"")
+	flagset.BoolVar(&opts.skipCleanupOnError, SkipCleanupOnErrorFlag, false,
+		"If set as true, the cleanup function responsible to remove all artifacts "+
+			"will be skipped if an error is faced.")
 }
 
 func newFramework(opts *frameworkOpts) (*Framework, error) {
@@ -155,6 +163,7 @@ func newFramework(opts *frameworkOpts) (*Framework, error) {
 		localOperatorArgs:   opts.localOperatorArgs,
 		kubeconfigPath:      opts.kubeconfigPath,
 		restMapper:          restMapper,
+		skipCleanupOnError:  opts.skipCleanupOnError,
 	}
 	return framework, nil
 }
@@ -208,7 +217,7 @@ func (f *Framework) addToScheme(addToScheme addToSchemeFunc, obj runtime.Object)
 
 func (f *Framework) runM(m *testing.M) (int, error) {
 	// setup context to use when setting up crd
-	ctx := f.newTestCtx(nil)
+	ctx := f.newContext(nil)
 	defer ctx.Cleanup()
 
 	// go test always runs from the test directory; change to project root
@@ -281,7 +290,8 @@ func (f *Framework) setupLocalCommand() (*exec.Cmd, error) {
 	} else {
 		// we can hardcode index 0 as that is the highest priority kubeconfig to be loaded and will always
 		// be populated by NewDefaultClientConfigLoadingRules()
-		localCmd.Env = append(os.Environ(), fmt.Sprintf("%v=%v", k8sutil.KubeConfigEnvVar, clientcmd.NewDefaultClientConfigLoadingRules().Precedence[0]))
+		localCmd.Env = append(os.Environ(), fmt.Sprintf("%v=%v", k8sutil.KubeConfigEnvVar,
+			clientcmd.NewDefaultClientConfigLoadingRules().Precedence[0]))
 	}
 	localCmd.Env = append(localCmd.Env, fmt.Sprintf("%v=%v", k8sutil.WatchNamespaceEnvVar, f.Namespace))
 	return localCmd, nil

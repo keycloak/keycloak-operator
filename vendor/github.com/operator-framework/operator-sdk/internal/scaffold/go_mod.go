@@ -35,12 +35,13 @@ func (s *GoMod) GetInput() (input.Input, error) {
 	return s.Input, nil
 }
 
+//nolint:lll
 const goModTmpl = `module {{ .Repo }}
 
 go 1.13
 
 require (
-	github.com/operator-framework/operator-sdk v0.15.1
+	github.com/operator-framework/operator-sdk v0.16.0
 	sigs.k8s.io/controller-runtime v0.4.0
 )
 
