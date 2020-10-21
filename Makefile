@@ -75,6 +75,7 @@ test/e2e-local-image: setup/operator-sdk
 	@echo Backing up operator.yaml
 	@cp deploy/operator.yaml deploy/operator.yaml_bckp
 	@echo Building operator image:
+	eval $$(minikube -p minikube docker-env); \
 	docker build . -t keycloak-operator:test
 	@echo Modifying operator.yaml
 	@sed -i 's/imagePullPolicy: Always/imagePullPolicy: Never/g' deploy/operator.yaml
