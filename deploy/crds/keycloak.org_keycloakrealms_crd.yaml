@@ -392,6 +392,7 @@ spec:
                     type: string
                 type: object
               type: array
+              x-kubernetes-list-type: map
           required:
           - realm
           type: object

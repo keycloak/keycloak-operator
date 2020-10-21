@@ -1,10 +1,18 @@
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// KeycloakSpec defines the desired state of Keycloak
+type TLSTerminationType string
+
+var (
+	DefaultTLSTermintation        TLSTerminationType
+	ReencryptTLSTerminationType   TLSTerminationType = "reencrypt"
+	PassthroughTLSTerminationType TLSTerminationType = "passthrough"
+)
+
 // +k8s:openapi-gen=true
 type KeycloakSpec struct {
 	// A list of extensions, where each one is a URL to a JAR files that will be deployed in Keycloak.
@@ -51,15 +59,69 @@ type KeycloakSpec struct {
 	// Specify PodDisruptionBudget configuration
 	// +optional
 	PodDisruptionBudget PodDisruptionBudgetConfig `json:"podDisruptionBudget,omitempty"`
+	// Resources (Requests and Limits) for KeycloakDeployment.
+	// +optional
+	KeycloakDeploymentSpec KeycloakDeploymentSpec `json:"keycloakDeploymentSpec,omitempty"`
 }
 
-type TLSTerminationType string
+type DeploymentSpec struct {
+	// Resources (Requests and Limits) for the Pods.
+	// +optional
+	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+}
 
-var (
-	DefaultTLSTermintation        TLSTerminationType
-	ReencryptTLSTerminationType   TLSTerminationType = "reencrypt"
-	PassthroughTLSTerminationType TLSTerminationType = "passthrough"
-)
+type KeycloakDeploymentSpec struct {
+	DeploymentSpec `json:",inline"`
+	// Experimental section
+	// NOTE: This section might change or get removed without any notice. It may also cause
+	// the deployment to behave in an unpredictable fashion. Please use with care.
+	// +optional
+	Experimental ExperimentalSpec `json:"experimental,omitempty"`
+}
+
+type PostgresqlDeploymentSpec struct {
+	DeploymentSpec `json:",inline"`
+}
+
+type ExperimentalSpec struct {
+	// Arguments to the entrypoint. Translates into Container CMD.
+	// +optional
+	Args []string `json:"args,omitempty"`
+	// Container command. Translates into Container ENTRYPOINT.
+	// +optional
+	Command []string `json:"command,omitempty"`
+	// List of environment variables to set in the container.
+	// +optional
+	// +patchMergeKey=name
+	// +patchStrategy=merge
+	Env []corev1.EnvVar `json:"env,omitempty" patchStrategy:"merge" patchMergeKey:"name"`
+	// Additional volume mounts
+	// +optional
+	Volumes VolumesSpec `json:"volumes,omitempty"`
+}
+
+type VolumesSpec struct {
+	Items []VolumeSpec `json:"items,omitempty"`
+	// Permissions mode.
+	// +optional
+	DefaultMode *int32 `json:"defaultMode,omitempty"`
+}
+
+type ConfigMapVolumeSpec struct {
+	// ConfigMap name
+	Name string `json:"name,omitempty"`
+	// An absolute path where to mount it
+	MountPath string `json:"mountPath"`
+	// ConfigMap mount details
+	// +optional
+	Items []corev1.KeyToPath `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
+}
+
+type VolumeSpec struct {
+	// ConfigMap mount
+	// +optional
+	ConfigMap *ConfigMapVolumeSpec `json:"configMap,omitempty"`
+}
 
 type KeycloakExternalAccess struct {
 	// If set to true, the Operator will create an Ingress or a Route
