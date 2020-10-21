@@ -9,7 +9,7 @@ else
   OPERATOR_SDK_ARCHITECTURE=x86_64-linux-gnu
 endif
 OPERATOR_SDK_DOWNLOAD_URL=https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk-$(OPERATOR_SDK_VERSION)-$(OPERATOR_SDK_ARCHITECTURE)
-MINIKUBE_DOWNLOAD_URL=https://github.com/kubernetes/minikube/releases/download/v1.9.2/minikube-linux-amd64
+MINIKUBE_DOWNLOAD_URL=https://github.com/kubernetes/minikube/releases/download/v1.14.0/minikube-linux-amd64
 KUBECTL_DOWNLOAD_URL=https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
 
 # Compile constants
