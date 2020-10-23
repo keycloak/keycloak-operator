@@ -179,7 +179,7 @@ setup/travis:
 	@mkdir -p $HOME/.kube $HOME/.minikube
 	@touch $KUBECONFIG
 	@minikube start --vm-driver=docker
-	sudo ./hack/modify_etc_hosts.sh "keycloak.local2"
+	sudo ./hack/modify_etc_hosts.sh "keycloak.local"
 	@minikube addons enable ingress
 
 .PHONY: test/goveralls
