@@ -16,7 +16,7 @@ END
 
 sed -i \
     -e 's/registry.svc.ci.openshift.org\/openshift\/release:golang-1.13/openshift\/golang-builder:1.13/' \
-    -e 's/FROM registry.access.redhat.com\/ubi8\/ubi-minimal:[0-9.]*/FROM registry.redhat.io\/ubi8\/ubi-minimal/' \
+    -e 's/FROM registry.access.redhat.com/FROM registry.redhat.io/' \
     -e 's/COPY . /COPY keycloak-operator-*.tar.gz /' \
     -e 's,RUN cd /src ,RUN cd /src \&\& tar -x --strip-components=1 -f keycloak-operator-*.tar.gz ,' \
     -e "s/##LABELS/$LABELS/g" \
