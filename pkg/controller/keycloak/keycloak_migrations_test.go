@@ -6,14 +6,15 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"github.com/keycloak/keycloak-operator/pkg/model"
+	kcAssert "github.com/keycloak/keycloak-operator/test/assert"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/apps/v1"
 )
 
 func TestKeycloakMigration_Test_No_Need_For_Migration_On_Empty_Desired_State(t *testing.T) {
 	// given
-	migrator := NewDefaultMigrator()
 	cr := &v1alpha1.Keycloak{}
+	migrator, _ := GetMigrator(cr)
 	currentState := common.ClusterState{}
 	desiredState := common.DesiredClusterState{}
 
@@ -27,12 +28,11 @@ func TestKeycloakMigration_Test_No_Need_For_Migration_On_Empty_Desired_State(t *
 
 func TestKeycloakMigration_Test_No_Need_For_Migration_On_Missing_Deployment_In_Desired_State(t *testing.T) {
 	// given
-	migrator := NewDefaultMigrator()
 	cr := &v1alpha1.Keycloak{}
+	migrator, _ := GetMigrator(cr)
 
 	keycloakDeployment := model.KeycloakDeployment(cr, nil)
-	keycloakDeployment.Spec.Replicas = &[]int32{5}[0]
-	keycloakDeployment.Spec.Template.Spec.Containers[0].Image = "old_image" //nolint
+	SetDeployment(keycloakDeployment, 5, "old_image")
 
 	currentState := common.ClusterState{
 		KeycloakDeployment: keycloakDeployment,
@@ -53,77 +53,25 @@ func TestKeycloakMigration_Test_No_Need_For_Migration_On_Missing_Deployment_In_D
 
 func TestKeycloakMigration_Test_Migrating_Image(t *testing.T) {
 	// given
-	migrator := NewDefaultMigrator()
 	cr := &v1alpha1.Keycloak{}
+	migrator, _ := GetMigrator(cr)
 
-	keycloakDeployment := model.KeycloakDeployment(cr, model.DatabaseSecret(cr))
-	keycloakDeployment.Spec.Replicas = &[]int32{5}[0]
-	keycloakDeployment.Spec.Template.Spec.Containers[0].Image = "old_image"
+	keycloakCurrentDeployment := model.KeycloakDeployment(cr, model.DatabaseSecret(cr))
+	SetDeployment(keycloakCurrentDeployment, 5, "old_image")
+
+	keycloakDesiredDeployment := model.KeycloakDeployment(cr, nil)
+	SetDeployment(keycloakDesiredDeployment, 5, "")
 
 	currentState := common.ClusterState{
-		KeycloakDeployment: keycloakDeployment,
+		KeycloakDeployment: keycloakCurrentDeployment,
 	}
 
 	desiredState := common.DesiredClusterState{}
 	desiredState = append(desiredState, common.GenericUpdateAction{
-		Ref: model.KeycloakDeployment(cr, nil),
+		Ref: keycloakDesiredDeployment,
 	})
 
-	// when
-	migratedActions, error := migrator.Migrate(cr, &currentState, desiredState)
-
-	// then
-	assert.Nil(t, error)
-	assert.Equal(t, int32(0), migratedActions[0].(common.GenericUpdateAction).Ref.(*v1.StatefulSet).Status.Replicas)
-}
-
-func TestKeycloakMigration_Test_Migrating_RHSSO_Image(t *testing.T) {
-	// given
-	migrator := NewDefaultMigrator()
-	cr := &v1alpha1.Keycloak{
-		Spec: v1alpha1.KeycloakSpec{
-			Profile: model.RHSSOProfile,
-		},
-	}
-
-	keycloakDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr))
-	keycloakDeployment.Spec.Replicas = &[]int32{5}[0]
-	keycloakDeployment.Spec.Template.Spec.Containers[0].Image = "old_image"
-
-	currentState := common.ClusterState{
-		KeycloakDeployment: keycloakDeployment,
-	}
-
-	desiredState := common.DesiredClusterState{}
-	desiredState = append(desiredState, common.GenericUpdateAction{
-		Ref: model.RHSSODeployment(cr, model.DatabaseSecret(cr)),
-	})
-
-	// when
-	migratedActions, error := migrator.Migrate(cr, &currentState, desiredState)
-
-	// then
-	assert.Nil(t, error)
-	assert.Equal(t, int32(0), migratedActions[0].(common.GenericUpdateAction).Ref.(*v1.StatefulSet).Status.Replicas)
-}
-
-func TestKeycloakMigration_Test_No_Need_Backup_Without_Migration_Backups_Enabled(t *testing.T) {
-	// given
-	migrator := NewDefaultMigrator()
-	cr := &v1alpha1.Keycloak{}
-	cr.Spec.Migration.Backups.Enabled = false
-
-	keycloakDeployment := model.KeycloakDeployment(cr, nil)
-	keycloakDeployment.Spec.Template.Spec.Containers[0].Image = "old_image"
-
-	currentState := common.ClusterState{
-		KeycloakDeployment: keycloakDeployment,
-	}
-
-	desiredState := common.DesiredClusterState{}
-	desiredState = append(desiredState, common.GenericUpdateAction{
-		Ref: keycloakDeployment,
-	})
+	kcAssert.ReplicasCount(t, desiredState, 5)
 
 	// when
 	migratedActions, error := migrator.Migrate(cr, &currentState, desiredState)
@@ -131,24 +79,71 @@ func TestKeycloakMigration_Test_No_Need_Backup_Without_Migration_Backups_Enabled
 	// then
 	assert.Nil(t, error)
 	assert.Equal(t, desiredState, migratedActions)
+	kcAssert.ReplicasCount(t, migratedActions, 0)
 }
 
-func TestKeycloakMigration_Test_Backup_Happens_With_Migration_Backups_Enabled(t *testing.T) {
+func TestKeycloakMigration_Test_Migrating_RHSSO_Image(t *testing.T) {
 	// given
-	migrator := NewDefaultMigrator()
-	cr := &v1alpha1.Keycloak{}
-	cr.Spec.Migration.Backups.Enabled = true
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			Profile: model.RHSSOProfile,
+		},
+	}
+	migrator, _ := GetMigrator(cr)
 
-	keycloakDeployment := model.KeycloakDeployment(cr, nil)
-	keycloakDeployment.Spec.Template.Spec.Containers[0].Image = "old_image"
+	keycloakCurrentDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr))
+	SetDeployment(keycloakCurrentDeployment, 5, "old_image")
+
+	keycloakDesiredDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr))
+	SetDeployment(keycloakDesiredDeployment, 5, "")
 
 	currentState := common.ClusterState{
-		KeycloakDeployment: keycloakDeployment,
+		KeycloakDeployment: keycloakCurrentDeployment,
 	}
 
 	desiredState := common.DesiredClusterState{}
 	desiredState = append(desiredState, common.GenericUpdateAction{
-		Ref: keycloakDeployment,
+		Ref: keycloakDesiredDeployment,
+	})
+
+	kcAssert.ReplicasCount(t, desiredState, 5)
+
+	// when
+	migratedActions, error := migrator.Migrate(cr, &currentState, desiredState)
+
+	// then
+	assert.Nil(t, error)
+	assert.Equal(t, desiredState, migratedActions)
+	kcAssert.ReplicasCount(t, migratedActions, 0)
+}
+
+func TestKeycloakMigration_Test_No_Need_Backup_Without_Migration_Backups_Enabled(t *testing.T) {
+	TBackup(t, false)
+}
+
+func TestKeycloakMigration_Test_Backup_Happens_With_Migration_Backups_Enabled(t *testing.T) {
+	TBackup(t, true)
+}
+
+func TBackup(t *testing.T, backupEnabled bool) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.Migration.Backups.Enabled = backupEnabled
+	migrator, _ := GetMigrator(cr)
+
+	keycloakCurrentDeployment := model.KeycloakDeployment(cr, nil)
+	SetDeployment(keycloakCurrentDeployment, 0, "old_image")
+
+	keycloakDesiredDeployment := model.KeycloakDeployment(cr, nil)
+	SetDeployment(keycloakDesiredDeployment, 0, "")
+
+	currentState := common.ClusterState{
+		KeycloakDeployment: keycloakCurrentDeployment,
+	}
+
+	desiredState := common.DesiredClusterState{}
+	desiredState = append(desiredState, common.GenericUpdateAction{
+		Ref: keycloakDesiredDeployment,
 	})
 
 	// when
@@ -156,5 +151,49 @@ func TestKeycloakMigration_Test_Backup_Happens_With_Migration_Backups_Enabled(t 
 
 	// then
 	assert.Nil(t, error)
-	assert.NotEqual(t, desiredState, migratedActions)
+	if backupEnabled {
+		assert.NotEqual(t, desiredState, migratedActions)
+	} else {
+		assert.Equal(t, desiredState, migratedActions)
+	}
+}
+
+func TestKeycloakMigration_Test_No_Migration_Happens_With_Rolling_Migrator(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.Migration.MigrationStrategy = v1alpha1.StrategyRolling
+	migrator, _ := GetMigrator(cr)
+
+	keycloakCurrentDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr))
+	SetDeployment(keycloakCurrentDeployment, 5, "old_image")
+
+	keycloakDesiredDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr))
+	SetDeployment(keycloakDesiredDeployment, 5, "")
+
+	currentState := common.ClusterState{
+		KeycloakDeployment: keycloakCurrentDeployment,
+	}
+
+	desiredState := common.DesiredClusterState{}
+	desiredState = append(desiredState, common.GenericUpdateAction{
+		Ref: keycloakDesiredDeployment,
+	})
+
+	kcAssert.ReplicasCount(t, desiredState, 5)
+
+	// when
+	migratedActions, err := migrator.Migrate(cr, &currentState, desiredState)
+
+	// then
+	assert.Nil(t, err)
+	assert.Equal(t, desiredState, migratedActions)
+	kcAssert.ReplicasCount(t, migratedActions, 5)
+}
+
+func SetDeployment(deployment *v1.StatefulSet, replicasCount int32, image string) {
+	deployment.Spec.Replicas = &[]int32{replicasCount}[0]
+	deployment.Status.Replicas = replicasCount
+	if image != "" {
+		deployment.Spec.Template.Spec.Containers[0].Image = image
+	}
 }

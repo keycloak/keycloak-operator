@@ -190,7 +190,10 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 	desiredState := reconciler.Reconcile(currentState, instance)
 
 	// Perform migration if needed
-	migrator := NewDefaultMigrator()
+	migrator, err := GetMigrator(instance)
+	if err != nil {
+		return r.ManageError(instance, err)
+	}
 	desiredState, err = migrator.Migrate(instance, currentState, desiredState)
 	if err != nil {
 		return r.ManageError(instance, err)
