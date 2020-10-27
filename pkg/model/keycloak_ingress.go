@@ -46,7 +46,9 @@ func KeycloakIngress(cr *kc.Keycloak) *v1beta1.Ingress {
 func KeycloakIngressReconciled(cr *kc.Keycloak, currentState *v1beta1.Ingress) *v1beta1.Ingress {
 	reconciled := currentState.DeepCopy()
 	reconciledHost := currentState.Spec.Rules[0].Host
+	reconciledSpecTLS := currentState.Spec.TLS
 	reconciled.Spec = v1beta1.IngressSpec{
+		TLS: reconciledSpecTLS,
 		Rules: []v1beta1.IngressRule{
 			{
 				Host: reconciledHost,
