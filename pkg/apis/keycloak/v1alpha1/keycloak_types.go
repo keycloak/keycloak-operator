@@ -180,10 +180,21 @@ type PodDisruptionBudgetConfig struct {
 }
 
 type MigrateConfig struct {
+	// Specify migration strategy
+	// +optional
+	MigrationStrategy MigrationStrategy `json:"strategy,omitempty"`
 	// Set it to config backup policy for migration
 	// +optional
 	Backups BackupConfig `json:"backups,omitempty"`
 }
+
+type MigrationStrategy string
+
+var (
+	NoStrategy       MigrationStrategy
+	StrategyRecreate MigrationStrategy = "recreate"
+	StrategyRolling  MigrationStrategy = "rolling"
+)
 
 type BackupConfig struct {
 	// If set to true, the operator will do database backup before doing migration
