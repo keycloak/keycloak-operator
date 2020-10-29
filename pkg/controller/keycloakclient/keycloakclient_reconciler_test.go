@@ -52,6 +52,8 @@ func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 	assert.IsType(t, common.CreateClientAction{}, desiredState[1])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
 	assert.IsType(t, model.ClientSecret(cr), desiredState[2].(common.GenericCreateAction).Ref)
+	assert.Equal(t, []byte("test"), model.ClientSecret(cr).Data[model.ClientSecretClientIDProperty])
+	assert.Equal(t, []byte("test"), model.ClientSecret(cr).Data[model.ClientSecretClientSecretProperty])
 }
 
 func TestKeycloakClientReconciler_Test_PartialUpdate_Client(t *testing.T) {
@@ -97,6 +99,8 @@ func TestKeycloakClientReconciler_Test_PartialUpdate_Client(t *testing.T) {
 	// client secret still needs to be created even if the client exists
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
 	assert.IsType(t, model.ClientSecret(cr), desiredState[2].(common.GenericCreateAction).Ref)
+	assert.Equal(t, []byte("test"), model.ClientSecret(cr).Data[model.ClientSecretClientIDProperty])
+	assert.Equal(t, []byte("test"), model.ClientSecret(cr).Data[model.ClientSecretClientSecretProperty])
 }
 
 func TestKeycloakClientReconciler_Test_Delete_Client(t *testing.T) {
@@ -181,6 +185,8 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 	assert.Equal(t, "test", desiredState[1].(common.UpdateClientAction).Realm)
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[2])
 	assert.IsType(t, model.ClientSecretReconciled(cr, currentState.ClientSecret), desiredState[2].(common.GenericUpdateAction).Ref)
+	assert.Equal(t, []byte("test"), model.ClientSecretReconciled(cr, currentState.ClientSecret).Data[model.ClientSecretClientIDProperty])
+	assert.Equal(t, []byte("test"), model.ClientSecretReconciled(cr, currentState.ClientSecret).Data[model.ClientSecretClientSecretProperty])
 }
 
 func TestKeycloakClientReconciler_Test_Marshal_Client(t *testing.T) {
