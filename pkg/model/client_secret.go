@@ -37,6 +37,5 @@ func ClientSecretReconciled(cr *v1alpha1.KeycloakClient, currentState *v1.Secret
 		ClientSecretClientIDProperty:     []byte(cr.Spec.Client.ClientID),
 		ClientSecretClientSecretProperty: []byte(cr.Spec.Client.Secret),
 	}
-	reconciled.Data = map[string][]byte{}
 	return reconciled
 }
