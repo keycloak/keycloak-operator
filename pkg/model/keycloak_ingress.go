@@ -9,6 +9,11 @@ import (
 )
 
 func KeycloakIngress(cr *kc.Keycloak) *v1beta1.Ingress {
+	ingressHost := cr.Spec.ExternalAccess.Host
+	if ingressHost == "" {
+		ingressHost = IngressDefaultHost
+	}
+
 	return &v1beta1.Ingress{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      ApplicationName,
@@ -23,7 +28,7 @@ func KeycloakIngress(cr *kc.Keycloak) *v1beta1.Ingress {
 		Spec: v1beta1.IngressSpec{
 			Rules: []v1beta1.IngressRule{
 				{
-					Host: IngressDefaultHost,
+					Host: ingressHost,
 					IngressRuleValue: v1beta1.IngressRuleValue{
 						HTTP: &v1beta1.HTTPIngressRuleValue{
 							Paths: []v1beta1.HTTPIngressPath{
