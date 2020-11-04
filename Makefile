@@ -76,6 +76,7 @@ test/e2e-local-image: cluster/prepare setup/operator-sdk
 test/coverage/prepare:
 	@echo Preparing coverage file:
 	@echo "mode: count" > cover-all.coverprofile
+	@echo "mode: count" > cover-e2e.coverprofile
 	@tail -n +2 cover-unit.coverprofile >> cover-all.coverprofile
 	@tail -n +2 cover-e2e.coverprofile >> cover-all.coverprofile
 	@echo Running test coverage generation:
@@ -175,4 +176,4 @@ test/goveralls: test/coverage/prepare
 	@echo "Preparing goveralls file"
 	go get -u github.com/mattn/goveralls
 	@echo "Running goveralls"
-	@goveralls -v -coverprofile=cover-all.coverprofile -service=travis-ci
+	@goveralls -v -coverprofile=cover-all.coverprofile -service=github
