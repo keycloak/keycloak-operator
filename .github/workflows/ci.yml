@@ -1,0 +1,55 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  build:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.13
+      id: go
+    - name: Install dependencies
+      run: |
+        go get github.com/mattn/goveralls
+        go get github.com/modocache/gover
+        sudo apt-get install -y conntrack
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v2
+    - name: Unit tests
+      env:
+        COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        make test/unit test/goveralls
+    - name: Start minikube
+      id: minikube
+      env:
+        CHANGE_MINIKUBE_NONE_USER: true
+        MINIKUBE_WANTUPDATENOTIFICATION: false
+        MINIKUBE_WANTREPORTERRORPROMPT: false
+      uses: medyagh/setup-minikube@master
+    - name: Setup minikube
+      run: |
+        sudo ./hack/modify_etc_hosts.sh "keycloak.local"
+        minikube addons enable ingress
+    - name: Run e2e tests
+      env:
+        COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        make cluster/prepare 
+        make test/e2e test/goveralls
+    - name: Run e2e tests for local image
+      env:
+        COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        make test/e2e-local-image
+    - name: After failure
+      if: ${{ failure() }}
+      run: |
+        echo "---- Keycloak Server logs ----"
+        kubectl logs keycloak-0
+        echo "---- Testing Ingress ----"
+        curl -kv https://keycloak.local/auth
+        echo "---- Ingress Controller logs ----"
+        kubectl logs -l app.kubernetes.io/name=nginx-ingress-controller -n kube-system
