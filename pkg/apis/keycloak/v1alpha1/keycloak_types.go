@@ -161,6 +161,11 @@ type KeycloakExternalAccess struct {
 	// Ingress TLS configuration is the same in both cases and it is up to the user
 	// to configure TLS section of the Ingress.
 	TLSTermination TLSTerminationType `json:"tlsTermination,omitempty"`
+	// If set, the Operator will use value of host for Ingress/Route host
+	// instead of default value keycloak.local for ingress and automatically
+	// chosen name for Route
+	// +optional
+	Host string `json:"host,omitempty"`
 }
 
 type KeycloakExternalDatabase struct {
