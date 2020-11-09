@@ -1,0 +1,34 @@
+- job_name: openshift-monitoring-federation
+  honor_labels: true
+  kubernetes_sd_configs:
+    - role: service
+      namespaces:
+        names:
+          - openshift-monitoring
+  scrape_interval: 30s
+  metrics_path: /federate
+  params:
+    match[]:
+      - 'console_url'
+      - 'cluster_version'
+      - 'ALERTS'
+      - 'subscription_sync_total'
+      - 'kubelet_volume_stats_used_bytes{endpoint="https-metrics",namespace!~"openshift-.*$",namespace!~"kube-.*$",namespace!="default"}'
+      - 'kubelet_volume_stats_available_bytes{endpoint="https-metrics",namespace!~"openshift-.*$",namespace!~"kube-.*$",namespace!="default"}'
+      - 'kubelet_volume_stats_capacity_bytes{endpoint="https-metrics",namespace!~"openshift-.*$",namespace!~"kube-.*$",namespace!="default"}'
+      - '{service="kube-state-metrics"}'
+      - '{service="node-exporter"}'
+      - '{__name__=~"node_namespace_pod_container:.*"}'
+      - '{__name__=~"node:.*"}'
+      - '{__name__=~"instance:.*"}'
+      - '{__name__=~"container_memory_.*"}'
+      - '{__name__=~"container_cpu_.*"}'
+      - '{__name__="container_last_seen"}'
+      - '{__name__=~":node_memory_.*"}'
+      - '{__name__=~"csv_.*"}'
+  scheme: https
+  tls_config:
+    insecure_skip_verify: true
+  basic_auth:
+    username: <user>
+    password: <pass>

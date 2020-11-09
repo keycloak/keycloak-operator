@@ -158,6 +158,14 @@ Please bear in mind this is intended to be used for internal purposes as there's
 | `make code/fix`           | Formats code using [gofmt](https://golang.org/cmd/gofmt/)                        |
 | `make code/lint`          | Checks for linting errors in the code                                            |
 
+#### Application Monitoring
+
+NOTE: This functionality works only in OpenShift environment.
+
+| *Command*                         | *Description*                                           |
+| --------------------------------- | ------------------------------------------------------- |
+| `make cluster/prepare/monitoring` | Installs and configures Application Monitoring Operator |
+
 #### CI
 | *Command*           | *Description*                                                              |
 | ------------------- | -------------------------------------------------------------------------- |

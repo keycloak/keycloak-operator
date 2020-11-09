@@ -36,6 +36,31 @@ cluster/clean:
 	@kubectl get crd --no-headers=true -o name | awk '/keycloak.org/{print $1}' | xargs kubectl delete || true
 	@kubectl delete namespace $(NAMESPACE) || true
 
+.PHONY: cluster/clean/monitoring
+cluster/clean/monitoring:
+	@kubectl delete -n $(NAMESPACE) --all blackboxtargets
+	@kubectl delete -n $(NAMESPACE) --all grafanadashboards
+	@kubectl delete -n $(NAMESPACE) --all grafanadatasources
+	@kubectl delete -n $(NAMESPACE) --all applicationmonitorings
+	@kubectl delete crd grafanas.integreatly.org
+	@kubectl delete crd grafanadashboards.integreatly.org
+	@kubectl delete crd grafanadatasources.integreatly.org
+	@kubectl delete crd blackboxtargets.applicationmonitoring.integreatly.org
+	@kubectl delete crd applicationmonitorings.applicationmonitoring.integreatly.org
+	@kubectl delete namespace application-monitoring
+
+.PHONY: cluster/prepare/monitoring
+cluster/prepare/monitoring:
+	$(eval _OS_PROMETHEUS_USER=$(shell oc get secrets -n openshift-monitoring grafana-datasources -o 'go-template={{index .data "prometheus.yaml"}}' | base64 --decode | jq -r '.datasources[0].basicAuthUser'))
+	$(eval _OS_PROMETHEUS_PASS=$(shell oc get secrets -n openshift-monitoring grafana-datasources -o 'go-template={{index .data "prometheus.yaml"}}' | base64 --decode | jq -r '.datasources[0].basicAuthPassword'))
+	kubectl label namespace $(NAMESPACE) monitoring-key=middleware || true
+	git clone --depth=1  git@github.com:integr8ly/application-monitoring-operator.git /tmp/keycloak-operator || true
+	$(MAKE) -C /tmp/keycloak-operator cluster/install
+	cat ./rhsso-operator/monitoring/federation.yaml | sed -e 's/<user>/'"$(_OS_PROMETHEUS_USER)"'/g' | \
+		sed -e 's@<pass>@'"$(_OS_PROMETHEUS_PASS)"'@g' > /tmp/keycloak-operator/integreatly-additional.yaml || true
+	kubectl create secret generic integreatly-additional-scrape-configs --from-file=/tmp/keycloak-operator/integreatly-additional.yaml --dry-run=client -o yaml | kubectl apply -n application-monitoring -f -
+	rm -rf /tmp/keycloak-operator/
+
 .PHONY: cluster/create/examples
 cluster/create/examples:
 	@kubectl create -f deploy/examples/keycloak/keycloak.yaml -n $(NAMESPACE)
