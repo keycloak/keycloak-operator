@@ -25,6 +25,12 @@ func GrafanaDashboard(cr *v1alpha1.Keycloak) *grafanav1alpha1.GrafanaDashboard {
 					Version: "1.3.9",
 				},
 			},
+			Datasources: []grafanav1alpha1.GrafanaDashboardDatasource{
+				{
+					InputName:      "DS_PROMETHEUS",
+					DatasourceName: "Prometheus",
+				},
+			},
 		},
 	}
 }
@@ -37,6 +43,12 @@ func GrafanaDashboardReconciled(cr *v1alpha1.Keycloak, currentState *grafanav1al
 		{
 			Name:    "grafana-piechart-panel",
 			Version: "1.3.9",
+		},
+	}
+	reconciled.Spec.Datasources = []grafanav1alpha1.GrafanaDashboardDatasource{
+		{
+			InputName:      "DS_PROMETHEUS",
+			DatasourceName: "Prometheus",
 		},
 	}
 	return reconciled
