@@ -417,6 +417,46 @@ func (in *KeycloakAPIRealm) DeepCopyInto(out *KeycloakAPIRealm) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.RegistrationAllowed != nil {
+		in, out := &in.RegistrationAllowed, &out.RegistrationAllowed
+		*out = new(bool)
+		**out = **in
+	}
+	if in.RegistrationEmailAsUsername != nil {
+		in, out := &in.RegistrationEmailAsUsername, &out.RegistrationEmailAsUsername
+		*out = new(bool)
+		**out = **in
+	}
+	if in.EditUsernameAllowed != nil {
+		in, out := &in.EditUsernameAllowed, &out.EditUsernameAllowed
+		*out = new(bool)
+		**out = **in
+	}
+	if in.ResetPasswordAllowed != nil {
+		in, out := &in.ResetPasswordAllowed, &out.ResetPasswordAllowed
+		*out = new(bool)
+		**out = **in
+	}
+	if in.RememberMe != nil {
+		in, out := &in.RememberMe, &out.RememberMe
+		*out = new(bool)
+		**out = **in
+	}
+	if in.VerifyEmail != nil {
+		in, out := &in.VerifyEmail, &out.VerifyEmail
+		*out = new(bool)
+		**out = **in
+	}
+	if in.LoginWithEmailAllowed != nil {
+		in, out := &in.LoginWithEmailAllowed, &out.LoginWithEmailAllowed
+		*out = new(bool)
+		**out = **in
+	}
+	if in.DuplicateEmailsAllowed != nil {
+		in, out := &in.DuplicateEmailsAllowed, &out.DuplicateEmailsAllowed
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 
