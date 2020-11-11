@@ -79,6 +79,13 @@ func getKeycloakRealmCR(namespace string) *keycloakv1alpha1.KeycloakRealm {
 					"envelopeFrom":    "sso@example.com",
 					"ssl":             "",
 				},
+				InternationalizationEnabled: &[]bool{true}[0],
+				SupportedLocales:            []string{"en", "de"},
+				DefaultLocale:               "en",
+				LoginTheme:                  "keycloak",
+				AccountTheme:                "keycloak",
+				AdminTheme:                  "keycloak",
+				EmailTheme:                  "keycloak",
 			},
 		},
 	}

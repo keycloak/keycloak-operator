@@ -509,6 +509,16 @@ func (in *KeycloakAPIRealm) DeepCopyInto(out *KeycloakAPIRealm) {
 			(*out)[key] = val
 		}
 	}
+	if in.InternationalizationEnabled != nil {
+		in, out := &in.InternationalizationEnabled, &out.InternationalizationEnabled
+		*out = new(bool)
+		**out = **in
+	}
+	if in.SupportedLocales != nil {
+		in, out := &in.SupportedLocales, &out.SupportedLocales
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
