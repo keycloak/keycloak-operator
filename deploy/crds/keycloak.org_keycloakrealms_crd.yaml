@@ -475,6 +475,11 @@ spec:
                 resetPasswordAllowed:
                   description: Forgot password
                   type: boolean
+                smtpServer:
+                  additionalProperties:
+                    type: string
+                  description: Email
+                  type: object
                 sslRequired:
                   description: Require SSL
                   type: string

@@ -134,6 +134,10 @@ type KeycloakAPIRealm struct {
 	// Failure Reset Time
 	// +optional
 	MaxDeltaTimeSeconds *int32 `json:"maxDeltaTimeSeconds,omitempty"`
+
+	// Email
+	// +optional
+	SMTPServer map[string]string `json:"smtpServer,omitempty"`
 }
 
 // https://www.keycloak.org/docs-api/10.0/rest-api/index.html#_userfederationproviderrepresentation
