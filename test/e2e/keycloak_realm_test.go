@@ -70,6 +70,15 @@ func getKeycloakRealmCR(namespace string) *keycloakv1alpha1.KeycloakRealm {
 				MinimumQuickLoginWaitSeconds: &[]int32{60}[0],
 				MaxFailureWaitSeconds:        &[]int32{900}[0],
 				MaxDeltaTimeSeconds:          &[]int32{43200}[0],
+				SMTPServer: map[string]string{
+					"starttls":        "",
+					"auth":            "",
+					"host":            "smtp.server",
+					"from":            "sso@example.com",
+					"fromDisplayName": "Example Company",
+					"envelopeFrom":    "sso@example.com",
+					"ssl":             "",
+				},
 			},
 		},
 	}

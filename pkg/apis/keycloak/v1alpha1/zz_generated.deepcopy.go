@@ -502,6 +502,13 @@ func (in *KeycloakAPIRealm) DeepCopyInto(out *KeycloakAPIRealm) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.SMTPServer != nil {
+		in, out := &in.SMTPServer, &out.SMTPServer
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return
 }
 
