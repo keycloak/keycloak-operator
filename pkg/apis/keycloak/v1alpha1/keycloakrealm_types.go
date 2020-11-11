@@ -138,6 +138,28 @@ type KeycloakAPIRealm struct {
 	// Email
 	// +optional
 	SMTPServer map[string]string `json:"smtpServer,omitempty"`
+
+	// Login Theme
+	// +optional
+	LoginTheme string `json:"loginTheme,omitempty"`
+	// Account Theme
+	// +optional
+	AccountTheme string `json:"accountTheme,omitempty"`
+	// Admin Console Theme
+	// +optional
+	AdminTheme string `json:"adminTheme,omitempty"`
+	// Email Theme
+	// +optional
+	EmailTheme string `json:"emailTheme,omitempty"`
+	// Internationalization Enabled
+	// +optional
+	InternationalizationEnabled *bool `json:"internationalizationEnabled,omitempty"`
+	// Supported Locales
+	// +optional
+	SupportedLocales []string `json:"supportedLocales,omitempty"`
+	// Default Locale
+	// +optional
+	DefaultLocale string `json:"defaultLocale,omitempty"`
 }
 
 // https://www.keycloak.org/docs-api/10.0/rest-api/index.html#_userfederationproviderrepresentation

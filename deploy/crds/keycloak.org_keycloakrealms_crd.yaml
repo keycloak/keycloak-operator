@@ -77,6 +77,9 @@ spec:
             realm:
               description: Keycloak Realm REST object.
               properties:
+                accountTheme:
+                  description: Account Theme
+                  type: string
                 adminEventsDetailsEnabled:
                   description: 'Enable admin events details TODO: change to values
                     and use kubebuilder default annotation once supported'
@@ -85,6 +88,9 @@ spec:
                   description: 'Enable events recording TODO: change to values and
                     use kubebuilder default annotation once supported'
                   type: boolean
+                adminTheme:
+                  description: Admin Console Theme
+                  type: string
                 authenticationFlows:
                   description: Authentication flows
                   items:
@@ -366,6 +372,9 @@ spec:
                     - clientId
                     type: object
                   type: array
+                defaultLocale:
+                  description: Default Locale
+                  type: string
                 displayName:
                   description: Realm display name.
                   type: string
@@ -375,6 +384,9 @@ spec:
                 editUsernameAllowed:
                   description: Edit username
                   type: boolean
+                emailTheme:
+                  description: Email Theme
+                  type: string
                 enabled:
                   description: Realm enabled flag.
                   type: boolean
@@ -438,6 +450,12 @@ spec:
                         type: boolean
                     type: object
                   type: array
+                internationalizationEnabled:
+                  description: Internationalization Enabled
+                  type: boolean
+                loginTheme:
+                  description: Login Theme
+                  type: string
                 loginWithEmailAllowed:
                   description: Login with email
                   type: boolean
@@ -483,6 +501,11 @@ spec:
                 sslRequired:
                   description: Require SSL
                   type: string
+                supportedLocales:
+                  description: Supported Locales
+                  items:
+                    type: string
+                  type: array
                 userFederationMappers:
                   description: User federation mappers are extension points triggered
                     by the user federation at various points.
