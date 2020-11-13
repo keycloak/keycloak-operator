@@ -60,8 +60,9 @@ spec:
                     or a Route pointing to Keycloak.
                   type: boolean
                 host:
-                  description: If set, the Operator will use value of host for Ingress
-                    host instead of default value keycloak.local
+                  description: If set, the Operator will use value of host for Ingress/Route
+                    host instead of default value keycloak.local for ingress and automatically
+                    chosen name for Route
                   type: string
                 tlsTermination:
                   description: TLS Termination type for the external access. Setting
