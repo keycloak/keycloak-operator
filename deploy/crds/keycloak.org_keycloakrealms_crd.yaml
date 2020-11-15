@@ -160,6 +160,9 @@ spec:
                     - alias
                     type: object
                   type: array
+                bruteForceProtected:
+                  description: Brute Force Detection
+                  type: boolean
                 clientScopes:
                   description: Client scopes
                   items:
@@ -384,6 +387,10 @@ spec:
                   items:
                     type: string
                   type: array
+                failureFactor:
+                  description: Max Login Failures
+                  format: int32
+                  type: integer
                 id:
                   type: string
                 identityProviders:
@@ -434,6 +441,25 @@ spec:
                 loginWithEmailAllowed:
                   description: Login with email
                   type: boolean
+                maxDeltaTimeSeconds:
+                  description: Failure Reset Time
+                  format: int32
+                  type: integer
+                maxFailureWaitSeconds:
+                  description: Max Wait
+                  format: int32
+                  type: integer
+                minimumQuickLoginWaitSeconds:
+                  description: Minimum Quick Login Wait
+                  format: int32
+                  type: integer
+                permanentLockout:
+                  description: Permanent Lockout
+                  type: boolean
+                quickLoginCheckMilliSeconds:
+                  description: Quick Login Check Milli Seconds
+                  format: int64
+                  type: integer
                 realm:
                   description: Realm name.
                   type: string
@@ -596,6 +622,10 @@ spec:
                 verifyEmail:
                   description: Verify email
                   type: boolean
+                waitIncrementSeconds:
+                  description: Wait Increment
+                  format: int32
+                  type: integer
               required:
               - realm
               type: object
