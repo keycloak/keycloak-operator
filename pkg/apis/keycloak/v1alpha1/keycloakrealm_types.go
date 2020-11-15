@@ -109,6 +109,31 @@ type KeycloakAPIRealm struct {
 	// Require SSL
 	// +optional
 	SslRequired string `json:"sslRequired,omitempty"`
+
+	// Brute Force Detection
+	// +optional
+	BruteForceProtected *bool `json:"bruteForceProtected,omitempty"`
+	// Permanent Lockout
+	// +optional
+	PermanentLockout *bool `json:"permanentLockout,omitempty"`
+	// Max Login Failures
+	// +optional
+	FailureFactor *int32 `json:"failureFactor,omitempty"`
+	// Wait Increment
+	// +optional
+	WaitIncrementSeconds *int32 `json:"waitIncrementSeconds,omitempty"`
+	// Quick Login Check Milli Seconds
+	// +optional
+	QuickLoginCheckMilliSeconds *int64 `json:"quickLoginCheckMilliSeconds,omitempty"`
+	// Minimum Quick Login Wait
+	// +optional
+	MinimumQuickLoginWaitSeconds *int32 `json:"minimumQuickLoginWaitSeconds,omitempty"`
+	// Max Wait
+	// +optional
+	MaxFailureWaitSeconds *int32 `json:"maxFailureWaitSeconds,omitempty"`
+	// Failure Reset Time
+	// +optional
+	MaxDeltaTimeSeconds *int32 `json:"maxDeltaTimeSeconds,omitempty"`
 }
 
 // https://www.keycloak.org/docs-api/10.0/rest-api/index.html#_userfederationproviderrepresentation

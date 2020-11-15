@@ -462,6 +462,46 @@ func (in *KeycloakAPIRealm) DeepCopyInto(out *KeycloakAPIRealm) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.BruteForceProtected != nil {
+		in, out := &in.BruteForceProtected, &out.BruteForceProtected
+		*out = new(bool)
+		**out = **in
+	}
+	if in.PermanentLockout != nil {
+		in, out := &in.PermanentLockout, &out.PermanentLockout
+		*out = new(bool)
+		**out = **in
+	}
+	if in.FailureFactor != nil {
+		in, out := &in.FailureFactor, &out.FailureFactor
+		*out = new(int32)
+		**out = **in
+	}
+	if in.WaitIncrementSeconds != nil {
+		in, out := &in.WaitIncrementSeconds, &out.WaitIncrementSeconds
+		*out = new(int32)
+		**out = **in
+	}
+	if in.QuickLoginCheckMilliSeconds != nil {
+		in, out := &in.QuickLoginCheckMilliSeconds, &out.QuickLoginCheckMilliSeconds
+		*out = new(int64)
+		**out = **in
+	}
+	if in.MinimumQuickLoginWaitSeconds != nil {
+		in, out := &in.MinimumQuickLoginWaitSeconds, &out.MinimumQuickLoginWaitSeconds
+		*out = new(int32)
+		**out = **in
+	}
+	if in.MaxFailureWaitSeconds != nil {
+		in, out := &in.MaxFailureWaitSeconds, &out.MaxFailureWaitSeconds
+		*out = new(int32)
+		**out = **in
+	}
+	if in.MaxDeltaTimeSeconds != nil {
+		in, out := &in.MaxDeltaTimeSeconds, &out.MaxDeltaTimeSeconds
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 
