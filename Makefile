@@ -154,23 +154,6 @@ code/lint:
 	@echo "--> Running golangci-lint"
 	@$(shell go env GOPATH)/bin/golangci-lint run --timeout 10m
 
-##############################
-# CI                         #
-##############################
-.PHONY: setup/travis
-setup/travis:
-	@echo Installing Kubectl
-	@curl -Lo kubectl ${KUBECTL_DOWNLOAD_URL} && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
-	@echo Installing Minikube
-	@curl -Lo minikube ${MINIKUBE_DOWNLOAD_URL} && chmod +x minikube && sudo mv minikube /usr/local/bin/
-	@echo Booting Minikube up, see Travis env. variables for more information
-	@mkdir -p $HOME/.kube $HOME/.minikube
-	@touch $KUBECONFIG
-	@sudo minikube start --vm-driver=none
-	@sudo chown -R travis: /home/travis/.minikube/
-	sudo ./hack/modify_etc_hosts.sh "keycloak.local"
-	@sudo minikube addons enable ingress
-
 .PHONY: test/goveralls
 test/goveralls: test/coverage/prepare
 	@echo "Preparing goveralls file"

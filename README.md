@@ -1,4 +1,5 @@
-[![Build Status](https://travis-ci.org/keycloak/keycloak-operator.svg?branch=master)](https://travis-ci.org/keycloak/keycloak-operator)
+![Build Status](https://github.com/keycloak/keycloak-operator/workflows/Go/badge.svg)
+![CI Status](https://github.com/keycloak/keycloak-operator/workflows/CI/badge.svg)
 [![Go Report Card](https://goreportcard.com/badge/github.com/keycloak/keycloak-operator)](https://goreportcard.com/report/github.com/keycloak/keycloak-operator)
 [![Coverage Status](https://coveralls.io/repos/github/keycloak/keycloak-operator/badge.svg?branch=master)](https://coveralls.io/github/keycloak/keycloak-operator?branch=master)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -157,11 +158,6 @@ Please bear in mind this is intended to be used for internal purposes as there's
 | `make code/check`         | Checks for linting errors in the code                                            |
 | `make code/fix`           | Formats code using [gofmt](https://golang.org/cmd/gofmt/)                        |
 | `make code/lint`          | Checks for linting errors in the code                                            |
-
-#### CI
-| *Command*           | *Description*                                                              |
-| ------------------- | -------------------------------------------------------------------------- |
-| `make setup/travis` | Downloads operator-sdk, makes it executable and copys to `/usr/local/bin/` |
 
 #### Components versions
 
