@@ -3,6 +3,7 @@ package keycloakrealm
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/pkg/errors"
@@ -183,13 +184,16 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 }
 
 func (r *ReconcileKeycloakRealm) manageSuccess(realm *kc.KeycloakRealm, deleted bool) error {
+	currentStatus := realm.Status.DeepCopy()
 	realm.Status.Ready = true
 	realm.Status.Message = ""
 	realm.Status.Phase = v1alpha1.PhaseReconciling
 
-	err := r.client.Status().Update(r.context, realm)
-	if err != nil {
-		log.Error(err, "unable to update status")
+	if !reflect.DeepEqual(currentStatus, &realm.Status) {
+		err := r.client.Status().Update(r.context, realm)
+		if err != nil {
+			log.Error(err, "unable to update status")
+		}
 	}
 
 	// Finalizer already set?

@@ -3,6 +3,7 @@ package keycloakclient
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -179,13 +180,16 @@ func (r *ReconcileKeycloakClient) adjustCrDefaults(cr *kc.KeycloakClient) {
 }
 
 func (r *ReconcileKeycloakClient) manageSuccess(client *kc.KeycloakClient, deleted bool) error {
+	currentStatus := client.Status.DeepCopy()
 	client.Status.Ready = true
 	client.Status.Message = ""
 	client.Status.Phase = v1alpha1.PhaseReconciling
 
-	err := r.client.Status().Update(r.context, client)
-	if err != nil {
-		log.Error(err, "unable to update status")
+	if !reflect.DeepEqual(currentStatus, &client.Status) {
+		err := r.client.Status().Update(r.context, client)
+		if err != nil {
+			log.Error(err, "unable to update status")
+		}
 	}
 
 	// Finalizer already set?

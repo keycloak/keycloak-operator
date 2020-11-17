@@ -3,6 +3,7 @@ package keycloak
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/keycloak/keycloak-operator/version"
@@ -227,6 +228,7 @@ func (r *ReconcileKeycloak) ManageError(instance *v1alpha1.Keycloak, issue error
 }
 
 func (r *ReconcileKeycloak) ManageSuccess(instance *v1alpha1.Keycloak, currentState *common.ClusterState) (reconcile.Result, error) {
+	currentStatus := instance.Status.DeepCopy()
 	// Check if the resources are ready
 	resourcesReady, err := currentState.IsResourcesReady(instance)
 	if err != nil {
@@ -262,13 +264,15 @@ func (r *ReconcileKeycloak) ManageSuccess(instance *v1alpha1.Keycloak, currentSt
 
 	r.setVersion(instance)
 
-	err = r.client.Status().Update(r.context, instance)
-	if err != nil {
-		log.Error(err, "unable to update status")
-		return reconcile.Result{
-			RequeueAfter: RequeueDelayError,
-			Requeue:      true,
-		}, nil
+	if !reflect.DeepEqual(currentStatus, &instance.Status) {
+		err = r.client.Status().Update(r.context, instance)
+		if err != nil {
+			log.Error(err, "unable to update status")
+			return reconcile.Result{
+				RequeueAfter: RequeueDelayError,
+				Requeue:      true,
+			}, nil
+		}
 	}
 
 	log.Info("desired cluster state met")

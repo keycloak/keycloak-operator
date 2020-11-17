@@ -3,6 +3,7 @@ package keycloakbackup
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -171,6 +172,7 @@ func (r *ReconcileKeycloakBackup) ManageError(instance *kc.KeycloakBackup, issue
 }
 
 func (r *ReconcileKeycloakBackup) ManageSuccess(instance *kc.KeycloakBackup, currentState *common.BackupState) (reconcile.Result, error) {
+	currentStatus := instance.Status.DeepCopy()
 	resourcesReady, err := currentState.IsResourcesReady()
 	if err != nil {
 		return r.ManageError(instance, err)
@@ -184,13 +186,15 @@ func (r *ReconcileKeycloakBackup) ManageSuccess(instance *kc.KeycloakBackup, cur
 		instance.Status.Phase = kc.BackupPhaseReconciling
 	}
 
-	err = r.client.Status().Update(r.context, instance)
-	if err != nil {
-		log.Error(err, "unable to update status")
-		return reconcile.Result{
-			RequeueAfter: RequeueDelayError,
-			Requeue:      true,
-		}, nil
+	if !reflect.DeepEqual(currentStatus, &instance.Status) {
+		err = r.client.Status().Update(r.context, instance)
+		if err != nil {
+			log.Error(err, "unable to update status")
+			return reconcile.Result{
+				RequeueAfter: RequeueDelayError,
+				Requeue:      true,
+			}, nil
+		}
 	}
 
 	log.Info("desired cluster state met")

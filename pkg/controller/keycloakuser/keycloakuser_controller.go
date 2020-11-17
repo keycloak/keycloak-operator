@@ -3,6 +3,7 @@ package keycloakuser
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/pkg/errors"
@@ -193,11 +194,14 @@ func (r *ReconcileKeycloakUser) Reconcile(request reconcile.Request) (reconcile.
 }
 
 func (r *ReconcileKeycloakUser) manageSuccess(user *kc.KeycloakUser, deleted bool) error {
+	currentStatus := user.Status.DeepCopy()
 	user.Status.Phase = kc.UserPhaseReconciled
 
-	err := r.client.Status().Update(r.context, user)
-	if err != nil {
-		log.Error(err, "unable to update status")
+	if !reflect.DeepEqual(currentStatus, &user.Status) {
+		err := r.client.Status().Update(r.context, user)
+		if err != nil {
+			log.Error(err, "unable to update status")
+		}
 	}
 
 	// Finalizer already set?
