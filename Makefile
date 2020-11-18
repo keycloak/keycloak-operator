@@ -157,8 +157,8 @@ code/lint:
 ##############################
 # CI                         #
 ##############################
-.PHONY: setup/travis
-setup/travis:
+.PHONY: setup/github
+setup/github:
 	@echo Installing Kubectl
 	@curl -Lo kubectl ${KUBECTL_DOWNLOAD_URL} && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 	@echo Installing Minikube
@@ -167,8 +167,7 @@ setup/travis:
 	@mkdir -p $HOME/.kube $HOME/.minikube
 	@touch $KUBECONFIG
 	@sudo minikube start --vm-driver=none
-	@sudo chown -R travis: /home/travis/.minikube/
-	sudo ./hack/modify_etc_hosts.sh "keycloak.local"
+	@sudo ./hack/modify_etc_hosts.sh "keycloak.local"
 	@sudo minikube addons enable ingress
 
 .PHONY: test/goveralls
