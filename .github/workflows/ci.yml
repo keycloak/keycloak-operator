@@ -18,30 +18,15 @@ jobs:
     - name: Check out code into the Go module directory
       uses: actions/checkout@v2
     - name: Unit tests
-      env:
-        COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        make test/unit test/goveralls
-    - name: Start minikube
-      id: minikube
-      env:
-        CHANGE_MINIKUBE_NONE_USER: true
-        MINIKUBE_WANTUPDATENOTIFICATION: false
-        MINIKUBE_WANTREPORTERRORPROMPT: false
-      uses: medyagh/setup-minikube@master
-    - name: Setup minikube
-      run: |
-        sudo ./hack/modify_etc_hosts.sh "keycloak.local"
-        minikube addons enable ingress
+        make test/unit
     - name: Run e2e tests
-      env:
-        COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        make setup/github
+        sudo chown -R $USER $HOME/.kube $HOME/.minikube
         make cluster/prepare 
-        make test/e2e test/goveralls
+        make test/e2e
     - name: Run e2e tests for local image
-      env:
-        COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         make test/e2e-local-image
     - name: After failure
