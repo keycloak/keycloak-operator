@@ -28,6 +28,8 @@ jobs:
         CHANGE_MINIKUBE_NONE_USER: true
         MINIKUBE_WANTUPDATENOTIFICATION: false
         MINIKUBE_WANTREPORTERRORPROMPT: false
+        # Workaround for https://github.com/medyagh/setup-minikube/issues/12
+        ACTIONS_ALLOW_UNSECURE_COMMANDS: true
       uses: medyagh/setup-minikube@master
     - name: Setup minikube
       run: |
