@@ -56,7 +56,7 @@ cluster/prepare/monitoring:
 	kubectl label namespace $(NAMESPACE) monitoring-key=middleware || true
 	git clone --depth=1  git@github.com:integr8ly/application-monitoring-operator.git /tmp/keycloak-operator || true
 	$(MAKE) -C /tmp/keycloak-operator cluster/install
-	cat ./rhsso-operator/monitoring/federation.yaml | sed -e 's/<user>/'"$(_OS_PROMETHEUS_USER)"'/g' | \
+	cat ./deploy/examples/monitoring/federation.yaml | sed -e 's/<user>/'"$(_OS_PROMETHEUS_USER)"'/g' | \
 		sed -e 's@<pass>@'"$(_OS_PROMETHEUS_PASS)"'@g' > /tmp/keycloak-operator/integreatly-additional.yaml || true
 	kubectl create secret generic integreatly-additional-scrape-configs --from-file=/tmp/keycloak-operator/integreatly-additional.yaml --dry-run=client -o yaml | kubectl apply -n application-monitoring -f -
 	rm -rf /tmp/keycloak-operator/
