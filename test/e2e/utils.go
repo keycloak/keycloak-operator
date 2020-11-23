@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/keycloak/keycloak-operator/pkg/common"
+
 	"github.com/pkg/errors"
 
 	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -26,6 +28,8 @@ type Condition func(t *testing.T, c kubernetes.Interface) error
 
 type ResponseCondition func(response *http.Response) error
 
+type ClientCondition func(authenticatedClient common.KeycloakInterface) error
+
 func WaitForCondition(t *testing.T, c kubernetes.Interface, cond Condition) error {
 	t.Logf("waiting up to %v for condition", pollTimeout)
 	var err error
@@ -36,6 +40,21 @@ func WaitForCondition(t *testing.T, c kubernetes.Interface, cond Condition) erro
 		}
 	}
 	return err
+}
+
+func WaitForConditionWithClient(t *testing.T, framework *framework.Framework, keycloakCR keycloakv1alpha1.Keycloak, cond ClientCondition) error {
+	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
+		authenticatedClient, err := MakeAuthenticatedClient(keycloakCR)
+		if err != nil {
+			return err
+		}
+		return cond(authenticatedClient)
+	})
+}
+
+func MakeAuthenticatedClient(keycloakCR keycloakv1alpha1.Keycloak) (common.KeycloakInterface, error) {
+	keycloakFactory := common.LocalConfigKeycloakFactory{}
+	return keycloakFactory.AuthenticatedClient(keycloakCR)
 }
 
 // Stolen from https://github.com/kubernetes/kubernetes/blob/master/test/e2e/framework/util.go

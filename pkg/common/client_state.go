@@ -15,6 +15,7 @@ type ClientState struct {
 	ClientSecret *v1.Secret
 	Context      context.Context
 	Realm        *kc.KeycloakRealm
+	Roles        []kc.RoleRepresentation
 }
 
 func NewClientState(context context.Context, realm *kc.KeycloakRealm) *ClientState {
@@ -51,6 +52,13 @@ func (i *ClientState) Read(context context.Context, cr *kc.KeycloakClient, realm
 	err = i.readClientSecret(context, cr, i.Client, controllerClient)
 	if err != nil {
 		return err
+	}
+
+	if i.Client != nil {
+		i.Roles, err = realmClient.ListClientRoles(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
