@@ -160,6 +160,68 @@ type KeycloakAPIRealm struct {
 	// Default Locale
 	// +optional
 	DefaultLocale string `json:"defaultLocale,omitempty"`
+
+	// Roles
+	// +optional
+	Roles *RolesRepresentation `json:"roles,omitempty"`
+}
+
+type RoleRepresentationArray []RoleRepresentation
+
+// https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_rolesrepresentation
+type RolesRepresentation struct {
+	// Client Roles
+	// +optional
+	Client map[string]RoleRepresentationArray `json:"client,omitempty"`
+
+	// Realm Roles
+	// +optional
+	Realm []RoleRepresentation `json:"realm,omitempty"`
+}
+
+// https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_rolerepresentation
+type RoleRepresentation struct {
+	// Role Attributes
+	// +optional
+	Attributes map[string][]string `json:"attributes,omitempty"`
+
+	// Client Role
+	// +optional
+	ClientRole *bool `json:"clientRole,omitempty"`
+
+	// Composite
+	// +optional
+	Composite *bool `json:"composite,omitempty"`
+
+	// Composites
+	// +optional
+	Composites *RoleRepresentationComposites `json:"composites,omitempty"`
+
+	// Container Id
+	// +optional
+	ContainerID string `json:"containerId,omitempty"`
+
+	// Description
+	// +optional
+	Description string `json:"description,omitempty"`
+
+	// Id
+	// +optional
+	ID string `json:"id,omitempty"`
+
+	// Name
+	Name string `json:"name"`
+}
+
+// https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_rolerepresentation-composites
+type RoleRepresentationComposites struct {
+	// Map client => []role
+	// +optional
+	Client map[string][]string `json:"client,omitempty"`
+
+	// Realm roles
+	// +optional
+	Realm []string `json:"realm,omitempty"`
 }
 
 // https://www.keycloak.org/docs-api/10.0/rest-api/index.html#_userfederationproviderrepresentation

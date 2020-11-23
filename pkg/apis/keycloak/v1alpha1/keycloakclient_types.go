@@ -13,6 +13,11 @@ type KeycloakClientSpec struct {
 	// Keycloak Client REST object.
 	// +kubebuilder:validation:Required
 	Client *KeycloakAPIClient `json:"client"`
+	// Client Roles
+	// +optional
+	// +listType=map
+	// +listMapKey=name
+	Roles []RoleRepresentation `json:"roles,omitempty"`
 }
 
 type KeycloakAPIClient struct {

@@ -29,6 +29,9 @@ type ActionRunner interface {
 	CreateClient(keycloakClient *v1alpha1.KeycloakClient, Realm string) error
 	DeleteClient(keycloakClient *v1alpha1.KeycloakClient, Realm string) error
 	UpdateClient(keycloakClient *v1alpha1.KeycloakClient, Realm string) error
+	CreateClientRole(keycloakClient *v1alpha1.KeycloakClient, role *v1alpha1.RoleRepresentation, realm string) error
+	UpdateClientRole(keycloakClient *v1alpha1.KeycloakClient, role, oldRole *v1alpha1.RoleRepresentation, realm string) error
+	DeleteClientRole(keycloakClient *v1alpha1.KeycloakClient, role, Realm string) error
 	CreateUser(obj *v1alpha1.KeycloakUser, realm string) error
 	UpdateUser(obj *v1alpha1.KeycloakUser, realm string) error
 	DeleteUser(id, realm string) error
@@ -140,6 +143,28 @@ func (i *ClusterActionRunner) UpdateClient(obj *v1alpha1.KeycloakClient, realm s
 		return errors.Errorf("cannot perform client update when client is nil")
 	}
 	return i.keycloakClient.UpdateClient(obj.Spec.Client, realm)
+}
+
+func (i *ClusterActionRunner) CreateClientRole(obj *v1alpha1.KeycloakClient, role *v1alpha1.RoleRepresentation, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform client role create when client is nil")
+	}
+	_, err := i.keycloakClient.CreateClientRole(obj.Spec.Client.ID, role, realm)
+	return err
+}
+
+func (i *ClusterActionRunner) UpdateClientRole(obj *v1alpha1.KeycloakClient, role, oldRole *v1alpha1.RoleRepresentation, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform client role update when client is nil")
+	}
+	return i.keycloakClient.UpdateClientRole(obj.Spec.Client.ID, role, oldRole, realm)
+}
+
+func (i *ClusterActionRunner) DeleteClientRole(obj *v1alpha1.KeycloakClient, role, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform client role delete when client is nil")
+	}
+	return i.keycloakClient.DeleteClientRole(obj.Spec.Client.ID, role, realm)
 }
 
 // Delete a realm using the keycloak api
@@ -333,6 +358,28 @@ type DeleteClientAction struct {
 	Msg   string
 }
 
+type CreateClientRoleAction struct {
+	Role  *v1alpha1.RoleRepresentation
+	Ref   *v1alpha1.KeycloakClient
+	Msg   string
+	Realm string
+}
+
+type UpdateClientRoleAction struct {
+	Role    *v1alpha1.RoleRepresentation
+	OldRole *v1alpha1.RoleRepresentation
+	Ref     *v1alpha1.KeycloakClient
+	Msg     string
+	Realm   string
+}
+
+type DeleteClientRoleAction struct {
+	Role  *v1alpha1.RoleRepresentation
+	Ref   *v1alpha1.KeycloakClient
+	Msg   string
+	Realm string
+}
+
 type ConfigureRealmAction struct {
 	Ref *v1alpha1.KeycloakRealm
 	Msg string
@@ -408,6 +455,18 @@ func (i CreateClientAction) Run(runner ActionRunner) (string, error) {
 
 func (i UpdateClientAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.UpdateClient(i.Ref, i.Realm)
+}
+
+func (i CreateClientRoleAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.CreateClientRole(i.Ref, i.Role, i.Realm)
+}
+
+func (i UpdateClientRoleAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.UpdateClientRole(i.Ref, i.Role, i.OldRole, i.Realm)
+}
+
+func (i DeleteClientRoleAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.DeleteClientRole(i.Ref, i.Role.Name, i.Realm)
 }
 
 func (i DeleteRealmAction) Run(runner ActionRunner) (string, error) {

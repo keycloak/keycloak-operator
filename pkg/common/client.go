@@ -92,6 +92,10 @@ func (c *Client) CreateClient(client *v1alpha1.KeycloakAPIClient, realmName stri
 	return c.create(client, fmt.Sprintf("realms/%s/clients", realmName), "client")
 }
 
+func (c *Client) CreateClientRole(clientID string, role *v1alpha1.RoleRepresentation, realmName string) (string, error) {
+	return c.create(role, fmt.Sprintf("realms/%s/clients/%s/roles", realmName, clientID), "client role")
+}
+
 func (c *Client) CreateUser(user *v1alpha1.KeycloakAPIUser, realmName string) (string, error) {
 	return c.create(user, fmt.Sprintf("realms/%s/users", realmName), "user")
 }
@@ -405,6 +409,10 @@ func (c *Client) UpdateClient(specClient *v1alpha1.KeycloakAPIClient, realmName 
 	return c.update(specClient, fmt.Sprintf("realms/%s/clients/%s", realmName, specClient.ID), "client")
 }
 
+func (c *Client) UpdateClientRole(clientID string, role, oldRole *v1alpha1.RoleRepresentation, realmName string) error {
+	return c.update(role, fmt.Sprintf("realms/%s/clients/%s/roles/%s", realmName, clientID, oldRole.Name), "client role")
+}
+
 func (c *Client) UpdateUser(specUser *v1alpha1.KeycloakAPIUser, realmName string) error {
 	return c.update(specUser, fmt.Sprintf("realms/%s/users/%s", realmName, specUser.ID), "user")
 }
@@ -470,6 +478,11 @@ func (c *Client) DeleteRealm(realmName string) error {
 
 func (c *Client) DeleteClient(clientID, realmName string) error {
 	err := c.delete(fmt.Sprintf("realms/%s/clients/%s", realmName, clientID), "client", nil)
+	return err
+}
+
+func (c *Client) DeleteClientRole(clientID, role, realmName string) error {
+	err := c.delete(fmt.Sprintf("realms/%s/clients/%s/roles/%s", realmName, clientID, role), "client role", nil)
 	return err
 }
 
@@ -554,6 +567,26 @@ func (c *Client) ListClients(realmName string) ([]*v1alpha1.KeycloakAPIClient, e
 
 	if !ok {
 		return nil, errors.Errorf("error decoding list clients response")
+	}
+
+	return res, nil
+}
+
+func (c *Client) ListClientRoles(clientID, realmName string) ([]v1alpha1.RoleRepresentation, error) {
+	result, err := c.list(fmt.Sprintf("realms/%s/clients/%s/roles", realmName, clientID), "client roles", func(body []byte) (T, error) {
+		var roles []v1alpha1.RoleRepresentation
+		err := json.Unmarshal(body, &roles)
+		return roles, err
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	res, ok := result.([]v1alpha1.RoleRepresentation)
+
+	if !ok {
+		return nil, errors.Errorf("error decoding list client roles response")
 	}
 
 	return res, nil
@@ -726,7 +759,7 @@ func (c *Client) login(user, pass string) error {
 
 // defaultRequester returns a default client for requesting http endpoints
 func defaultRequester() Requester {
-	transport := http.DefaultTransport.(*http.Transport).Clone() // nolint
+	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} // nolint
 
 	c := &http.Client{Transport: transport, Timeout: time.Second * 10}
@@ -753,6 +786,10 @@ type KeycloakInterface interface {
 	UpdateClient(specClient *v1alpha1.KeycloakAPIClient, realmName string) error
 	DeleteClient(clientID, realmName string) error
 	ListClients(realmName string) ([]*v1alpha1.KeycloakAPIClient, error)
+	ListClientRoles(clientID, realmName string) ([]v1alpha1.RoleRepresentation, error)
+	CreateClientRole(clientID string, role *v1alpha1.RoleRepresentation, realmName string) (string, error)
+	UpdateClientRole(clientID string, role, oldRole *v1alpha1.RoleRepresentation, realmName string) error
+	DeleteClientRole(clientID, role, realmName string) error
 
 	CreateUser(user *v1alpha1.KeycloakAPIUser, realmName string) (string, error)
 	CreateFederatedIdentity(fid v1alpha1.FederatedIdentity, userID string, realmName string) (string, error)
