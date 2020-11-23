@@ -18,6 +18,7 @@ type KeycloakRealmSpec struct {
 	// +kubebuilder:validation:Required
 	Realm *KeycloakAPIRealm `json:"realm"`
 	// A list of overrides to the default Realm behavior.
+	// +listType=atomic
 	RealmOverrides []*RedirectorIdentityProviderOverride `json:"realmOverrides,omitempty"`
 }
 
@@ -231,8 +232,7 @@ type KeycloakAPIAuthenticatorConfig struct {
 
 type RedirectorIdentityProviderOverride struct {
 	// Identity Provider to be overridden.
-	// +optional
-	IdentityProvider string `json:"identityProvider,omitempty"`
+	IdentityProvider string `json:"identityProvider"`
 	// Flow to be overridden.
 	// +optional
 	ForFlow string `json:"forFlow,omitempty"`

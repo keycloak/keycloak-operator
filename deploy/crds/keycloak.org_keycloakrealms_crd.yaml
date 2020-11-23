@@ -609,8 +609,11 @@ spec:
                   identityProvider:
                     description: Identity Provider to be overridden.
                     type: string
+                required:
+                - identityProvider
                 type: object
               type: array
+              x-kubernetes-list-type: atomic
             unmanaged:
               description: When set to true, this KeycloakRealm will be marked as
                 unmanaged and not be managed by this operator. It can then be used
