@@ -78,7 +78,7 @@ func getKeycloakClientCR(namespace string, external bool) *keycloakv1alpha1.Keyc
 				PublicClient:              true,
 				FrontchannelLogout:        false,
 				Protocol:                  "openid-connect",
-				FullScopeAllowed:          true,
+				FullScopeAllowed:          &[]bool{true}[0],
 				NodeReRegistrationTimeout: -1,
 				DefaultClientScopes:       []string{"profile"},
 				OptionalClientScopes:      []string{"microprofile-jwt"},

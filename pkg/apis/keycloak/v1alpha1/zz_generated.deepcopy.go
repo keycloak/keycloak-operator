@@ -273,6 +273,11 @@ func (in *KeycloakAPIClient) DeepCopyInto(out *KeycloakAPIClient) {
 			(*out)[key] = val
 		}
 	}
+	if in.FullScopeAllowed != nil {
+		in, out := &in.FullScopeAllowed, &out.FullScopeAllowed
+		*out = new(bool)
+		**out = **in
+	}
 	if in.ProtocolMappers != nil {
 		in, out := &in.ProtocolMappers, &out.ProtocolMappers
 		*out = make([]KeycloakProtocolMapper, len(*in))

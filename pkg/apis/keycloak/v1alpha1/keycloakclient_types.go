@@ -93,7 +93,7 @@ type KeycloakAPIClient struct {
 	Attributes map[string]string `json:"attributes,omitempty"`
 	// True if Full Scope is allowed.
 	// +optional
-	FullScopeAllowed bool `json:"fullScopeAllowed,omitempty"`
+	FullScopeAllowed *bool `json:"fullScopeAllowed,omitempty"`
 	// Node registration timeout.
 	// +optional
 	NodeReRegistrationTimeout int `json:"nodeReRegistrationTimeout,omitempty"`
