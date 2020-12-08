@@ -167,6 +167,10 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 				{Name: "update", Description: "update_description"},
 				{Name: "rename_recreate"},
 			},
+			ScopeMappings: &v1alpha1.MappingsRepresentation{
+				ClientMappings: map[string]v1alpha1.ClientMappingsRepresentation{"someclient": {Mappings: []v1alpha1.RoleRepresentation{{Name: "b"}, {Name: "c"}}}},
+				RealmMappings:  []v1alpha1.RoleRepresentation{{Name: "rb"}, {Name: "rc"}},
+			},
 		},
 	}
 
@@ -186,6 +190,10 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 			{ID: "updateID", Name: "update"},
 			{ID: "renameID", Name: "rename"},
 			{ID: "rename_recreateID", Name: "rename_recreate"},
+		},
+		ScopeMappings: &v1alpha1.MappingsRepresentation{
+			ClientMappings: map[string]v1alpha1.ClientMappingsRepresentation{"someclient": {Mappings: []v1alpha1.RoleRepresentation{{Name: "a"}, {Name: "b"}}}},
+			RealmMappings:  []v1alpha1.RoleRepresentation{{Name: "ra"}, {Name: "rb"}},
 		},
 	}
 
@@ -219,7 +227,14 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 	assert.Equal(t, "rename_recreate", desiredState[8].(common.CreateClientRoleAction).Role.Name)
 	assert.IsType(t, common.CreateClientRoleAction{}, desiredState[9])
 	assert.Equal(t, "delete_recreate", desiredState[9].(common.CreateClientRoleAction).Role.Name)
-	assert.Equal(t, 10, len(desiredState))
+
+	assert.IsType(t, common.CreateClientRealmScopeMappingsAction{}, desiredState[10])
+	assert.IsType(t, common.CreateClientClientScopeMappingsAction{}, desiredState[11])
+	assert.Equal(t, "someclient", desiredState[11].(common.CreateClientClientScopeMappingsAction).Mappings.Client)
+	assert.IsType(t, common.DeleteClientRealmScopeMappingsAction{}, desiredState[12])
+	assert.IsType(t, common.DeleteClientClientScopeMappingsAction{}, desiredState[13])
+
+	assert.Equal(t, 14, len(desiredState))
 }
 
 func TestKeycloakClientReconciler_Test_Marshal_Client(t *testing.T) {
@@ -254,30 +269,39 @@ func TestKeycloakClientReconciler_Test_Marshal_Client(t *testing.T) {
 	assert.True(t, strings.Contains(s, "\"publicClient\":false"), "Element publicClient should not be omitted if false, as keycloaks default is true")
 }
 
-func TestKeycloakClientReconciler_Test_Role_DifferenceIntersection(t *testing.T) {
+func TestKeycloakClientReconciler_Test_ScopeMapping_Difference(t *testing.T) {
 	// given
-	a := []v1alpha1.RoleRepresentation{
-		{Name: "a"},
-		{ID: "ignored", Name: "b"},
-		{ID: "cID", Name: "c"},
+	a := &v1alpha1.MappingsRepresentation{
+		RealmMappings: []v1alpha1.RoleRepresentation{{Name: "realmRoleA"}, {Name: "realmRoleB"}},
+		ClientMappings: map[string]v1alpha1.ClientMappingsRepresentation{
+			"clientA":  {Mappings: []v1alpha1.RoleRepresentation{{Name: "allDeleted"}}},
+			"clientB1": {Mappings: []v1alpha1.RoleRepresentation{{Name: "a"}, {Name: "b"}}, ID: "idB1"},
+			"clientB2": {Mappings: []v1alpha1.RoleRepresentation{{Name: "a"}, {Name: "b"}}},
+		},
 	}
-	b := []v1alpha1.RoleRepresentation{
-		{Name: "b"},
-		{ID: "cID", Name: "differentName"},
-		{Name: "d"},
+	b := &v1alpha1.MappingsRepresentation{
+		RealmMappings: []v1alpha1.RoleRepresentation{{Name: "realmRoleB"}, {Name: "realmRoleC"}},
+		ClientMappings: map[string]v1alpha1.ClientMappingsRepresentation{
+			"clientA":  {Mappings: []v1alpha1.RoleRepresentation{{Name: "allDeleted"}}},
+			"clientB1": {Mappings: []v1alpha1.RoleRepresentation{{Name: "b"}, {Name: "c"}}},
+			"clientB2": {Mappings: []v1alpha1.RoleRepresentation{{Name: "b"}, {Name: "c"}}, ID: "idB2"},
+			"clientC":  {Mappings: []v1alpha1.RoleRepresentation{{Name: "irrelevant"}}},
+		},
 	}
 
 	// when
-	difference, intersection := roleDifferenceIntersection(a, b)
+	d := scopeMappingDifference(a, b)
 
 	// then
-	expectedDifference := []v1alpha1.RoleRepresentation{
-		{Name: "a"},
+	expected := &v1alpha1.MappingsRepresentation{
+		RealmMappings: []v1alpha1.RoleRepresentation{{Name: "realmRoleA"}},
+		ClientMappings: map[string]v1alpha1.ClientMappingsRepresentation{
+			"clientB1": {Client: "clientB1", ID: "idB1", Mappings: []v1alpha1.RoleRepresentation{{Name: "a"}}},
+			"clientB2": {Client: "clientB2", ID: "idB2", Mappings: []v1alpha1.RoleRepresentation{{Name: "a"}}},
+		},
 	}
-	expectedIntersection := []v1alpha1.RoleRepresentation{
-		{ID: "ignored", Name: "b"},
-		{ID: "cID", Name: "c"},
-	}
-	assert.Equal(t, expectedDifference, difference)
-	assert.Equal(t, expectedIntersection, intersection)
+	assert.Equal(t, expected, d)
+
+	_, ok := d.ClientMappings["clientA"]
+	assert.False(t, ok)
 }
