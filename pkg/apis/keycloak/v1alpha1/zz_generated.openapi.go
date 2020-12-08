@@ -336,12 +336,18 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakClientSpec(ref common.ReferenceCa
 							},
 						},
 					},
+					"scopeMappings": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Scope Mappings",
+							Ref:         ref("github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.MappingsRepresentation"),
+						},
+					},
 				},
 				Required: []string{"realmSelector", "client"},
 			},
 		},
 		Dependencies: []string{
-			"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakAPIClient", "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.RoleRepresentation", "k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"},
+			"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakAPIClient", "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.MappingsRepresentation", "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.RoleRepresentation", "k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"},
 	}
 }
 

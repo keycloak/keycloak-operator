@@ -18,6 +18,35 @@ type KeycloakClientSpec struct {
 	// +listType=map
 	// +listMapKey=name
 	Roles []RoleRepresentation `json:"roles,omitempty"`
+	// Scope Mappings
+	// +optional
+	ScopeMappings *MappingsRepresentation `json:"scopeMappings,omitempty"`
+}
+
+// https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_mappingsrepresentation
+type MappingsRepresentation struct {
+	// Client Mappings
+	// +optional
+	ClientMappings map[string]ClientMappingsRepresentation `json:"clientMappings,omitempty"`
+
+	// Realm Mappings
+	// +optional
+	RealmMappings []RoleRepresentation `json:"realmMappings,omitempty"`
+}
+
+// https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_clientmappingsrepresentation
+type ClientMappingsRepresentation struct {
+	// Client
+	// +optional
+	Client string `json:"client,omitempty"`
+
+	// ID
+	// +optional
+	ID string `json:"id,omitempty"`
+
+	// Mappings
+	// +optional
+	Mappings []RoleRepresentation `json:"mappings,omitempty"`
 }
 
 type KeycloakAPIClient struct {

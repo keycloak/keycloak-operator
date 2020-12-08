@@ -11,11 +11,12 @@ import (
 )
 
 type ClientState struct {
-	Client       *kc.KeycloakAPIClient
-	ClientSecret *v1.Secret
-	Context      context.Context
-	Realm        *kc.KeycloakRealm
-	Roles        []kc.RoleRepresentation
+	Client        *kc.KeycloakAPIClient
+	ClientSecret  *v1.Secret
+	Context       context.Context
+	Realm         *kc.KeycloakRealm
+	Roles         []kc.RoleRepresentation
+	ScopeMappings *kc.MappingsRepresentation
 }
 
 func NewClientState(context context.Context, realm *kc.KeycloakRealm) *ClientState {
@@ -56,6 +57,11 @@ func (i *ClientState) Read(context context.Context, cr *kc.KeycloakClient, realm
 
 	if i.Client != nil {
 		i.Roles, err = realmClient.ListClientRoles(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
+		if err != nil {
+			return err
+		}
+
+		i.ScopeMappings, err = realmClient.ListScopeMappings(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
 		if err != nil {
 			return err
 		}

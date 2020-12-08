@@ -169,6 +169,29 @@ spec:
                 bruteForceProtected:
                   description: Brute Force Detection
                   type: boolean
+                clientScopeMappings:
+                  additionalProperties:
+                    items:
+                      description: https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_scopemappingrepresentation
+                      properties:
+                        client:
+                          description: Client
+                          type: string
+                        clientScope:
+                          description: Client Scope
+                          type: string
+                        roles:
+                          description: Roles
+                          items:
+                            type: string
+                          type: array
+                        self:
+                          description: Self
+                          type: string
+                      type: object
+                    type: array
+                  description: Client Scope Mappings
+                  type: object
                 clientScopes:
                   description: Client scopes
                   items:
@@ -599,6 +622,27 @@ spec:
                         type: object
                       type: array
                   type: object
+                scopeMappings:
+                  description: Scope Mappings
+                  items:
+                    description: https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_scopemappingrepresentation
+                    properties:
+                      client:
+                        description: Client
+                        type: string
+                      clientScope:
+                        description: Client Scope
+                        type: string
+                      roles:
+                        description: Roles
+                        items:
+                          type: string
+                        type: array
+                      self:
+                        description: Self
+                        type: string
+                    type: object
+                  type: array
                 smtpServer:
                   additionalProperties:
                     type: string
