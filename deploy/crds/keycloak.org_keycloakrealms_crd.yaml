@@ -366,6 +366,12 @@ spec:
                 displayName:
                   description: Realm display name.
                   type: string
+                duplicateEmailsAllowed:
+                  description: Duplicate emails
+                  type: boolean
+                editUsernameAllowed:
+                  description: Edit username
+                  type: boolean
                 enabled:
                   description: Realm enabled flag.
                   type: boolean
@@ -425,8 +431,26 @@ spec:
                         type: boolean
                     type: object
                   type: array
+                loginWithEmailAllowed:
+                  description: Login with email
+                  type: boolean
                 realm:
                   description: Realm name.
+                  type: string
+                registrationAllowed:
+                  description: User registration
+                  type: boolean
+                registrationEmailAsUsername:
+                  description: Email as username
+                  type: boolean
+                rememberMe:
+                  description: Remember me
+                  type: boolean
+                resetPasswordAllowed:
+                  description: Forgot password
+                  type: boolean
+                sslRequired:
+                  description: Require SSL
                   type: string
                 userFederationMappers:
                   description: User federation mappers are extension points triggered
@@ -569,6 +593,9 @@ spec:
                         type: string
                     type: object
                   type: array
+                verifyEmail:
+                  description: Verify email
+                  type: boolean
               required:
               - realm
               type: object

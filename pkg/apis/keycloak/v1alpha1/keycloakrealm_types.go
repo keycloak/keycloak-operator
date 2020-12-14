@@ -80,6 +80,34 @@ type KeycloakAPIRealm struct {
 	// user federation at various points.
 	// +optional
 	UserFederationMappers []KeycloakAPIUserFederationMapper `json:"userFederationMappers,omitempty"`
+
+	// User registration
+	// +optional
+	RegistrationAllowed *bool `json:"registrationAllowed,omitempty"`
+	// Email as username
+	// +optional
+	RegistrationEmailAsUsername *bool `json:"registrationEmailAsUsername,omitempty"`
+	// Edit username
+	// +optional
+	EditUsernameAllowed *bool `json:"editUsernameAllowed,omitempty"`
+	// Forgot password
+	// +optional
+	ResetPasswordAllowed *bool `json:"resetPasswordAllowed,omitempty"`
+	// Remember me
+	// +optional
+	RememberMe *bool `json:"rememberMe,omitempty"`
+	// Verify email
+	// +optional
+	VerifyEmail *bool `json:"verifyEmail,omitempty"`
+	// Login with email
+	// +optional
+	LoginWithEmailAllowed *bool `json:"loginWithEmailAllowed,omitempty"`
+	// Duplicate emails
+	// +optional
+	DuplicateEmailsAllowed *bool `json:"duplicateEmailsAllowed,omitempty"`
+	// Require SSL
+	// +optional
+	SslRequired string `json:"sslRequired,omitempty"`
 }
 
 // https://www.keycloak.org/docs-api/10.0/rest-api/index.html#_userfederationproviderrepresentation

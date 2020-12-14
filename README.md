@@ -159,6 +159,14 @@ Please bear in mind this is intended to be used for internal purposes as there's
 | `make code/fix`           | Formats code using [gofmt](https://golang.org/cmd/gofmt/)                        |
 | `make code/lint`          | Checks for linting errors in the code                                            |
 
+#### Application Monitoring
+
+NOTE: This functionality works only in OpenShift environment.
+
+| *Command*                         | *Description*                                           |
+| --------------------------------- | ------------------------------------------------------- |
+| `make cluster/prepare/monitoring` | Installs and configures Application Monitoring Operator |
+
 #### Components versions
 
 All images used by the Operator might be controlled using dedicated Environmental Variables:
@@ -182,7 +190,6 @@ Before contributing to Keycloak Operator please read our [contributing guideline
 * [Keycloak Documentation](https://github.com/keycloak/keycloak-documentation) - Documentation for Keycloak
 * [Keycloak QuickStarts](https://github.com/keycloak/keycloak-quickstarts) - QuickStarts for getting started with Keycloak
 * [Keycloak Docker](https://github.com/jboss-dockerfiles/keycloak) - Docker images for Keycloak
-* [Keycloak Gatekeeper](https://github.com/keycloak/keycloak-gatekeeper) - Proxy service to secure apps and services with Keycloak
 * [Keycloak Node.js Connect](https://github.com/keycloak/keycloak-nodejs-connect) - Node.js adapter for Keycloak
 * [Keycloak Node.js Admin Client](https://github.com/keycloak/keycloak-nodejs-admin-client) - Node.js library for Keycloak Admin REST API
 

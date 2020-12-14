@@ -325,6 +325,9 @@ spec:
                         before doing migration
                       type: boolean
                   type: object
+                strategy:
+                  description: Specify migration strategy
+                  type: string
               type: object
             podDisruptionBudget:
               description: Specify PodDisruptionBudget configuration.
