@@ -23,6 +23,11 @@ func KeycloakIngress(cr *kc.Keycloak) *v1beta1.Ingress {
 			},
 			Annotations: map[string]string{
 				"nginx.ingress.kubernetes.io/backend-protocol": "HTTPS",
+				"nginx.ingress.kubernetes.io/server-snippet": `
+                      location ~* "^/auth/realms/master/metrics" {
+                          deny all;
+                          return 404;
+                        }`,
 			},
 		},
 		Spec: v1beta1.IngressSpec{

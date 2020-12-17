@@ -189,7 +189,15 @@ func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework
 		return err
 	}
 
-	err = WaitForSuccessResponse(t, f, keycloakInternalURL+"/auth/realms/master/metrics")
+	response, err := http.Get(keycloakInternalURL + "/auth/realms/master/metrics")
+	response.Body.Close()
+	if err == nil && response.StatusCode != 404 {
+		return errors.Errorf("invalid response for Keycloak metrics (%v)", response.Status)
+	}
+	if response.StatusCode == 404 {
+		return nil
+	}
+
 	return err
 }
 
