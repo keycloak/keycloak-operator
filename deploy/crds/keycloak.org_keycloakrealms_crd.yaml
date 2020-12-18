@@ -342,7 +342,8 @@ spec:
                                       scopes:
                                         description: The scopes associated with this
                                           resource.
-                                        items: {}
+                                        items:
+                                          type: string
                                         type: array
                                       type:
                                         description: The type of this resource. It
@@ -386,7 +387,8 @@ spec:
                                         type: string
                                       policies:
                                         description: Policies.
-                                        items: {}
+                                        items:
+                                          type: string
                                         type: array
                                       resources:
                                         description: Resources.
@@ -424,7 +426,8 @@ spec:
                                             scopes:
                                               description: The scopes associated with
                                                 this resource.
-                                              items: {}
+                                              items:
+                                                type: string
                                               type: array
                                             type:
                                               description: The type of this resource.
@@ -488,7 +491,8 @@ spec:
                                   type: boolean
                                 scopes:
                                   description: The scopes associated with this resource.
-                                  items: {}
+                                  items:
+                                    type: string
                                   type: array
                                 type:
                                   description: The type of this resource. It can be
@@ -525,7 +529,8 @@ spec:
                                   type: string
                                 policies:
                                   description: Policies.
-                                  items: {}
+                                  items:
+                                    type: string
                                   type: array
                                 resources:
                                   description: Resources.
@@ -562,7 +567,8 @@ spec:
                                       scopes:
                                         description: The scopes associated with this
                                           resource.
-                                        items: {}
+                                        items:
+                                          type: string
                                         type: array
                                       type:
                                         description: The type of this resource. It
