@@ -40,7 +40,7 @@ Please remember to provide a good summary, description as well as steps to repro
 ### Creating Keycloak Instance
 Once the CRDs and RBAC rules are applied and the operator is running. Use the examples from the operator.
 
-1. Run `kubectl apply -f deploy/examples/keycloak/keycloak.yaml` 
+1. Run `kubectl apply -f deploy/examples/keycloak/keycloak.yaml`
 
 ## Building from Source
 
@@ -99,7 +99,7 @@ Debug the operator in [VS Code](https://code.visualstudio.com/docs/languages/go)
   "args": []
 }
 ```
-3. Debug Keycloak Operator 
+3. Debug Keycloak Operator
 
 #### Alternative Step 3: Deploying to a Cluster
 Deploy the operator into the running cluster
@@ -181,7 +181,7 @@ All images used by the Operator might be controlled using dedicated Environmenta
  | `RHSSO` for OpenJ9  | `RELATED_IMAGE_RHSSO_OPENJ9`            | `registry.redhat.io/rh-sso-7/sso74-openshift-rhel8:7.4-1`        |
  | `RHSSO` for OpenJDK | `RELATED_IMAGE_RHSSO_OPENJDK`           | `registry.redhat.io/rh-sso-7/sso74-openshift-rhel8:7.4-1`        |
  | Init container      | `RELATED_IMAGE_KEYCLOAK_INIT_CONTAINER` | `quay.io/keycloak/keycloak-init-container:master`                |
- | Backup container    | `RELATED_IMAGE_RHMI_BACKUP_CONTAINER`   | `quay.io/integreatly/backup-container:1.0.10`                    |
+ | Backup container    | `RELATED_IMAGE_RHMI_BACKUP_CONTAINER`   | `quay.io/integreatly/backup-container:1.0.16`                    |
  | Postgresql          | `RELATED_IMAGE_POSTGRESQL`              | `registry.redhat.io/rhel8/postgresql-10:1`                       |
 
 ## Contributing

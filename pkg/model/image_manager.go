@@ -20,7 +20,7 @@ const (
 	DefaultRHSSOImageOpenJDK     = "registry.redhat.io/rh-sso-7/sso74-openshift-rhel8:7.4"
 	DefaultKeycloakInitContainer = "quay.io/keycloak/keycloak-init-container:master"
 	DefaultRHSSOInitContainer    = "registry.redhat.io/rh-sso-7-tech-preview/sso74-init-container-rhel8:7.4"
-	DefaultRHMIBackupContainer   = "quay.io/integreatly/backup-container:1.0.14"
+	DefaultRHMIBackupContainer   = "quay.io/integreatly/backup-container:1.0.16"
 	DefaultPostgresqlImage       = "registry.access.redhat.com/rhscl/postgresql-10-rhel7:1"
 )
 
