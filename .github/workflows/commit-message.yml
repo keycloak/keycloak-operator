@@ -10,4 +10,4 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Check if JIRA ID is in the commit message
-        run: git log -n 1 --pretty=format:'%s' --abbrev-commit | grep -E 'KEYCLOAK-[0-9]+' > /dev/null
+        run: git show -s --format=%B | grep -E 'KEYCLOAK-[0-9]+' > /dev/null
