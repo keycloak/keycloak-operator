@@ -7,6 +7,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -62,6 +63,26 @@ func PostgresqlDeployment(cr *v1alpha1.Keycloak) *v13.Deployment {
 					},
 				},
 				Spec: v1.PodSpec{
+					InitContainers: []v1.Container{
+						{
+							Name:  "init-pvc",
+							Image: Images.Images[PostgresqlImage],
+							SecurityContext: &v1.SecurityContext{
+								RunAsUser: pointer.Int64Ptr(0),
+							},
+							Command: []string{
+								"sh",
+								"-c",
+								"chown -R postgres:postgres " + PostgresqlPersistentVolumeMountPath,
+							},
+							VolumeMounts: []v1.VolumeMount{
+								{
+									Name:      PostgresqlPersistentVolumeName,
+									MountPath: PostgresqlPersistentVolumeMountPath,
+								},
+							},
+						},
+					},
 					Containers: []v1.Container{
 						{
 							Name:  PostgresqlDeploymentName,
