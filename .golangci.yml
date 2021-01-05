@@ -12,6 +12,8 @@ linters-settings:
 
 run:
   modules-download-mode: vendor
+  skip-dirs:
+    - pkg/client
 
 service:
   golangci-lint-version: 1.26.0

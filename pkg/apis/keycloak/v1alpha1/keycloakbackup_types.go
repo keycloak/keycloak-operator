@@ -95,6 +95,7 @@ type KeycloakBackupStatus struct {
 }
 
 // KeycloakBackup is the Schema for the keycloakbackups API.
+// +genclient
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
