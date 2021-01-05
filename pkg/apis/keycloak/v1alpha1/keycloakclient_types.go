@@ -163,6 +163,7 @@ type KeycloakClientStatus struct {
 }
 
 // KeycloakClient is the Schema for the keycloakclients API.
+// +genclient
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

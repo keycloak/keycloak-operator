@@ -230,6 +230,7 @@ var (
 )
 
 // Keycloak is the Schema for the keycloaks API.
+// +genclient
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

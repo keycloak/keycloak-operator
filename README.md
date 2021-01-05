@@ -157,6 +157,7 @@ Please bear in mind this is intended to be used for internal purposes as there's
 | `make code/check`         | Checks for linting errors in the code                                            |
 | `make code/fix`           | Formats code using [gofmt](https://golang.org/cmd/gofmt/)                        |
 | `make code/lint`          | Checks for linting errors in the code                                            |
+| `make client/gen`         | Generates/Updates the clients bases on the CR status and spec definitions        |
 
 #### Application Monitoring
 

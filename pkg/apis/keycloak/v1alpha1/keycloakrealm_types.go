@@ -411,6 +411,7 @@ type KeycloakRealmStatus struct {
 }
 
 // KeycloakRealm is the Schema for the keycloakrealms API
+// +genclient
 // +k8s:openapi-gen=true
 // +kubebuilder:subresource:status
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
