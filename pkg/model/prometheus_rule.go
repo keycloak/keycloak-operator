@@ -10,16 +10,6 @@ import (
 
 func PrometheusRule(cr *v1alpha1.Keycloak) *monitoringv1.PrometheusRule {
 	rules := []monitoringv1.Rule{{
-		Alert: "KeycloakJavaHeapThresholdExceeded",
-		Annotations: map[string]string{
-			"message": `{{ printf "%0.0f" $value }}% heap usage of {{ $labels.area }} in pod {{$labels.pod }}, namespace {{ $labels.namespace }}.`,
-		},
-		Expr: intstr.FromString(`100 * jvm_memory_bytes_used{area="heap",namespace="` + cr.Namespace + `"} / jvm_memory_bytes_max{area="heap",namespace="` + cr.Namespace + `"} > 90`),
-		For:  "1m",
-		Labels: map[string]string{
-			"severity": "warning",
-		},
-	}, {
 		Alert: "KeycloakJavaNonHeapThresholdExceeded",
 		Annotations: map[string]string{
 			"message": `{{ printf "%0.0f" $value }}% nonheap usage of {{ $labels.area }} in pod {{ $labels.pod }}, namespace {{ $labels.namespace }}.`,
