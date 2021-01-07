@@ -483,10 +483,12 @@ func (i *ClusterState) IsResourcesReady(cr *kc.Keycloak) (bool, error) {
 	}
 
 	// If running on OpenShift, check the Route is ready
-	stateManager := GetStateManager()
-	openshift, keyExists := stateManager.GetState(RouteKind).(bool)
-	if keyExists && openshift {
-		keycloakRouteReady = IsRouteReady(i.KeycloakRoute)
+	if cr.Spec.ExternalAccess.Enabled {
+		stateManager := GetStateManager()
+		openshift, keyExists := stateManager.GetState(RouteKind).(bool)
+		if keyExists && openshift {
+			keycloakRouteReady = IsRouteReady(i.KeycloakRoute)
+		}
 	}
 
 	return keycloakDeploymentReady && postgresqlDeploymentReady && keycloakRouteReady, nil
