@@ -5,8 +5,8 @@ metadata:
     capabilities: Deep Insights
     categories: Security
     certified: 'False'
-    containerImage: 'quay.io/keycloak/keycloak-operator:11.0.0'
-    createdAt: 2020-07-24 00:00:00
+    containerImage: 'quay.io/keycloak/keycloak-operator:12.0.1'
+    createdAt: 2021-01-07 00:00:00
     description: 'An Operator for installing and managing Keycloak'
     repository: 'https://github.com/keycloak/keycloak-operator'
     support: Red Hat
@@ -113,7 +113,7 @@ metadata:
           }
         }
       ]
-  name: keycloak-operator.v11.0.0
+  name: keycloak-operator.v12.0.1
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -191,139 +191,138 @@ spec:
                             fieldPath: metadata.name
                       - name: OPERATOR_NAME
                         value: keycloak-operator
-                    image: quay.io/keycloak/keycloak-operator:11.0.0
+                    image: quay.io/keycloak/keycloak-operator:12.0.1
                     imagePullPolicy: Always
                     name: keycloak-operator
                     resources: {}
                 serviceAccountName: keycloak-operator
       permissions:
         - rules:
-          - apiGroups:
-              - ""
-            resources:
-              - pods
-              - services
-              - services/finalizers
-              - endpoints
-              - persistentvolumeclaims
-              - events
-              - configmaps
-              - secrets
-            verbs:
-              - list
-              - get
-              - create
-              - patch
-              - update
-              - watch
-              - delete
-          - apiGroups:
-              - apps
-            resources:
-              - deployments
-              - daemonsets
-              - replicasets
-              - statefulsets
-            verbs:
-              - list
-              - get
-              - create
-              - update
-              - watch
-          - apiGroups:
-              - batch
-            resources:
-              - cronjobs
-              - jobs
-            verbs:
-              - list
-              - get
-              - create
-              - update
-              - watch
-          - apiGroups:
-              - route.openshift.io
-            resources:
-              - routes
-            verbs:
-              - list
-              - get
-              - create
-              - update
-              - watch
-          - apiGroups:
-              - extensions
-            resources:
-              - ingresses
-            verbs:
-              - list
-              - get
-              - create
-              - update
-              - watch
-          - apiGroups:
-              - monitoring.coreos.com
-            resources:
-              - servicemonitors
-              - prometheusrules
-              - podmonitors
-            verbs:
-              - list
-              - get
-              - create
-              - update
-              - watch
-          - apiGroups:
-              - integreatly.org
-            resources:
-              - grafanadashboards
-            verbs:
-              - get
-              - list
-              - create
-              - update
-              - watch
-          - apiGroups:
-              - apps
-            resourceNames:
-              - keycloak-operator
-            resources:
-              - deployments/finalizers
-            verbs:
-              - update
-          - apiGroups:
-              - policy
-            resources:
-              - poddisruptionbudgets
-            verbs:
-              - get
-              - list
-              - create
-              - update
-              - watch
-          - apiGroups:
-              - keycloak.org
-            resources:
-              - keycloaks
-              - keycloaks/status
-              - keycloaks/finalizers
-              - keycloakrealms
-              - keycloakrealms/status
-              - keycloakrealms/finalizers
-              - keycloakclients
-              - keycloakclients/status
-              - keycloakclients/finalizers
-              - keycloakbackups
-              - keycloakbackups/status
-              - keycloakbackups/finalizers
-              - keycloakusers
-              - keycloakusers/status
-              - keycloakusers/finalizers
-            verbs:
-              - get
-              - list
-              - update
-              - watch
+            - apiGroups:
+                - ""
+              resources:
+                - pods
+                - services
+                - services/finalizers
+                - endpoints
+                - persistentvolumeclaims
+                - events
+                - configmaps
+                - secrets
+              verbs:
+                - list
+                - get
+                - create
+                - patch
+                - update
+                - watch
+                - delete
+            - apiGroups:
+                - apps
+              resources:
+                - deployments
+                - daemonsets
+                - replicasets
+                - statefulsets
+              verbs:
+                - list
+                - get
+                - create
+                - update
+                - watch
+            - apiGroups:
+                - batch
+              resources:
+                - cronjobs
+                - jobs
+              verbs:
+                - list
+                - get
+                - create
+                - update
+                - watch
+            - apiGroups:
+                - route.openshift.io
+              resources:
+                - routes
+              verbs:
+                - list
+                - get
+                - create
+                - update
+                - watch
+            - apiGroups:
+                - extensions
+              resources:
+                - ingresses
+              verbs:
+                - list
+                - get
+                - create
+                - update
+                - watch
+            - apiGroups:
+                - monitoring.coreos.com
+              resources:
+                - servicemonitors
+                - prometheusrules
+              verbs:
+                - list
+                - get
+                - create
+                - update
+                - watch
+            - apiGroups:
+                - integreatly.org
+              resources:
+                - grafanadashboards
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - watch
+            - apiGroups:
+                - apps
+              resourceNames:
+                - keycloak-operator
+              resources:
+                - deployments/finalizers
+              verbs:
+                - update
+            - apiGroups:
+                - policy
+              resources:
+                - poddisruptionbudgets
+              verbs:
+                - get
+                - list
+                - create
+                - update
+                - watch
+            - apiGroups:
+                - keycloak.org
+              resources:
+                - keycloaks
+                - keycloaks/status
+                - keycloaks/finalizers
+                - keycloakrealms
+                - keycloakrealms/status
+                - keycloakrealms/finalizers
+                - keycloakclients
+                - keycloakclients/status
+                - keycloakclients/finalizers
+                - keycloakbackups
+                - keycloakbackups/status
+                - keycloakbackups/finalizers
+                - keycloakusers
+                - keycloakusers/status
+                - keycloakusers/finalizers
+              verbs:
+                - get
+                - list
+                - update
+                - watch
           serviceAccountName: keycloak-operator
     strategy: deployment
   installModes:
@@ -341,7 +340,7 @@ spec:
     - Access
   links:
     - name: Documentation
-      url: https://github.com/keycloak/keycloak-operator/tree/11.0.0/docs
+      url: https://www.keycloak.org/docs/latest/server_installation/index.html#_operator
     - name: Keycloak
       url: https://www.keycloak.org/
     - name: Keycloak Discourse
@@ -352,5 +351,5 @@ spec:
   maturity: alpha
   provider:
     name: Red Hat
-  version: 11.0.0
-  replaces: keycloak-operator.v10.0.0
+  version: 12.0.1
+  replaces: keycloak-operator.v11.0.0
