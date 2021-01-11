@@ -1,8 +1,8 @@
 package e2e
 
 import (
+	"github.com/keycloak/keycloak-operator/pkg/k8sutil"
 	routev1 "github.com/openshift/api/route/v1"
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	framework "github.com/operator-framework/operator-sdk/pkg/test"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
