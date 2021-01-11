@@ -8,12 +8,15 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/keycloak/keycloak-operator/pkg/k8sutil"
+
 	"sigs.k8s.io/controller-runtime/pkg/cache"
 
 	"github.com/keycloak/keycloak-operator/version"
 	"github.com/pkg/errors"
 
 	"github.com/keycloak/keycloak-operator/pkg/common"
+
 	routev1 "github.com/openshift/api/route/v1"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
@@ -26,7 +29,6 @@ import (
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	grafanav1alpha1 "github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
 
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	kubemetrics "github.com/operator-framework/operator-sdk/pkg/kube-metrics"
 	"github.com/operator-framework/operator-sdk/pkg/leader"
 	"github.com/operator-framework/operator-sdk/pkg/log/zap"

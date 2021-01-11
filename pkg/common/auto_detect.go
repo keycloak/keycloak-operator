@@ -7,8 +7,8 @@ import (
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	grafanav1alpha1 "github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
+	"github.com/keycloak/keycloak-operator/pkg/k8sutil"
 	routev1 "github.com/openshift/api/route/v1"
-	"github.com/operator-framework/operator-sdk/pkg/k8sutil"
 	"k8s.io/client-go/discovery"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
