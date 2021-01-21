@@ -233,7 +233,11 @@ func (i *ClusterState) readPostgresqlServiceEndpointsCurrentState(context contex
 }
 
 func (i *ClusterState) readPostgresqlDeploymentCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
-	postgresqlDeployment := model.PostgresqlDeployment(cr)
+	// Find out if we're on OpenShift or Kubernetes
+	stateManager := GetStateManager()
+	isOpenshift, _ := stateManager.GetState(OpenShiftAPIServerKind).(bool)
+
+	postgresqlDeployment := model.PostgresqlDeployment(cr, isOpenshift)
 	postgresqlDeploymentSelector := model.PostgresqlDeploymentSelector(cr)
 
 	err := controllerClient.Get(context, postgresqlDeploymentSelector, postgresqlDeployment)

@@ -77,7 +77,7 @@ func (i *KeycloakReconciler) reconcileExternalAccess(desired *common.DesiredClus
 	// Find out if we're on OpenShift or Kubernetes and create either a Route or
 	// an Ingress
 	stateManager := common.GetStateManager()
-	openshift, keyExists := stateManager.GetState(common.RouteKind).(bool)
+	openshift, keyExists := stateManager.GetState(common.OpenShiftAPIServerKind).(bool)
 
 	if keyExists && openshift {
 		desired.AddAction(i.getKeycloakRouteDesiredState(clusterState, cr))
@@ -142,7 +142,12 @@ func (i *KeycloakReconciler) getPostgresqlServiceDesiredState(clusterState *comm
 }
 
 func (i *KeycloakReconciler) getPostgresqlDeploymentDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
-	postgresqlDeployment := model.PostgresqlDeployment(cr)
+	// Find out if we're on OpenShift or Kubernetes
+	stateManager := common.GetStateManager()
+	isOpenshift, _ := stateManager.GetState(common.OpenShiftAPIServerKind).(bool)
+
+	postgresqlDeployment := model.PostgresqlDeployment(cr, isOpenshift)
+
 	if clusterState.PostgresqlDeployment == nil {
 		return common.GenericCreateAction{
 			Ref: postgresqlDeployment,
