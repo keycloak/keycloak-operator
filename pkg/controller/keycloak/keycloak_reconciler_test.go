@@ -36,6 +36,7 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.ServiceMonitorsKind), true)
 	stateManager.SetState(common.GetStateFieldName(ControllerName, grafanav1alpha1.GrafanaDashboardKind), true)
 	stateManager.SetState(common.RouteKind, true)
+	stateManager.SetState(common.OpenShiftAPIServerKind, true)
 
 	// when
 	reconciler := NewKeycloakReconciler()
@@ -76,7 +77,7 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	assert.IsType(t, model.GrafanaDashboard(cr), desiredState[3].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.DatabaseSecret(cr), desiredState[4].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.PostgresqlPersistentVolumeClaim(cr), desiredState[5].(common.GenericCreateAction).Ref)
-	assert.IsType(t, model.PostgresqlDeployment(cr), desiredState[6].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.PostgresqlDeployment(cr, true), desiredState[6].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.PostgresqlService(cr, model.DatabaseSecret(cr), false), desiredState[7].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakService(cr), desiredState[8].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakDiscoveryService(cr), desiredState[9].(common.GenericCreateAction).Ref)
@@ -140,7 +141,7 @@ func TestKeycloakReconciler_Test_Updating_RHSSO(t *testing.T) {
 		DatabaseSecret:                  model.DatabaseSecret(cr),
 		PostgresqlPersistentVolumeClaim: model.PostgresqlPersistentVolumeClaim(cr),
 		PostgresqlService:               model.PostgresqlService(cr, model.DatabaseSecret(cr), false),
-		PostgresqlDeployment:            model.PostgresqlDeployment(cr),
+		PostgresqlDeployment:            model.PostgresqlDeployment(cr, true),
 		KeycloakService:                 model.KeycloakService(cr),
 		KeycloakDiscoveryService:        model.KeycloakDiscoveryService(cr),
 		KeycloakDeployment:              model.RHSSODeployment(cr, model.DatabaseSecret(cr)),
@@ -183,7 +184,7 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 		DatabaseSecret:                  model.DatabaseSecret(cr),
 		PostgresqlPersistentVolumeClaim: model.PostgresqlPersistentVolumeClaim(cr),
 		PostgresqlService:               model.PostgresqlService(cr, model.DatabaseSecret(cr), false),
-		PostgresqlDeployment:            model.PostgresqlDeployment(cr),
+		PostgresqlDeployment:            model.PostgresqlDeployment(cr, true),
 		KeycloakService:                 model.KeycloakService(cr),
 		KeycloakDiscoveryService:        model.KeycloakDiscoveryService(cr),
 		KeycloakDeployment:              model.KeycloakDeployment(cr, model.DatabaseSecret(cr)),
@@ -198,6 +199,7 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.ServiceMonitorsKind), true)
 	stateManager.SetState(common.GetStateFieldName(ControllerName, grafanav1alpha1.GrafanaDashboardKind), true)
 	stateManager.SetState(common.RouteKind, true)
+	stateManager.SetState(common.OpenShiftAPIServerKind, true)
 	defer stateManager.Clear()
 
 	// when
@@ -237,7 +239,7 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	assert.IsType(t, model.GrafanaDashboard(cr), desiredState[3].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.DatabaseSecret(cr), desiredState[4].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.PostgresqlPersistentVolumeClaim(cr), desiredState[5].(common.GenericUpdateAction).Ref)
-	assert.IsType(t, model.PostgresqlDeployment(cr), desiredState[6].(common.GenericUpdateAction).Ref)
+	assert.IsType(t, model.PostgresqlDeployment(cr, true), desiredState[6].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.PostgresqlService(cr, model.DatabaseSecret(cr), false), desiredState[7].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.KeycloakService(cr), desiredState[8].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.KeycloakDiscoveryService(cr), desiredState[9].(common.GenericUpdateAction).Ref)
@@ -581,6 +583,7 @@ func TestKeycloakReconciler_Test_Setting_Resources(t *testing.T) {
 	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.ServiceMonitorsKind), true)
 	stateManager.SetState(common.GetStateFieldName(ControllerName, grafanav1alpha1.GrafanaDashboardKind), true)
 	stateManager.SetState(common.RouteKind, true)
+	stateManager.SetState(common.OpenShiftAPIServerKind, false)
 
 	// when
 	reconciler := NewKeycloakReconciler()
@@ -590,7 +593,7 @@ func TestKeycloakReconciler_Test_Setting_Resources(t *testing.T) {
 	//    6) Postgresql Deployment
 	//    11) Keycloak StatefulSets
 	assert.Equal(t, len(desiredState), 13)
-	assert.IsType(t, model.PostgresqlDeployment(cr), desiredState[6].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.PostgresqlDeployment(cr, false), desiredState[6].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakDeployment(cr, model.DatabaseSecret(cr)), desiredState[11].(common.GenericCreateAction).Ref)
 	keycloakContainer := desiredState[11].(common.GenericCreateAction).Ref.(*v13.StatefulSet).Spec.Template.Spec.Containers[0]
 	assert.Equal(t, &resource700Mi, keycloakContainer.Resources.Requests.Memory(), "Keycloak Deployment: Memory-Requests should be: "+resource700Mi.String()+" but is "+keycloakContainer.Resources.Requests.Memory().String())
@@ -619,6 +622,7 @@ func TestKeycloakReconciler_Test_No_Resources_Specified(t *testing.T) {
 	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.ServiceMonitorsKind), true)
 	stateManager.SetState(common.GetStateFieldName(ControllerName, grafanav1alpha1.GrafanaDashboardKind), true)
 	stateManager.SetState(common.RouteKind, true)
+	stateManager.SetState(common.OpenShiftAPIServerKind, true)
 
 	// when
 	reconciler := NewKeycloakReconciler()
@@ -628,7 +632,7 @@ func TestKeycloakReconciler_Test_No_Resources_Specified(t *testing.T) {
 	//    6) Postgresql Deployment
 	//    11) Keycloak StatefulSets
 	assert.Equal(t, len(desiredState), 13)
-	assert.IsType(t, model.PostgresqlDeployment(cr), desiredState[6].(common.GenericCreateAction).Ref)
+	assert.IsType(t, model.PostgresqlDeployment(cr, true), desiredState[6].(common.GenericCreateAction).Ref)
 	assert.IsType(t, model.KeycloakDeployment(cr, model.DatabaseSecret(cr)), desiredState[11].(common.GenericCreateAction).Ref)
 	keycloakContainer := desiredState[11].(common.GenericCreateAction).Ref.(*v13.StatefulSet).Spec.Template.Spec.Containers[0]
 	assert.Equal(t, 0, len(keycloakContainer.Resources.Requests), "Requests-List should be empty")

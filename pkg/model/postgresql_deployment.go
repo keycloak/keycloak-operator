@@ -36,8 +36,8 @@ func getPostgresResources(cr *v1alpha1.Keycloak) v1.ResourceRequirements {
 	return requirements
 }
 
-func PostgresqlDeployment(cr *v1alpha1.Keycloak) *v13.Deployment {
-	return &v13.Deployment{
+func PostgresqlDeployment(cr *v1alpha1.Keycloak, isOpenshift bool) *v13.Deployment {
+	v13Deployment := &v13.Deployment{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      PostgresqlDeploymentName,
 			Namespace: cr.Namespace,
@@ -63,26 +63,6 @@ func PostgresqlDeployment(cr *v1alpha1.Keycloak) *v13.Deployment {
 					},
 				},
 				Spec: v1.PodSpec{
-					InitContainers: []v1.Container{
-						{
-							Name:  "init-pvc",
-							Image: Images.Images[PostgresqlImage],
-							SecurityContext: &v1.SecurityContext{
-								RunAsUser: pointer.Int64Ptr(0),
-							},
-							Command: []string{
-								"sh",
-								"-c",
-								"chown -R postgres:postgres " + PostgresqlPersistentVolumeMountPath,
-							},
-							VolumeMounts: []v1.VolumeMount{
-								{
-									Name:      PostgresqlPersistentVolumeName,
-									MountPath: PostgresqlPersistentVolumeMountPath,
-								},
-							},
-						},
-					},
 					Containers: []v1.Container{
 						{
 							Name:  PostgresqlDeploymentName,
@@ -166,6 +146,35 @@ func PostgresqlDeployment(cr *v1alpha1.Keycloak) *v13.Deployment {
 			},
 			Strategy: v13.DeploymentStrategy{
 				Type: v13.RecreateDeploymentStrategyType,
+			},
+		},
+	}
+
+	//If not openshift append the initcontainer part
+	if !isOpenshift {
+		v13Deployment.Spec.Template.Spec.InitContainers = getPostgresqlDeploymentInitContainer(cr)
+	}
+	return v13Deployment
+}
+
+func getPostgresqlDeploymentInitContainer(cr *v1alpha1.Keycloak) []v1.Container {
+	return []v1.Container{
+		{
+			Name:  "init-pvc",
+			Image: Images.Images[PostgresqlImage],
+			SecurityContext: &v1.SecurityContext{
+				RunAsUser: pointer.Int64Ptr(0),
+			},
+			Command: []string{
+				"sh",
+				"-c",
+				"chown -R postgres:postgres " + PostgresqlPersistentVolumeMountPath,
+			},
+			VolumeMounts: []v1.VolumeMount{
+				{
+					Name:      PostgresqlPersistentVolumeName,
+					MountPath: PostgresqlPersistentVolumeMountPath,
+				},
 			},
 		},
 	}

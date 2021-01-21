@@ -54,6 +54,7 @@ func (b *Background) Stop() {
 }
 
 func (b *Background) autoDetectCapabilities() {
+	b.detectOpenshift()
 	b.detectMonitoringResources()
 	b.detectRoute()
 }
@@ -86,5 +87,18 @@ func (b *Background) detectMonitoringResources() {
 	resourceExists, _ = k8sutil.ResourceExists(b.dc, grafanav1alpha1.SchemeGroupVersion.String(), grafanav1alpha1.GrafanaDashboardKind)
 	if resourceExists {
 		b.SubscriptionChannel <- grafanav1alpha1.SchemeGroupVersion.WithKind(grafanav1alpha1.GrafanaDashboardKind)
+	}
+}
+
+func (b *Background) detectOpenshift() {
+	apiGroupVersion := "operator.openshift.io/v1"
+	kind := OpenShiftAPIServerKind
+	stateManager := GetStateManager()
+	isOpenshift, _ := k8sutil.ResourceExists(b.dc, apiGroupVersion, kind)
+	if isOpenshift {
+		// Set state that its Openshift (helps to differentiate between openshift and kubernetes)
+		stateManager.SetState(OpenShiftAPIServerKind, true)
+	} else {
+		stateManager.SetState(OpenShiftAPIServerKind, false)
 	}
 }
