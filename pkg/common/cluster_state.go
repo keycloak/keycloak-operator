@@ -61,6 +61,7 @@ type ClusterState struct {
 	KeycloakAdminSecret             *v1.Secret
 	KeycloakIngress                 *v1beta1.Ingress
 	KeycloakRoute                   *v13.Route
+	KeycloakMetricsRoute            *v13.Route
 	PostgresqlServiceEndpoints      *v1.Endpoints
 	PodDisruptionBudget             *v1beta12.PodDisruptionBudget
 	KeycloakProbes                  *v1.ConfigMap
@@ -148,6 +149,13 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 		}
 	} else {
 		err = i.readKeycloakIngressCurrentState(context, cr, controllerClient)
+		if err != nil {
+			return err
+		}
+	}
+
+	if i.KeycloakRoute != nil {
+		err = i.readKeycloakMetricsRouteCurrentState(context, cr, controllerClient)
 		if err != nil {
 			return err
 		}
@@ -427,6 +435,22 @@ func (i *ClusterState) readKeycloakRouteCurrentState(context context.Context, cr
 	} else {
 		i.KeycloakRoute = keycloakRoute.DeepCopy()
 		cr.UpdateStatusSecondaryResources(i.KeycloakRoute.Kind, i.KeycloakRoute.Name)
+	}
+	return nil
+}
+
+func (i *ClusterState) readKeycloakMetricsRouteCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	keycloakMetricsRoute := model.KeycloakMetricsRoute(cr, i.KeycloakRoute)
+	keycloakRouteSelector := model.KeycloakMetricsRouteSelector(cr)
+
+	err := controllerClient.Get(context, keycloakRouteSelector, keycloakMetricsRoute)
+	if err != nil {
+		if !apiErrors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.KeycloakMetricsRoute = keycloakMetricsRoute.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakRoute.Kind, i.KeycloakMetricsRoute.Name)
 	}
 	return nil
 }

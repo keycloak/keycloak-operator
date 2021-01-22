@@ -57,6 +57,7 @@ func TestKeycloakReconciler_Test_Creating_All(t *testing.T) {
 	//    10) Keycloak Probe ConfigMap
 	//    11) Keycloak StatefulSets
 	//    12) Keycloak Route
+	//        Note, that's no MetricsRoute as it needs an established hostname from the root route
 	assert.Equal(t, len(desiredState), 13)
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[0])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[1])
@@ -190,6 +191,7 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 		KeycloakDeployment:              model.KeycloakDeployment(cr, model.DatabaseSecret(cr)),
 		KeycloakAdminSecret:             model.KeycloakAdminSecret(cr),
 		KeycloakRoute:                   model.KeycloakRoute(cr),
+		KeycloakMetricsRoute:            model.KeycloakMetricsRoute(cr, model.KeycloakRoute(cr)),
 		KeycloakProbes:                  model.KeycloakProbes(cr),
 	}
 
@@ -220,7 +222,8 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	//    9) Keycloak Discovery Service
 	//    10) Keycloak StatefulSets
 	//    11) Keycloak Route
-	assert.Equal(t, len(desiredState), 12)
+	//    12) Keycloak Metrics Route
+	assert.Equal(t, len(desiredState), 13)
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[0])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[1])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[2])
@@ -233,6 +236,7 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[9])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[10])
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[11])
+	assert.IsType(t, common.GenericUpdateAction{}, desiredState[12])
 	assert.IsType(t, model.KeycloakAdminSecret(cr), desiredState[0].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.PrometheusRule(cr), desiredState[1].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.ServiceMonitor(cr), desiredState[2].(common.GenericUpdateAction).Ref)
@@ -245,6 +249,7 @@ func TestKeycloakReconciler_Test_Updating_All(t *testing.T) {
 	assert.IsType(t, model.KeycloakDiscoveryService(cr), desiredState[9].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.KeycloakDeployment(cr, model.DatabaseSecret(cr)), desiredState[10].(common.GenericUpdateAction).Ref)
 	assert.IsType(t, model.KeycloakRoute(cr), desiredState[11].(common.GenericUpdateAction).Ref)
+	assert.IsType(t, model.KeycloakMetricsRoute(cr, model.KeycloakRoute(cr)), desiredState[12].(common.GenericUpdateAction).Ref)
 }
 
 func TestKeycloakReconciler_Test_No_Action_When_Monitoring_Resources_Dont_Exist(t *testing.T) {
