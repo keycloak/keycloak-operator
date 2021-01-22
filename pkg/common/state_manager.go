@@ -2,10 +2,6 @@ package common
 
 import "sync"
 
-const (
-	RealmLabelSelectorsKey = "realmLabelSelectors"
-)
-
 type StateManager struct {
 	*sync.Mutex
 	state map[string]interface{}

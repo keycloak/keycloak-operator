@@ -81,6 +81,7 @@ func (i *KeycloakReconciler) reconcileExternalAccess(desired *common.DesiredClus
 
 	if keyExists && openshift {
 		desired.AddAction(i.getKeycloakRouteDesiredState(clusterState, cr))
+		desired.AddAction(i.getKeycloakMetricsRouteDesiredState(clusterState, cr))
 	} else {
 		desired.AddAction(i.getKeycloakIngressDesiredState(clusterState, cr))
 	}
@@ -310,6 +311,24 @@ func (i *KeycloakReconciler) getKeycloakRouteDesiredState(clusterState *common.C
 	return common.GenericUpdateAction{
 		Ref: model.KeycloakRouteReconciled(cr, clusterState.KeycloakRoute),
 		Msg: "Update Keycloak Route",
+	}
+}
+
+func (i *KeycloakReconciler) getKeycloakMetricsRouteDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	if clusterState.KeycloakRoute == nil {
+		return nil
+	}
+
+	if clusterState.KeycloakMetricsRoute == nil {
+		return common.GenericCreateAction{
+			Ref: model.KeycloakMetricsRoute(cr, clusterState.KeycloakRoute),
+			Msg: "Create Keycloak Metrics Route",
+		}
+	}
+
+	return common.GenericUpdateAction{
+		Ref: model.KeycloakMetricsRouteReconciled(cr, clusterState.KeycloakMetricsRoute, clusterState.KeycloakRoute),
+		Msg: "Update Keycloak Metrics Route",
 	}
 }
 

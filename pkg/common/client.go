@@ -726,7 +726,7 @@ func (c *Client) login(user, pass string) error {
 
 // defaultRequester returns a default client for requesting http endpoints
 func defaultRequester() Requester {
-	transport := http.DefaultTransport.(*http.Transport).Clone() // nolint
+	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} // nolint
 
 	c := &http.Client{Transport: transport, Timeout: time.Second * 10}
