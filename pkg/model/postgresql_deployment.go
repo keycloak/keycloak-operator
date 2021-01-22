@@ -150,7 +150,6 @@ func PostgresqlDeployment(cr *v1alpha1.Keycloak, isOpenshift bool) *v13.Deployme
 		},
 	}
 
-	//If not openshift append the initcontainer part
 	if !isOpenshift {
 		v13Deployment.Spec.Template.Spec.InitContainers = getPostgresqlDeploymentInitContainer(cr)
 	}

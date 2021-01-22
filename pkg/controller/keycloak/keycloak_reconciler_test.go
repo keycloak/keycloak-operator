@@ -583,7 +583,6 @@ func TestKeycloakReconciler_Test_Setting_Resources(t *testing.T) {
 	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.ServiceMonitorsKind), true)
 	stateManager.SetState(common.GetStateFieldName(ControllerName, grafanav1alpha1.GrafanaDashboardKind), true)
 	stateManager.SetState(common.RouteKind, true)
-	stateManager.SetState(common.OpenShiftAPIServerKind, false)
 
 	// when
 	reconciler := NewKeycloakReconciler()
