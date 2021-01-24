@@ -226,9 +226,9 @@ type KeycloakAPIAuthenticationExecution struct {
 	// +optional
 	AuthenticatorConfig string `json:"authenticatorConfig,omitempty"`
 
-	// Authenticator flow
+	// Autheticator flow
 	// +optional
-	AuthenticatorFlow bool `json:"authenticatorFlow,omitempty"`
+	AutheticatorFlow bool `json:"autheticatorFlow,omitempty"`
 
 	// Flow Alias
 	// +optional
