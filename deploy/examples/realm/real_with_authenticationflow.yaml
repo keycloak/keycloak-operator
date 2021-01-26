@@ -1,0 +1,61 @@
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakRealm
+metadata:
+  name: oidc
+  namespace: keycloak
+  labels:
+    app: sso
+spec:
+  instanceSelector:
+    matchLabels:
+      app: sso
+  realm:
+    displayName: Oidc
+    enabled: true
+    id: oidc
+    realm: oidc
+    eventsListeners:
+      - "metrics-listener"
+    authenticatorConfig:
+      - alias: "oidc"
+        config:
+          defaultProvider: "oidc"
+    authenticationFlows:
+    - alias: "Main-Flow"
+      description: "browser based authentication"
+      providerId: "basic-flow"
+      topLevel: true
+      builtIn: false
+      authenticationExecutions: 
+      - requirement: "ALTERNATIVE"
+        priority: 10
+        userSetupAllowed: false
+        autheticatorFlow: true
+        flowAlias: "Sub-Flow"
+    - alias: "Sub-Flow"
+      providerId: "basic-flow"
+      topLevel: false
+      builtIn: false
+      authenticationExecutions: []
+    - alias: "browser"
+      providerId: "basic-flow"
+      topLevel: true
+      builtIn: false
+      authenticationExecutions:
+      - authenticator: "identity-provider-redirector"
+        authenticatorConfig: oidc
+        requirement: "ALTERNATIVE"
+        priority: 0
+        userSetupAllowed: false
+        autheticatorFlow: false
+    - alias: "registration"
+      providerId: "basic-flow"
+      topLevel: true
+      builtIn: false
+      authenticationExecutions: []
+    - alias: "direct grant"
+      providerId: "basic-flow"
+      topLevel: true
+      builtIn: false
+      authenticationExecutions: []
+
