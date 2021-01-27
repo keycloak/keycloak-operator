@@ -2,7 +2,6 @@ package common
 
 import (
 	"bytes"
-	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
@@ -13,16 +12,12 @@ import (
 	"time"
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
-	"github.com/keycloak/keycloak-operator/pkg/model"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	config2 "sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 const (
-	authURL = "auth/realms/master/protocol/openid-connect/token"
+	authURLTemplate = "auth/realms/%s/protocol/openid-connect/token"
 )
 
 type Requester interface {
@@ -67,12 +62,8 @@ func (c *Client) create(obj T, resourcePath, resourceName string) (string, error
 	defer res.Body.Close()
 
 	if res.StatusCode != 201 && res.StatusCode != 204 {
-		return "", errors.Errorf("failed to create %s: (%d) %s", resourceName, res.StatusCode, res.Status)
-	}
-
-	if resourceName == "client" {
 		d, _ := ioutil.ReadAll(res.Body)
-		fmt.Println("user response ", string(d))
+		return "", errors.Errorf("failed to create %s: (%d) %s [%s]", resourceName, res.StatusCode, res.Status, string(d))
 	}
 
 	location := strings.Split(res.Header.Get("Location"), "/")
@@ -711,8 +702,15 @@ func (c *Client) Ping() error {
 	return nil
 }
 
-// login requests a new auth token from Keycloak
-func (c *Client) login(user, pass string) error {
+func (c *Client) getAuthURL(realm string) string {
+	if realm == "" {
+		// fallback to master - just in case
+		realm = "master"
+	}
+	return fmt.Sprintf(authURLTemplate, realm)
+}
+
+func (c *Client) usernameAndPasswordLogin(user, pass string) error {
 	form := url.Values{}
 	form.Add("username", user)
 	form.Add("password", pass)
@@ -721,13 +719,55 @@ func (c *Client) login(user, pass string) error {
 
 	req, err := http.NewRequest(
 		"POST",
-		fmt.Sprintf("%s/%s", c.URL, authURL),
+		fmt.Sprintf("%s/%s", c.URL, c.getAuthURL("master")),
 		strings.NewReader(form.Encode()),
 	)
 	if err != nil {
-		return errors.Wrap(err, "error creating login request")
+		return errors.Wrap(err, "error creating usernameAndPasswordLogin request")
 	}
 
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	res, err := c.requester.Do(req)
+	if err != nil {
+		logrus.Errorf("error on request %+v", err)
+		return errors.Wrap(err, "error performing token request")
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		logrus.Errorf("error reading response %+v", err)
+		return errors.Wrap(err, "error reading token response")
+	}
+
+	tokenRes := &v1alpha1.TokenResponse{}
+	err = json.Unmarshal(body, tokenRes)
+	if err != nil {
+		return errors.Wrap(err, "error parsing token response")
+	}
+
+	if tokenRes.Error != "" {
+		logrus.Errorf("error with request: " + tokenRes.ErrorDescription)
+		return errors.Errorf(tokenRes.ErrorDescription)
+	}
+
+	c.token = tokenRes.AccessToken
+
+	return nil
+}
+
+func (c *Client) clientCredentialsLogin(clientID, clientSecret, realm string) error {
+	form := url.Values{}
+	form.Add("grant_type", "client_credentials")
+
+	req, err := http.NewRequest(
+		"POST",
+		fmt.Sprintf("%s/%s", c.URL, c.getAuthURL(realm)),
+		strings.NewReader(form.Encode()),
+	)
+	if err != nil {
+		return errors.Wrap(err, "error creating usernameAndPasswordLogin request")
+	}
+	req.SetBasicAuth(clientID, clientSecret)
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	res, err := c.requester.Do(req)
 	if err != nil {
@@ -765,8 +805,6 @@ func defaultRequester() Requester {
 	c := &http.Client{Transport: transport, Timeout: time.Second * 10}
 	return c
 }
-
-//go:generate moq -out keycloakClient_moq.go . KeycloakInterface
 
 type KeycloakInterface interface {
 	Ping() error
@@ -825,51 +863,4 @@ type KeycloakInterface interface {
 	GetAuthenticatorConfig(configID, realmName string) (*v1alpha1.AuthenticatorConfig, error)
 	UpdateAuthenticatorConfig(authenticatorConfig *v1alpha1.AuthenticatorConfig, realmName string) error
 	DeleteAuthenticatorConfig(configID, realmName string) error
-}
-
-//go:generate moq -out keycloakClientFactory_moq.go . KeycloakClientFactory
-
-//KeycloakClientFactory interface
-type KeycloakClientFactory interface {
-	AuthenticatedClient(kc v1alpha1.Keycloak) (KeycloakInterface, error)
-}
-
-type LocalConfigKeycloakFactory struct {
-}
-
-// AuthenticatedClient returns an authenticated client for requesting endpoints from the Keycloak api
-func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (KeycloakInterface, error) {
-	config, err := config2.GetConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	secretClient, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-
-	var credentialSecret, endpoint string
-	if kc.Spec.External.Enabled {
-		credentialSecret = "credential-" + kc.Name
-		endpoint = kc.Spec.External.URL
-	} else {
-		credentialSecret = kc.Status.CredentialSecret
-		endpoint = kc.Status.InternalURL
-	}
-
-	adminCreds, err := secretClient.CoreV1().Secrets(kc.Namespace).Get(context.TODO(), credentialSecret, v12.GetOptions{})
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get the admin credentials")
-	}
-	user := string(adminCreds.Data[model.AdminUsernameProperty])
-	pass := string(adminCreds.Data[model.AdminPasswordProperty])
-	client := &Client{
-		URL:       endpoint,
-		requester: defaultRequester(),
-	}
-	if err := client.login(user, pass); err != nil {
-		return nil, err
-	}
-	return client, nil
 }

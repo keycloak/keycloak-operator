@@ -7,10 +7,10 @@ import (
 // KeycloakRealmSpec defines the desired state of KeycloakRealm.
 // +k8s:openapi-gen=true
 type KeycloakRealmSpec struct {
-	// When set to true, this KeycloakRealm will be marked as unmanaged and not be managed by this operator.
+	// When set to false, this KeycloakRealm will be marked as unmanaged and will not be managed by this operator.
 	// It can then be used for targeting purposes.
 	// +optional
-	Unmanaged bool `json:"unmanaged,omitempty"`
+	Managed ManagementType `json:"managed,omitempty"`
 	// Selector for looking up Keycloak Custom Resources.
 	// +kubebuilder:validation:Required
 	InstanceSelector *metav1.LabelSelector `json:"instanceSelector,omitempty"`

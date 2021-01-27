@@ -466,7 +466,7 @@ func keycloakRealmWithUserFederationTest(t *testing.T, framework *test.Framework
 
 func keycloakUnmanagedRealmTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	keycloakRealmCR := getKeycloakRealmCR(namespace)
-	keycloakRealmCR.Spec.Unmanaged = true
+	keycloakRealmCR.Spec.Managed = keycloakv1alpha1.Unmanaged
 
 	err := Create(framework, keycloakRealmCR, ctx)
 	if err != nil {

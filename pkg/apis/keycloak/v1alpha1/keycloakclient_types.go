@@ -7,9 +7,13 @@ import (
 // KeycloakClientSpec defines the desired state of KeycloakClient.
 // +k8s:openapi-gen=true
 type KeycloakClientSpec struct {
+	// When set to false, this KeycloakClient will be marked as unmanaged and will not be managed by this operator.
+	// It can then be used for targeting purposes.
+	// +optional
+	Managed ManagementType `json:"managed,omitempty"`
 	// Selector for looking up KeycloakRealm Custom Resources.
 	// +kubebuilder:validation:Required
-	RealmSelector *metav1.LabelSelector `json:"realmSelector"`
+	RealmSelector *RealmSelector `json:"realmSelector"`
 	// Keycloak Client REST object.
 	// +kubebuilder:validation:Required
 	Client *KeycloakAPIClient `json:"client"`
@@ -18,6 +22,20 @@ type KeycloakClientSpec struct {
 	// +listType=map
 	// +listMapKey=name
 	Roles []RoleRepresentation `json:"roles,omitempty"`
+}
+
+type RealmSelector struct {
+	// matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+	// map is equivalent to an element of matchExpressions, whose key field is "key", the
+	// operator is "In", and the values array contains only "value". The requirements are ANDed.
+	// +optional
+	MatchLabels map[string]string `json:"matchLabels,omitempty" protobuf:"bytes,1,rep,name=matchLabels"`
+	// matchExpressions is a list of label selector requirements. The requirements are ANDed.
+	// +optional
+	MatchExpressions []metav1.LabelSelectorRequirement `json:"matchExpressions,omitempty" protobuf:"bytes,2,rep,name=matchExpressions"`
+	// match by Realm name
+	// +optional
+	RealmName string `json:"realmName"`
 }
 
 type KeycloakAPIClient struct {
@@ -165,6 +183,8 @@ type KeycloakClientStatus struct {
 	Ready bool `json:"ready"`
 	// A map of all the secondary resources types and names created for this CR. e.g "Deployment": [ "DeploymentName1", "DeploymentName2" ]
 	SecondaryResources map[string][]string `json:"secondaryResources,omitempty"`
+	// The secret where the admin credentials are to be found.
+	CredentialSecret string `json:"credentialSecret"`
 }
 
 // KeycloakClient is the Schema for the keycloakclients API.

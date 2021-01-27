@@ -22,7 +22,7 @@ func getDummyUser() *v1alpha1.KeycloakUser {
 			Namespace: "dummy",
 		},
 		Spec: v1alpha1.KeycloakUserSpec{
-			RealmSelector: &v1.LabelSelector{
+			RealmSelector: &v1alpha1.RealmSelector{
 				MatchLabels: map[string]string{
 					"app": "sso",
 				},

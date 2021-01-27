@@ -71,13 +71,24 @@ func GetMatchingKeycloaks(ctx context.Context, c client.Client, labelSelector *v
 	return list, err
 }
 
-// Try to get a list of keycloak instances that match the selector specified on the realm
-func GetMatchingRealms(ctx context.Context, c client.Client, labelSelector *v1.LabelSelector) (v1alpha1.KeycloakRealmList, error) {
+func GetMatchingRealms(ctx context.Context, c client.Client, labelSelector *v1alpha1.RealmSelector) (v1alpha1.KeycloakRealmList, error) {
 	var list v1alpha1.KeycloakRealmList
+
 	opts := []client.ListOption{
 		client.MatchingLabels(labelSelector.MatchLabels),
 	}
 
 	err := c.List(ctx, &list, opts...)
+
+	if labelSelector.RealmName != "" {
+		newList := []v1alpha1.KeycloakRealm{}
+		for _, realm := range list.Items {
+			if labelSelector.RealmName == realm.Spec.Realm.Realm {
+				newList = append(newList, realm)
+			}
+		}
+		list.Items = newList
+	}
+
 	return list, err
 }

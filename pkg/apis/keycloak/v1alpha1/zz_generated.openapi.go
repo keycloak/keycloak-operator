@@ -303,10 +303,17 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakClientSpec(ref common.ReferenceCa
 				Description: "KeycloakClientSpec defines the desired state of KeycloakClient.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
+					"managed": {
+						SchemaProps: spec.SchemaProps{
+							Description: "When set to false, this KeycloakClient will be marked as unmanaged and will not be managed by this operator. It can then be used for targeting purposes.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 					"realmSelector": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Selector for looking up KeycloakRealm Custom Resources.",
-							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"),
+							Ref:         ref("github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.RealmSelector"),
 						},
 					},
 					"client": {
@@ -341,7 +348,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakClientSpec(ref common.ReferenceCa
 			},
 		},
 		Dependencies: []string{
-			"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakAPIClient", "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.RoleRepresentation", "k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"},
+			"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakAPIClient", "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.RealmSelector", "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.RoleRepresentation"},
 	}
 }
 
@@ -395,8 +402,15 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakClientStatus(ref common.Reference
 							},
 						},
 					},
+					"credentialSecret": {
+						SchemaProps: spec.SchemaProps{
+							Description: "The secret where the admin credentials are to be found.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 				},
-				Required: []string{"phase", "message", "ready"},
+				Required: []string{"phase", "message", "ready", "credentialSecret"},
 			},
 		},
 	}
@@ -453,10 +467,10 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakRealmSpec(ref common.ReferenceCal
 				Description: "KeycloakRealmSpec defines the desired state of KeycloakRealm.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
-					"unmanaged": {
+					"managed": {
 						SchemaProps: spec.SchemaProps{
-							Description: "When set to true, this KeycloakRealm will be marked as unmanaged and not be managed by this operator. It can then be used for targeting purposes.",
-							Type:        []string{"boolean"},
+							Description: "When set to false, this KeycloakRealm will be marked as unmanaged and will not be managed by this operator. It can then be used for targeting purposes.",
+							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
@@ -569,10 +583,10 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 				Description: "KeycloakSpec defines the desired state of Keycloak.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
-					"unmanaged": {
+					"managed": {
 						SchemaProps: spec.SchemaProps{
-							Description: "When set to true, this Keycloak will be marked as unmanaged and will not be managed by this operator. It can then be used for targeting purposes.",
-							Type:        []string{"boolean"},
+							Description: "When set to false, this Keycloak will be marked as unmanaged and will not be managed by this operator. It can then be used for targeting purposes.",
+							Type:        []string{"string"},
 							Format:      "",
 						},
 					},
@@ -795,10 +809,17 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakUserSpec(ref common.ReferenceCall
 				Description: "KeycloakUserSpec defines the desired state of KeycloakUser.",
 				Type:        []string{"object"},
 				Properties: map[string]spec.Schema{
+					"managed": {
+						SchemaProps: spec.SchemaProps{
+							Description: "When set to false, this KeycloakUser will be marked as unmanaged and will not be managed by this operator. It can then be used for targeting purposes.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
 					"realmSelector": {
 						SchemaProps: spec.SchemaProps{
 							Description: "Selector for looking up KeycloakRealm Custom Resources.",
-							Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"),
+							Ref:         ref("github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.RealmSelector"),
 						},
 					},
 					"user": {
@@ -812,7 +833,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakUserSpec(ref common.ReferenceCall
 			},
 		},
 		Dependencies: []string{
-			"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakAPIUser", "k8s.io/apimachinery/pkg/apis/meta/v1.LabelSelector"},
+			"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.KeycloakAPIUser", "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1.RealmSelector"},
 	}
 }
 

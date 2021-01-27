@@ -44,7 +44,7 @@ func WaitForCondition(t *testing.T, c kubernetes.Interface, cond Condition) erro
 
 func WaitForConditionWithClient(t *testing.T, framework *framework.Framework, keycloakCR keycloakv1alpha1.Keycloak, cond ClientCondition) error {
 	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
-		authenticatedClient, err := MakeAuthenticatedClient(keycloakCR)
+		authenticatedClient, err := MakeAuthenticatedClient(framework, keycloakCR)
 		if err != nil {
 			return err
 		}
@@ -52,9 +52,9 @@ func WaitForConditionWithClient(t *testing.T, framework *framework.Framework, ke
 	})
 }
 
-func MakeAuthenticatedClient(keycloakCR keycloakv1alpha1.Keycloak) (common.KeycloakInterface, error) {
-	keycloakFactory := common.LocalConfigKeycloakFactory{}
-	return keycloakFactory.AuthenticatedClient(keycloakCR)
+func MakeAuthenticatedClient(framework *framework.Framework, keycloakCR keycloakv1alpha1.Keycloak) (common.KeycloakInterface, error) {
+	keycloakFactory := common.NewDefaultKeycloakConnectionFactory(context.TODO(), framework.Client.Client, &keycloakCR, nil)
+	return keycloakFactory.CreateConnection()
 }
 
 // Stolen from https://github.com/kubernetes/kubernetes/blob/master/test/e2e/framework/util.go
@@ -112,6 +112,7 @@ func WaitForKeycloakToBeReady(t *testing.T, framework *framework.Framework, name
 }
 
 func WaitForRealmToBeReady(t *testing.T, framework *framework.Framework, namespace string) error {
+	t.Logf("waiting up to %v for KeycloakRealm %s to be created", pollTimeout, testKeycloakRealmCRName)
 	keycloakRealmCR := &keycloakv1alpha1.KeycloakRealm{}
 
 	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
@@ -134,6 +135,7 @@ func WaitForRealmToBeReady(t *testing.T, framework *framework.Framework, namespa
 }
 
 func WaitForClientToBeReady(t *testing.T, framework *framework.Framework, namespace string, name string) error {
+	t.Logf("waiting up to %v for KeycloakClient %s to be created", pollTimeout, testKeycloakClientCRName)
 	keycloakClientCR := &keycloakv1alpha1.KeycloakClient{}
 
 	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
@@ -156,6 +158,7 @@ func WaitForClientToBeReady(t *testing.T, framework *framework.Framework, namesp
 }
 
 func WaitForUserToBeReady(t *testing.T, framework *framework.Framework, namespace string) error {
+	t.Logf("waiting up to %v for KeycloakUser %s to be created", pollTimeout, testKeycloakUserCRName)
 	keycloakUserCR := &keycloakv1alpha1.KeycloakUser{}
 
 	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {

@@ -160,7 +160,9 @@ func TestKeycloakRealmReconciler_Update(t *testing.T) {
 
 	// then
 	// 0 - check keycloak available
-	// 1 - no other action added
+	// 1 - reconcile Operator CLI Client
+	// no other action added
 	assert.IsType(t, &common.PingAction{}, desiredState[0])
-	assert.Len(t, desiredState, 1)
+	assert.IsType(t, &common.GenericCreateAction{}, desiredState[1])
+	assert.Len(t, desiredState, 2)
 }

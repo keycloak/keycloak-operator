@@ -1,4 +1,6 @@
 linters-settings:
+  gocognit:
+    min-complexity: 40
   golint:
     min-confidence: 0
   gocyclo:

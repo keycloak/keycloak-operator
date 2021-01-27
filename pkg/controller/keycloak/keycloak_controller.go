@@ -170,8 +170,7 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 		return reconcile.Result{}, err
 	}
 	currentState := common.NewClusterState()
-
-	if instance.Spec.Unmanaged {
+	if instance.Spec.Managed == keycloakv1alpha1.Unmanaged {
 		return r.ManageSuccess(instance, currentState)
 	}
 

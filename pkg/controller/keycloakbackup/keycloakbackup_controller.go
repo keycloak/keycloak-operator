@@ -131,7 +131,7 @@ func (r *ReconcileKeycloakBackup) Reconcile(request reconcile.Request) (reconcil
 
 	var currentState *common.BackupState
 	for _, keycloak := range keycloaks.Items {
-		if keycloak.Spec.Unmanaged {
+		if keycloak.Spec.Managed == kc.Unmanaged {
 			return r.ManageError(instance, errors.Errorf("backups cannot be created for unmanaged keycloak instances"))
 		}
 

@@ -74,6 +74,11 @@ spec:
                     are ANDed.
                   type: object
               type: object
+            managed:
+              description: When set to false, this KeycloakRealm will be marked as
+                unmanaged and will not be managed by this operator. It can then be
+                used for targeting purposes.
+              type: string
             realm:
               description: Keycloak Realm REST object.
               properties:
@@ -778,11 +783,6 @@ spec:
                 type: object
               type: array
               x-kubernetes-list-type: atomic
-            unmanaged:
-              description: When set to true, this KeycloakRealm will be marked as
-                unmanaged and not be managed by this operator. It can then be used
-                for targeting purposes.
-              type: boolean
           required:
           - realm
           type: object

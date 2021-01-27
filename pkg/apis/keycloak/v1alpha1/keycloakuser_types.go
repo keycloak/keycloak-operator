@@ -16,9 +16,13 @@ var (
 // KeycloakUserSpec defines the desired state of KeycloakUser.
 // +k8s:openapi-gen=true
 type KeycloakUserSpec struct {
+	// When set to false, this KeycloakUser will be marked as unmanaged and will not be managed by this operator.
+	// It can then be used for targeting purposes.
+	// +optional
+	Managed ManagementType `json:"managed,omitempty"`
 	// Selector for looking up KeycloakRealm Custom Resources.
 	// +kubebuilder:validation:Required
-	RealmSelector *metav1.LabelSelector `json:"realmSelector,omitempty"`
+	RealmSelector *RealmSelector `json:"realmSelector,omitempty"`
 	// Keycloak User REST object.
 	// +kubebuilder:validation:Required
 	User KeycloakAPIUser `json:"user"`

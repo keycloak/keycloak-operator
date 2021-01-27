@@ -37,7 +37,7 @@ func getKeycloakUserCR(namespace string) *keycloakv1alpha1.KeycloakUser {
 			Labels:    CreateLabel(namespace),
 		},
 		Spec: keycloakv1alpha1.KeycloakUserSpec{
-			RealmSelector: &metav1.LabelSelector{
+			RealmSelector: &keycloakv1alpha1.RealmSelector{
 				MatchLabels: CreateLabel(namespace),
 			},
 			User: keycloakv1alpha1.KeycloakAPIUser{
