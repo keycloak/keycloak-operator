@@ -31,7 +31,19 @@ Please remember to provide a good summary, description as well as steps to repro
 | [KeycloakClient](./deploy/crds/keycloak.org_keycloakclients_crd.yaml) | Represents a client in a keycloak server                 |
 | [KeycloakBackup](./deploy/crds/keycloak.org_keycloakbackups_crd.yaml) | Manage Keycloak database backups                         |
 
-## Deploying to a Cluster
+
+## Deployment to a Kubernetes or Openshift cluster
+
+The official documentation contains installation instruction for this Operator.
+
+[Getting started with keycloak-operator on Openshift](https://www.keycloak.org/getting-started/getting-started-operator-openshift)
+
+[Getting started with keycloak-operator on Kubernetes](https://www.keycloak.org/getting-started/getting-started-operator-kubernetes)
+
+[Operator installation](https://www.keycloak.org/docs/latest/server_installation/index.html#_installing-operator)
+
+
+## Developer Reference
 *Note*: You will need a running Kubernetes or OpenShift cluster to use the Operator
 
 1. Run `make cluster/prepare` # This will apply the necessary Custom Resource Definitions (CRDs) and RBAC rules to the clusters
@@ -41,8 +53,6 @@ Please remember to provide a good summary, description as well as steps to repro
 Once the CRDs and RBAC rules are applied and the operator is running. Use the examples from the operator.
 
 1. Run `kubectl apply -f deploy/examples/keycloak/keycloak.yaml`
-
-## Building from Source
 
 ### Local Development
 *Note*: You will need a running Kubernetes or OpenShift cluster to use the Operator
