@@ -27,13 +27,12 @@ cluster/prepare:
 
 .PHONY: cluster/clean
 cluster/clean:
-	@kubectl get all -n $(NAMESPACE) --no-headers=true -o name | xargs kubectl delete -n $(NAMESPACE) || true
-	@kubectl get roles,rolebindings,serviceaccounts keycloak-operator -n $(NAMESPACE) --no-headers=true -o name | xargs kubectl delete -n $(NAMESPACE) || true
-	@kubectl get pv,pvc -n $(NAMESPACE) --no-headers=true -o name | xargs kubectl delete -n $(NAMESPACE) || true
-	# Remove all CRDS with keycloak.org in the name
-	@kubectl get crd --no-headers=true -o name | awk '/keycloak.org/{print $1}' | xargs kubectl delete || true
+	@kubectl delete -f deploy/service_account.yaml -n $(NAMESPACE) || true
+	@kubectl delete -f deploy/role_binding.yaml -n $(NAMESPACE) || true
+	@kubectl delete -f deploy/role.yaml -n $(NAMESPACE) || true
 	@kubectl delete namespace $(NAMESPACE) || true
-
+	@kubectl delete -f deploy/crds/ || true
+	
 .PHONY: cluster/clean/monitoring
 cluster/clean/monitoring:
 	@kubectl delete -n $(NAMESPACE) --all blackboxtargets
