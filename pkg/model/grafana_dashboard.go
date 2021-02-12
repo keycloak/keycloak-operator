@@ -18,7 +18,6 @@ func GrafanaDashboard(cr *v1alpha1.Keycloak) *grafanav1alpha1.GrafanaDashboard {
 		},
 		Spec: grafanav1alpha1.GrafanaDashboardSpec{
 			Json: GrafanaDashboardJSON,
-			Name: "keycloak.json",
 			Plugins: []grafanav1alpha1.GrafanaPlugin{
 				{
 					Name:    "grafana-piechart-panel",
@@ -38,7 +37,6 @@ func GrafanaDashboard(cr *v1alpha1.Keycloak) *grafanav1alpha1.GrafanaDashboard {
 func GrafanaDashboardReconciled(cr *v1alpha1.Keycloak, currentState *grafanav1alpha1.GrafanaDashboard) *grafanav1alpha1.GrafanaDashboard {
 	reconciled := currentState.DeepCopy()
 	reconciled.Spec.Json = GrafanaDashboardJSON
-	reconciled.Spec.Name = "keycloak.json"
 	reconciled.Spec.Plugins = []grafanav1alpha1.GrafanaPlugin{
 		{
 			Name:    "grafana-piechart-panel",
