@@ -10,10 +10,23 @@ import (
 const (
 	LivenessProbeImplementation = `#!/bin/bash
 set -e
-curl -s --max-time 10 --fail http://$(hostname -i):8080/auth > /dev/null
+
+if [[ $# != 1 ]]; then
+    exit 1
+fi
+
+context_path=$1
+
+curl -s --max-time 10 --fail "http://$(hostname -i):8080/${context_path}" > /dev/null
 `
 	ReadinessProbeImplementation = `#!/bin/bash
 set -e
+
+if [[ $# != 1 ]]; then
+    exit 1
+fi
+
+context_path=$1
 
 DATASOURCE_POOL_TYPE="data-source"
 DATASOURCE_POOL_NAME="KeycloakDS"
@@ -40,7 +53,7 @@ else
 fi
 
 curl -s --max-time 10 --fail http://localhost:9990/management $AUTH_STRING --header "Content-Type: application/json" -d "{\"operation\":\"test-connection-in-pool\", \"address\":[\"subsystem\",\"datasources\",\"${DATASOURCE_POOL_TYPE}\",\"${DATASOURCE_POOL_NAME}\"], \"json.pretty\":1}"
-curl -s --max-time 10 --fail http://$(hostname -i):8080/auth > /dev/null
+curl -s --max-time 10 --fail "http://$(hostname -i):8080/${context_path}" > /dev/null
 `
 )
 

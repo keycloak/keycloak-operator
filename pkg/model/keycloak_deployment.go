@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	ContextPath                = "auth"
 	LivenessProbeInitialDelay  = 30
 	ReadinessProbeInitialDelay = 40
 	//10s (curl) + 10s (curl) + 2s (just in case)
@@ -405,6 +406,7 @@ func livenessProbe() *v1.Probe {
 					"/bin/sh",
 					"-c",
 					"/probes/" + LivenessProbeProperty,
+					ContextPath,
 				},
 			},
 		},
@@ -423,6 +425,7 @@ func readinessProbe() *v1.Probe {
 					"/bin/sh",
 					"-c",
 					"/probes/" + ReadinessProbeProperty,
+					ContextPath,
 				},
 			},
 		},

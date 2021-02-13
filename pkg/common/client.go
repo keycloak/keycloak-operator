@@ -22,7 +22,8 @@ import (
 )
 
 const (
-	authURL = "auth/realms/master/protocol/openid-connect/token"
+	contextPath = "auth"
+	authURL = fmt.Sprintf("%s/realms/master/protocol/openid-connect/token", contextPath)
 )
 
 type Requester interface {
@@ -48,7 +49,7 @@ func (c *Client) create(obj T, resourcePath, resourceName string) (string, error
 
 	req, err := http.NewRequest(
 		"POST",
-		fmt.Sprintf("%s/auth/admin/%s", c.URL, resourcePath),
+		fmt.Sprintf("%s/%s/admin/%s", c.URL, contextPath, resourcePath),
 		bytes.NewBuffer(jsonValue),
 	)
 	if err != nil {
@@ -228,7 +229,7 @@ func (c *Client) CreateIdentityProvider(identityProvider *v1alpha1.KeycloakIdent
 
 // Generic get function for returning a Keycloak resource
 func (c *Client) get(resourcePath, resourceName string, unMarshalFunc func(body []byte) (T, error)) (T, error) {
-	u := fmt.Sprintf("%s/auth/admin/%s", c.URL, resourcePath)
+	u := fmt.Sprintf("%s/%s/admin/%s", c.URL, contextPath, resourcePath)
 	req, err := http.NewRequest(
 		"GET",
 		u,
@@ -304,7 +305,7 @@ func (c *Client) GetClient(clientID, realmName string) (*v1alpha1.KeycloakAPICli
 }
 
 func (c *Client) GetClientSecret(clientID, realmName string) (string, error) {
-	//"https://{{ rhsso_route }}/auth/admin/realms/{{ rhsso_realm }}/clients/{{ rhsso_client_id }}/client-secret"
+	//"https://{{ rhsso_route }}/{{ context_path }}/admin/realms/{{ rhsso_realm }}/clients/{{ rhsso_client_id }}/client-secret"
 	result, err := c.get(fmt.Sprintf("realms/%s/clients/%s/client-secret", realmName, clientID), "client-secret", func(body []byte) (T, error) {
 		res := map[string]string{}
 		if err := json.Unmarshal(body, &res); err != nil {
@@ -387,7 +388,7 @@ func (c *Client) update(obj T, resourcePath, resourceName string) error {
 
 	req, err := http.NewRequest(
 		"PUT",
-		fmt.Sprintf("%s/auth/admin/%s", c.URL, resourcePath),
+		fmt.Sprintf("%s/%s/admin/%s", c.URL, contextPath, resourcePath),
 		bytes.NewBuffer(jsonValue),
 	)
 	if err != nil {
@@ -439,7 +440,7 @@ func (c *Client) UpdateAuthenticatorConfig(authenticatorConfig *v1alpha1.Authent
 func (c *Client) delete(resourcePath, resourceName string, obj T) error {
 	req, err := http.NewRequest(
 		"DELETE",
-		fmt.Sprintf("%s/auth/admin/%s", c.URL, resourcePath),
+		fmt.Sprintf("%s/%s/admin/%s", c.URL, contextPath, resourcePath),
 		nil,
 	)
 
@@ -450,7 +451,7 @@ func (c *Client) delete(resourcePath, resourceName string, obj T) error {
 		}
 		req, err = http.NewRequest(
 			"DELETE",
-			fmt.Sprintf("%s/auth/admin/%s", c.URL, resourcePath),
+			fmt.Sprintf("%s/%s/admin/%s", c.URL, contextPath, resourcePath),
 			bytes.NewBuffer(jsonValue),
 		)
 		if err != nil {
@@ -523,7 +524,7 @@ func (c *Client) DeleteAuthenticatorConfig(configID, realmName string) error {
 func (c *Client) list(resourcePath, resourceName string, unMarshalListFunc func(body []byte) (T, error)) (T, error) {
 	req, err := http.NewRequest(
 		"GET",
-		fmt.Sprintf("%s/auth/admin/%s", c.URL, resourcePath),
+		fmt.Sprintf("%s/%s/admin/%s", c.URL, contextPath, resourcePath),
 		nil,
 	)
 	if err != nil {
@@ -727,7 +728,7 @@ func (c *Client) ListAuthenticationExecutionsForFlow(flowAlias, realmName string
 }
 
 func (c *Client) Ping() error {
-	u := c.URL + "/auth/"
+	u := fmt.Sprintf("%s/%s/", c.URL contextPath)
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
 		logrus.Errorf("error creating ping request %+v", err)
