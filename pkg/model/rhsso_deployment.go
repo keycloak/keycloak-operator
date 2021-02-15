@@ -112,7 +112,7 @@ func getRHSSOEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 }
 
 func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
-	return &v13.StatefulSet{
+	rhssoStatefulSet := &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      KeycloakDeploymentName,
 			Namespace: cr.Namespace,
@@ -141,6 +141,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSe
 				Spec: v1.PodSpec{
 					Volumes:        KeycloakVolumes(cr),
 					InitContainers: KeycloakExtensionsInitContainers(cr),
+					Affinity:       KeycloakPodAffinity(cr),
 					Containers: []v1.Container{
 						{
 							Name:  KeycloakDeploymentName,
@@ -177,6 +178,13 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSe
 			},
 		},
 	}
+
+	if cr.Spec.KeycloakDeploymentSpec.Experimental.Affinity != nil {
+		rhssoStatefulSet.Spec.Template.Spec.Affinity = cr.Spec.KeycloakDeploymentSpec.Experimental.Affinity
+	} else if cr.Spec.MultiAvailablityZones.Enabled {
+		rhssoStatefulSet.Spec.Template.Spec.Affinity = KeycloakPodAffinity(cr)
+	}
+	return rhssoStatefulSet
 }
 
 func RHSSODeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
@@ -224,6 +232,9 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 		},
 	}
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
+	if cr.Spec.KeycloakDeploymentSpec.Experimental.Affinity != nil {
+		reconciled.Spec.Template.Spec.Affinity = cr.Spec.KeycloakDeploymentSpec.Experimental.Affinity
+	}
 
 	return reconciled
 }
