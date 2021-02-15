@@ -51,6 +51,7 @@ cluster/clean/monitoring:
 
 .PHONY: cluster/prepare/monitoring
 cluster/prepare/monitoring:
+	oc label namespace $(NAMESPACE) "monitoring-key=middleware"
 	$(eval _OS_PROMETHEUS_USER=$(shell oc get secrets -n openshift-monitoring grafana-datasources -o 'go-template={{index .data "prometheus.yaml"}}' | base64 --decode | jq -r '.datasources[0].basicAuthUser'))
 	$(eval _OS_PROMETHEUS_PASS=$(shell oc get secrets -n openshift-monitoring grafana-datasources -o 'go-template={{index .data "prometheus.yaml"}}' | base64 --decode | jq -r '.datasources[0].basicAuthPassword'))
 	kubectl label namespace $(NAMESPACE) monitoring-key=middleware || true

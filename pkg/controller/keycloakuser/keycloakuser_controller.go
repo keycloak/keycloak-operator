@@ -11,8 +11,6 @@ import (
 
 	"k8s.io/client-go/tools/record"
 
-	"k8s.io/apimachinery/pkg/runtime/schema"
-
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	kubeerrors "k8s.io/apimachinery/pkg/api/errors"
@@ -35,7 +33,7 @@ var log = logf.Log.WithName("controller_keycloakuser")
 
 // Add creates a new KeycloakUser Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
-func Add(mgr manager.Manager, _ chan schema.GroupVersionKind) error {
+func Add(mgr manager.Manager) error {
 	return add(mgr, newReconciler(mgr))
 }
 

@@ -57,6 +57,7 @@ type ClusterState struct {
 	PostgresqlDeployment            *v12.Deployment
 	KeycloakService                 *v1.Service
 	KeycloakDiscoveryService        *v1.Service
+	KeycloakMonitoringService       *v1.Service
 	KeycloakDeployment              *v12.StatefulSet
 	KeycloakAdminSecret             *v1.Secret
 	KeycloakIngress                 *v1beta1.Ingress
@@ -128,6 +129,11 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 	}
 
 	err = i.readKeycloakDiscoveryServiceCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readKeycloakMonitoringServiceCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
 	}
@@ -419,6 +425,22 @@ func (i *ClusterState) readKeycloakDiscoveryServiceCurrentState(context context.
 	} else {
 		i.KeycloakDiscoveryService = keycloakDiscoveryService.DeepCopy()
 		cr.UpdateStatusSecondaryResources(i.KeycloakDiscoveryService.Kind, i.KeycloakDiscoveryService.Name)
+	}
+	return nil
+}
+
+func (i *ClusterState) readKeycloakMonitoringServiceCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	keycloakMonitoringService := model.KeycloakMonitoringService(cr)
+	keycloakMonitoringServiceSelector := model.KeycloakMonitoringServiceSelector(cr)
+
+	err := controllerClient.Get(context, keycloakMonitoringServiceSelector, keycloakMonitoringService)
+	if err != nil {
+		if !apiErrors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.KeycloakMonitoringService = keycloakMonitoringService.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakMonitoringService.Kind, i.KeycloakMonitoringService.Name)
 	}
 	return nil
 }

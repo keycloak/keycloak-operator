@@ -15,6 +15,7 @@ const (
 	PostgresqlDeploymentComponent        = "database"
 	PostgresqlServiceName                = ApplicationName + "-postgresql"
 	KeycloakDiscoveryServiceName         = ApplicationName + "-discovery"
+	KeycloakMonitoringServiceName        = ApplicationName + "-monitoring"
 	KeycloakDeploymentName               = ApplicationName
 	KeycloakDeploymentComponent          = "keycloak"
 	PostgresqlBackupComponent            = "database-backup"

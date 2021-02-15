@@ -40,6 +40,7 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 
 	desired = desired.AddAction(i.getKeycloakServiceDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDiscoveryServiceDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.getKeycloakMonitoringServiceDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakProbesDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.getKeycloakDeploymentOrRHSSODesiredState(clusterState, cr))
 	i.reconcileExternalAccess(&desired, clusterState, cr)
@@ -188,6 +189,28 @@ func (i *KeycloakReconciler) getKeycloakDiscoveryServiceDesiredState(clusterStat
 	return common.GenericUpdateAction{
 		Ref: model.KeycloakDiscoveryServiceReconciled(cr, clusterState.KeycloakDiscoveryService),
 		Msg: "Update keycloak Discovery Service",
+	}
+}
+
+func (i *KeycloakReconciler) getKeycloakMonitoringServiceDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	stateManager := common.GetStateManager()
+	resourceWatchExists, keyExists := stateManager.GetState(common.GetStateFieldName(ControllerName, monitoringv1.ServiceMonitorsKind)).(bool)
+	// Only add or update the monitoring resources if the resource type exists on the cluster. These booleans are set in the common/autodetect logic
+	if !keyExists || !resourceWatchExists {
+		return nil
+	}
+
+	keycloakMonitoringService := model.KeycloakMonitoringService(cr)
+
+	if clusterState.KeycloakMonitoringService == nil {
+		return common.GenericCreateAction{
+			Ref: keycloakMonitoringService,
+			Msg: "Create Keycloak Monitoring Service",
+		}
+	}
+	return common.GenericUpdateAction{
+		Ref: model.KeycloakMonitoringServiceReconciled(cr, clusterState.KeycloakMonitoringService),
+		Msg: "Update keycloak Monitoring Service",
 	}
 }
 
