@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	contextPath = "auth"
+	contextPath = contextPathDefault
 	authURL = fmt.Sprintf("%s/realms/master/protocol/openid-connect/token", contextPath)
 )
 
