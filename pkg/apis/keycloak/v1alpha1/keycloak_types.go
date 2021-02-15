@@ -82,6 +82,8 @@ type KeycloakSpec struct {
 	// Specify PodAntiAffinity settings for Keycloak deployment in Multi AZ
 	// +optional
 	MultiAvailablityZones MultiAvailablityZonesConfig `json:"multiAvailablityZones,omitempty"`
+	// Context Path used by WildFly server. Default to "auth".
+	ContextPath *string `json:"contextPath"`
 }
 
 type DeploymentSpec struct {

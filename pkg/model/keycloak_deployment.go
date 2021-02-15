@@ -14,7 +14,6 @@ import (
 )
 
 const (
-	ContextPath                = "auth"
 	LivenessProbeInitialDelay  = 30
 	ReadinessProbeInitialDelay = 40
 	//10s (curl) + 10s (curl) + 2s (just in case)
@@ -179,6 +178,11 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 }
 
 func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
+	contextPath := cr.Spec.ContextPath
+	if contextPath == "" {
+		contextPath = ContextPathDefault
+	}
+
 	keycloakStatefulset := &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      KeycloakDeploymentName,
@@ -227,8 +231,8 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 								},
 							},
 							VolumeMounts:   KeycloakVolumeMounts(cr, KeycloakExtensionPath),
-							LivenessProbe:  livenessProbe(),
-							ReadinessProbe: readinessProbe(),
+							LivenessProbe:  livenessProbe(contextPath),
+							ReadinessProbe: readinessProbe(contextPath),
 							Env:            getKeycloakEnv(cr, dbSecret),
 							Args:           cr.Spec.KeycloakDeploymentSpec.Experimental.Args,
 							Command:        cr.Spec.KeycloakDeploymentSpec.Experimental.Command,
@@ -281,8 +285,8 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 				},
 			},
 			VolumeMounts:   KeycloakVolumeMounts(cr, KeycloakExtensionPath),
-			LivenessProbe:  livenessProbe(),
-			ReadinessProbe: readinessProbe(),
+			LivenessProbe:  livenessProbe(contextPath),
+			ReadinessProbe: readinessProbe(contextPath),
 			Env:            getKeycloakEnv(cr, dbSecret),
 			Resources:      getResources(cr),
 		},
@@ -398,7 +402,7 @@ func addVolumesFromKeycloakCR(cr *v1alpha1.Keycloak, volumes []v1.Volume) []v1.V
 	return volumes
 }
 
-func livenessProbe() *v1.Probe {
+func livenessProbe(contextPath string) *v1.Probe {
 	return &v1.Probe{
 		Handler: v1.Handler{
 			Exec: &v1.ExecAction{
@@ -406,7 +410,7 @@ func livenessProbe() *v1.Probe {
 					"/bin/sh",
 					"-c",
 					"/probes/" + LivenessProbeProperty,
-					ContextPath,
+					contextPath,
 				},
 			},
 		},
@@ -417,7 +421,7 @@ func livenessProbe() *v1.Probe {
 	}
 }
 
-func readinessProbe() *v1.Probe {
+func readinessProbe(contextPath string) *v1.Probe {
 	return &v1.Probe{
 		Handler: v1.Handler{
 			Exec: &v1.ExecAction{
@@ -425,7 +429,7 @@ func readinessProbe() *v1.Probe {
 					"/bin/sh",
 					"-c",
 					"/probes/" + ReadinessProbeProperty,
-					ContextPath,
+					contextPath,
 				},
 			},
 		},
