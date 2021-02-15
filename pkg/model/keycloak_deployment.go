@@ -152,6 +152,10 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 			Name:  "PROXY_ADDRESS_FORWARDING",
 			Value: "true",
 		},
+		{
+			Name:  "KEYCLOAK_STATISTICS",
+			Value: "all",
+		},
 	}
 
 	if cr.Spec.ExternalDatabase.Enabled {
