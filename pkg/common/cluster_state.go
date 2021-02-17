@@ -65,6 +65,7 @@ type ClusterState struct {
 	PodDisruptionBudget             *v1beta12.PodDisruptionBudget
 	KeycloakProbes                  *v1.ConfigMap
 	KeycloakBackup                  *v1alpha1.KeycloakBackup
+	KeycloakMasterRealm             *v1alpha1.KeycloakRealm
 }
 
 func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
@@ -154,6 +155,11 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 	}
 
 	err = i.readKeycloakBackupCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readKeycloakMasterRealmCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
 	}
@@ -466,7 +472,7 @@ func (i *ClusterState) readPodDisruptionCurrentState(context context.Context, cr
 }
 
 func (i *ClusterState) IsResourcesReady(cr *kc.Keycloak) (bool, error) {
-	if cr.Spec.Unmanaged {
+	if cr.Spec.Managed == kc.Unmanaged {
 		return true, nil
 	}
 
@@ -519,6 +525,22 @@ func (i *ClusterState) readKeycloakBackupCurrentState(context context.Context, c
 		}
 	} else {
 		i.KeycloakBackup = KeycloakBackup.DeepCopy()
+	}
+	return nil
+}
+
+func (i *ClusterState) readKeycloakMasterRealmCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	masterRealm := model.KeycloakMasterRealm(cr)
+	masterRealmSelector := model.KeycloakMasterRealmSelector(cr)
+
+	err := controllerClient.Get(context, masterRealmSelector, masterRealm)
+	if err != nil {
+		if !apiErrors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.KeycloakMasterRealm = masterRealm.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakMasterRealm.Kind, i.KeycloakMasterRealm.Name)
 	}
 	return nil
 }

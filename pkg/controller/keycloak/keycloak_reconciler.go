@@ -28,6 +28,7 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 	desired = desired.AddAction(i.GetKeycloakPrometheusRuleDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakServiceMonitorDesiredState(clusterState, cr))
 	desired = desired.AddAction(i.GetKeycloakGrafanaDashboardDesiredState(clusterState, cr))
+	desired = desired.AddAction(i.GetKeycloakMasterRealm(clusterState, cr))
 
 	if !cr.Spec.ExternalDatabase.Enabled {
 		desired = desired.AddAction(i.getDatabaseSecretDesiredState(clusterState, cr))
@@ -235,6 +236,21 @@ func (i *KeycloakReconciler) GetKeycloakServiceMonitorDesiredState(clusterState 
 	return common.GenericUpdateAction{
 		Ref: servicemonitor,
 		Msg: "update keycloak service monitor",
+	}
+}
+
+func (i *KeycloakReconciler) GetKeycloakMasterRealm(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	masterRealm := model.KeycloakMasterRealm(cr)
+
+	if clusterState.KeycloakMasterRealm == nil {
+		return common.GenericCreateAction{
+			Ref: masterRealm,
+			Msg: "Create Keycloak Master Realm",
+		}
+	}
+	return common.GenericUpdateAction{
+		Ref: model.KeycloakMasterRealmReconciled(cr, clusterState.KeycloakMasterRealm),
+		Msg: "Update Keycloak Master Realm",
 	}
 }
 

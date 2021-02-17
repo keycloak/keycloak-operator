@@ -8,8 +8,10 @@ import (
 )
 
 const (
-	RHSSOProfile                 = "RHSSO"
-	ProfileEnvironmentalVariable = "PROFILE"
+	RHSSOProfile                      = "RHSSO"
+	ProfileEnvironmentalVariable      = "PROFILE"
+	AuthenticationEnvironmentVariable = "AUTH"
+	DefaultAuthenticationMethod       = "CLIENT_FIRST"
 )
 
 var Profiles = NewProfileManager()
@@ -34,6 +36,18 @@ func (p *ProfileManager) IsRHSSO(cr *v1alpha1.Keycloak) bool {
 		return true
 	}
 	return false
+}
+
+// Returns true is the new Authentication mechanism should be used. The default behavior is true
+// but it can be changed by overriding the "AUTH" environment variable
+// to anything else than "CLIENT_FIRST". This should never be used unless an unexpected bug is found
+// in the new authentication flow. This also requires turning off the OLM (and that's on purpose).
+func (p *ProfileManager) UseDefaultAuthenticationMode() bool {
+	env := os.Getenv(AuthenticationEnvironmentVariable)
+	if env == "" {
+		return true
+	}
+	return env == DefaultAuthenticationMethod
 }
 
 func (p *ProfileManager) GetKeycloakOrRHSSOImage(cr *v1alpha1.Keycloak) string {

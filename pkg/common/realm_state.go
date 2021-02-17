@@ -11,10 +11,11 @@ import (
 )
 
 type RealmState struct {
-	Realm            *kc.KeycloakRealm
-	RealmUserSecrets map[string]*v1.Secret
-	Context          context.Context
-	Keycloak         *kc.Keycloak
+	Realm             *kc.KeycloakRealm
+	RealmUserSecrets  map[string]*v1.Secret
+	Context           context.Context
+	Keycloak          *kc.Keycloak
+	KeycloakCLIClient *kc.KeycloakClient
 }
 
 func NewRealmState(context context.Context, keycloak kc.Keycloak) *RealmState {
@@ -24,15 +25,31 @@ func NewRealmState(context context.Context, keycloak kc.Keycloak) *RealmState {
 	}
 }
 
-func (i *RealmState) Read(cr *kc.KeycloakRealm, realmClient KeycloakInterface, controllerClient client.Client) error {
+func (i *RealmState) ReadRealmCurrentState(cr *kc.KeycloakRealm, realmClient KeycloakInterface) (*kc.KeycloakRealm, error) {
 	realm, err := realmClient.GetRealm(cr.Spec.Realm.Realm)
 	if err != nil {
-		i.Realm = nil
+		return nil, err
+	}
+	return realm, nil
+}
+
+func (i *RealmState) Read(cr *kc.KeycloakRealm, realmClient KeycloakInterface, controllerClient client.Client) error {
+	var err error
+	i.Realm, err = i.ReadRealmCurrentState(cr, realmClient)
+	if err != nil {
 		return err
 	}
 
-	i.Realm = realm
-	if realm == nil || len(cr.Spec.Realm.Users) == 0 {
+	if i.Realm == nil {
+		return nil
+	}
+
+	err = i.readKeycloakOpenShiftCLIClientCurrentState(cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	if len(cr.Spec.Realm.Users) == 0 {
 		return nil
 	}
 
@@ -44,7 +61,6 @@ func (i *RealmState) Read(cr *kc.KeycloakRealm, realmClient KeycloakInterface, c
 			return err
 		}
 		i.RealmUserSecrets[user.UserName] = secret
-
 		cr.UpdateStatusSecondaryResources(SecretKind, model.GetRealmUserSecretName(i.Keycloak.Namespace, cr.Spec.Realm.Realm, user.UserName))
 	}
 
@@ -65,4 +81,20 @@ func (i *RealmState) readRealmUserSecret(realm *kc.KeycloakRealm, user *kc.Keycl
 	}
 
 	return secret, err
+}
+
+func (i *RealmState) readKeycloakOpenShiftCLIClientCurrentState(cr *kc.KeycloakRealm, controllerClient client.Client) error {
+	keycloakCLIClient := model.KeycloakOperatorCLIClient(cr)
+	keycloakCLIClientSelector := model.KeycloakOperatorCLIClientSelector(cr)
+
+	err := controllerClient.Get(i.Context, keycloakCLIClientSelector, keycloakCLIClient)
+	if err != nil {
+		if !errors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.KeycloakCLIClient = keycloakCLIClient.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.KeycloakCLIClient.Kind, i.KeycloakCLIClient.Name)
+	}
+	return nil
 }

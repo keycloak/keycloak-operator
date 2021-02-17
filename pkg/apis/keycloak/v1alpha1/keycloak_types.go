@@ -16,10 +16,10 @@ var (
 // KeycloakSpec defines the desired state of Keycloak.
 // +k8s:openapi-gen=true
 type KeycloakSpec struct {
-	// When set to true, this Keycloak will be marked as unmanaged and will not be managed by this operator.
+	// When set to false, this Keycloak will be marked as unmanaged and will not be managed by this operator.
 	// It can then be used for targeting purposes.
 	// +optional
-	Unmanaged bool `json:"unmanaged,omitempty"`
+	Managed ManagementType `json:"managed,omitempty"`
 	// Contains configuration for external Keycloak instances. Unmanaged needs to be set to true to use this.
 	// +optional
 	External KeycloakExternal `json:"external"`

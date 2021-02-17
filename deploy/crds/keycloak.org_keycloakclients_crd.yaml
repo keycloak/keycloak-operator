@@ -185,6 +185,11 @@ spec:
               required:
               - clientId
               type: object
+            managed:
+              description: When set to false, this KeycloakClient will be marked as
+                unmanaged and will not be managed by this operator. It can then be
+                used for targeting purposes.
+              type: string
             realmSelector:
               description: Selector for looking up KeycloakRealm Custom Resources.
               properties:
@@ -227,6 +232,9 @@ spec:
                     "In", and the values array contains only "value". The requirements
                     are ANDed.
                   type: object
+                realmName:
+                  description: match by Realm name
+                  type: string
               type: object
             roles:
               description: Client Roles
@@ -288,6 +296,9 @@ spec:
         status:
           description: KeycloakClientStatus defines the observed state of KeycloakClient
           properties:
+            credentialSecret:
+              description: The secret where the admin credentials are to be found.
+              type: string
             message:
               description: Human-readable message indicating details about current
                 operator phase or error.
@@ -309,6 +320,7 @@ spec:
                 ]'
               type: object
           required:
+          - credentialSecret
           - message
           - phase
           - ready

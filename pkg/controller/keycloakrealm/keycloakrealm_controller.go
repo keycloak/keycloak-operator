@@ -32,11 +32,6 @@ const (
 
 var log = logf.Log.WithName(ControllerName)
 
-/**
-* USER ACTION REQUIRED: This is a scaffold file intended for the user to modify with their own Controller
-* business logic.  Delete these comments after modifying this file.*
- */
-
 // Add creates a new KeycloakRealm Controller and adds it to the Manager. The Manager will set fields on the Controller
 // and Start it when the Manager is Started.
 func Add(mgr manager.Manager, _ chan schema.GroupVersionKind) error {
@@ -117,7 +112,7 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 		return reconcile.Result{}, err
 	}
 
-	if instance.Spec.Unmanaged {
+	if instance.Spec.Managed == kc.Unmanaged {
 		return reconcile.Result{Requeue: false}, r.manageSuccess(instance, instance.DeletionTimestamp != nil)
 	}
 
@@ -138,14 +133,16 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 	// The realm may be applicable to multiple keycloak instances,
 	// process all of them
 	for _, keycloak := range keycloaks.Items {
+		// Avoid passing a local reference to a function (escape analysis)
+		keycloakRefCopied := keycloak.DeepCopy()
 		// Get an authenticated keycloak api client for the instance
-		keycloakFactory := common.LocalConfigKeycloakFactory{}
+		keycloakFactory := common.NewDefaultKeycloakConnectionFactory(r.context, r.client, keycloakRefCopied, instance)
 
-		if keycloak.Spec.Unmanaged {
+		if keycloak.Spec.Managed == kc.Unmanaged {
 			return r.ManageError(instance, errors.Errorf("realms cannot be created for unmanaged keycloak instances"))
 		}
 
-		authenticated, err := keycloakFactory.AuthenticatedClient(keycloak)
+		authenticated, err := keycloakFactory.CreateConnection()
 
 		if err != nil {
 			return r.ManageError(instance, err)

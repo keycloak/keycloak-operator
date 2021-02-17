@@ -29,9 +29,13 @@ cluster/prepare:
 
 .PHONY: cluster/clean
 cluster/clean:
+	@kubectl delete keycloakuser --all -n $(NAMESPACE) || true
+	@kubectl delete keycloakclient --all -n $(NAMESPACE) || true
+	@kubectl delete keycloakrealm --all -n $(NAMESPACE) || true
+	@kubectl delete keycloak --all -n $(NAMESPACE) || true
 	@kubectl get all -n $(NAMESPACE) --no-headers=true -o name | xargs kubectl delete -n $(NAMESPACE) || true
 	@kubectl get roles,rolebindings,serviceaccounts keycloak-operator -n $(NAMESPACE) --no-headers=true -o name | xargs kubectl delete -n $(NAMESPACE) || true
-	@kubectl get pv,pvc -n $(NAMESPACE) --no-headers=true -o name | xargs kubectl delete -n $(NAMESPACE) || true
+	@kubectl get pv,pvc -n $(NAMESPACE) --no-headers=true -o name --timeout=10s | xargs kubectl delete -n $(NAMESPACE) || true
 	# Remove all CRDS with keycloak.org in the name
 	@kubectl get crd --no-headers=true -o name | awk '/keycloak.org/{print $1}' | xargs kubectl delete || true
 	@kubectl delete namespace $(NAMESPACE) || true

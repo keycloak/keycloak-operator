@@ -60,7 +60,7 @@ func getKeycloakClientCR(namespace string, external bool) *keycloakv1alpha1.Keyc
 			Labels:    labels,
 		},
 		Spec: keycloakv1alpha1.KeycloakClientSpec{
-			RealmSelector: &metav1.LabelSelector{
+			RealmSelector: &keycloakv1alpha1.RealmSelector{
 				MatchLabels: labels,
 			},
 			Client: &keycloakv1alpha1.KeycloakAPIClient{
@@ -125,7 +125,7 @@ func keycloakClientRolesTest(t *testing.T, framework *test.Framework, ctx *test.
 
 	// update client: delete/rename/leave/add role
 	keycloakCR := getDeployedKeycloakCR(framework, namespace)
-	authenticatedClient, err := MakeAuthenticatedClient(keycloakCR)
+	authenticatedClient, err := MakeAuthenticatedClient(framework, keycloakCR)
 	if err != nil {
 		return err
 	}

@@ -314,6 +314,11 @@ spec:
                       type: object
                   type: object
               type: object
+            managed:
+              description: When set to false, this Keycloak will be marked as unmanaged
+                and will not be managed by this operator. It can then be used for
+                targeting purposes.
+              type: string
             migration:
               description: Specify Migration configuration
               properties:
@@ -376,11 +381,6 @@ spec:
               description: Name of the StorageClass for Postgresql Persistent Volume
                 Claim
               type: string
-            unmanaged:
-              description: When set to true, this Keycloak will be marked as unmanaged
-                and will not be managed by this operator. It can then be used for
-                targeting purposes.
-              type: boolean
           type: object
         status:
           description: KeycloakStatus defines the observed state of Keycloak.

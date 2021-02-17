@@ -31,6 +31,11 @@ spec:
         spec:
           description: KeycloakUserSpec defines the desired state of KeycloakUser.
           properties:
+            managed:
+              description: When set to false, this KeycloakUser will be marked as
+                unmanaged and will not be managed by this operator. It can then be
+                used for targeting purposes.
+              type: string
             realmSelector:
               description: Selector for looking up KeycloakRealm Custom Resources.
               properties:
@@ -73,6 +78,9 @@ spec:
                     "In", and the values array contains only "value". The requirements
                     are ANDed.
                   type: object
+                realmName:
+                  description: match by Realm name
+                  type: string
               type: object
             user:
               description: Keycloak User REST object.

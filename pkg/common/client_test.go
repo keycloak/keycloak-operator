@@ -286,7 +286,7 @@ func TestClient_ListRealms(t *testing.T) {
 	assert.Len(t, realms, 1)
 }
 
-func TestClient_login(t *testing.T) {
+func TestClient_loginUsingAdminCredentials(t *testing.T) {
 	// given
 	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		assert.Equal(t, TokenPath, req.URL.Path)
@@ -299,9 +299,43 @@ func TestClient_login(t *testing.T) {
 		json, err := jsoniter.Marshal(response)
 		assert.NoError(t, err)
 
-		size, err := w.Write(json)
+		_, err = w.Write(json)
 		assert.NoError(t, err)
-		assert.Equal(t, size, len(json))
+
+		w.WriteHeader(204)
+	})
+	server := httptest.NewServer(handler)
+	defer server.Close()
+
+	client := Client{
+		requester: server.Client(),
+		URL:       server.URL,
+	}
+
+	// when
+	err := client.usernameAndPasswordLogin("dummy", "dummy")
+	tokenObtainedUsingAdminCredentials := client.token
+
+	// then
+	assert.NoError(t, err)
+	assert.Equal(t, tokenObtainedUsingAdminCredentials, "dummy")
+}
+
+func TestClient_loginUsingClientCredentials(t *testing.T) {
+	// given
+	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		assert.Equal(t, TokenPath, req.URL.Path)
+		assert.Equal(t, req.Method, http.MethodPost)
+
+		response := v1alpha1.TokenResponse{
+			AccessToken: "dummy",
+		}
+
+		json, err := jsoniter.Marshal(response)
+		assert.NoError(t, err)
+
+		_, err = w.Write(json)
+		assert.NoError(t, err)
 
 		w.WriteHeader(204)
 	})
@@ -315,10 +349,11 @@ func TestClient_login(t *testing.T) {
 	}
 
 	// when
-	err := client.login("dummy", "dummy")
+	err := client.clientCredentialsLogin("ClientID", "ClientSecret", "master")
+	tokenObtainedUsingClientCredentials := client.token
 
 	// then
 	// token must be set on the client now
 	assert.NoError(t, err)
-	assert.Equal(t, client.token, "dummy")
+	assert.Equal(t, tokenObtainedUsingClientCredentials, "dummy")
 }

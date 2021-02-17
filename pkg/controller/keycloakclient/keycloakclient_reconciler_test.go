@@ -23,7 +23,7 @@ func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 			Namespace: "test",
 		},
 		Spec: v1alpha1.KeycloakClientSpec{
-			RealmSelector: &v13.LabelSelector{
+			RealmSelector: &v1alpha1.RealmSelector{
 				MatchLabels: map[string]string{"application": "sso"},
 			},
 			Client: &v1alpha1.KeycloakAPIClient{
@@ -65,7 +65,7 @@ func TestKeycloakClientReconciler_Test_PartialUpdate_Client(t *testing.T) {
 			Namespace: "test",
 		},
 		Spec: v1alpha1.KeycloakClientSpec{
-			RealmSelector: &v13.LabelSelector{
+			RealmSelector: &v1alpha1.RealmSelector{
 				MatchLabels: map[string]string{"application": "sso"},
 			},
 			Client: &v1alpha1.KeycloakAPIClient{
@@ -115,7 +115,7 @@ func TestKeycloakClientReconciler_Test_Delete_Client(t *testing.T) {
 			},
 		},
 		Spec: v1alpha1.KeycloakClientSpec{
-			RealmSelector: &v13.LabelSelector{
+			RealmSelector: &v1alpha1.RealmSelector{
 				MatchLabels: map[string]string{"application": "sso"},
 			},
 			Client: &v1alpha1.KeycloakAPIClient{
@@ -153,7 +153,7 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 			Namespace: "test",
 		},
 		Spec: v1alpha1.KeycloakClientSpec{
-			RealmSelector: &v13.LabelSelector{
+			RealmSelector: &v1alpha1.RealmSelector{
 				MatchLabels: map[string]string{"application": "sso"},
 			},
 			Client: &v1alpha1.KeycloakAPIClient{
@@ -230,7 +230,7 @@ func TestKeycloakClientReconciler_Test_Marshal_Client(t *testing.T) {
 			Namespace: "test",
 		},
 		Spec: v1alpha1.KeycloakClientSpec{
-			RealmSelector: &v13.LabelSelector{
+			RealmSelector: &v1alpha1.RealmSelector{
 				MatchLabels: map[string]string{"application": "sso"},
 			},
 			Client: &v1alpha1.KeycloakAPIClient{

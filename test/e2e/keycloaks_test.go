@@ -60,7 +60,7 @@ func getKeycloakCR(namespace string) *keycloakv1alpha1.Keycloak {
 func getUnmanagedKeycloakCR(namespace string) *keycloakv1alpha1.Keycloak {
 	keycloak := getKeycloakCR(namespace)
 	keycloak.Name = testKeycloakUnmanagedCRName
-	keycloak.Spec.Unmanaged = true
+	keycloak.Spec.Managed = keycloakv1alpha1.Unmanaged
 	return keycloak
 }
 
