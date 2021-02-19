@@ -311,6 +311,13 @@ func addVolumeMountsFromKeycloakCR(cr *v1alpha1.Keycloak, mountedVolumes []v1.Vo
 				}
 				mountedVolumes = append(mountedVolumes, configMapMount)
 			}
+			if v.Secret != nil {
+				secretMount := v1.VolumeMount{
+					Name:      v.Secret.Name,
+					MountPath: v.Secret.MountPath,
+				}
+				mountedVolumes = append(mountedVolumes, secretMount)
+			}
 		}
 	}
 	return mountedVolumes
@@ -376,6 +383,27 @@ func addVolumesFromKeycloakCR(cr *v1alpha1.Keycloak, volumes []v1.Volume) []v1.V
 					},
 				}
 				volumes = append(volumes, configMapVolume)
+			}
+			if v.Secret != nil {
+				secretVolume := v1.Volume{
+					Name: v.Secret.Name,
+					VolumeSource: v1.VolumeSource{
+						Projected: &v1.ProjectedVolumeSource{
+							Sources: []v1.VolumeProjection{
+								{
+									Secret: &v1.SecretProjection{
+										LocalObjectReference: v1.LocalObjectReference{
+											Name: v.Secret.Name,
+										},
+										Items: v.Secret.Items,
+									},
+								},
+							},
+							DefaultMode: cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.DefaultMode,
+						},
+					},
+				}
+				volumes = append(volumes, secretVolume)
 			}
 		}
 	}

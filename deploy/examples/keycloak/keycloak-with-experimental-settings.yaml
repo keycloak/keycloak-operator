@@ -29,3 +29,6 @@ spec:
           - configMap:
               name: test-config
               mountPath: /test-config
+          - secret:
+              name: keytabs
+              mountPath: /keytabs
