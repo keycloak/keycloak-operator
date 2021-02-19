@@ -28,6 +28,10 @@ func TestKeycloakDeployment_testExperimentalVolumesWithConfigMaps(t *testing.T) 
 	testExperimentalVolumesWithConfigMaps(t, KeycloakDeployment)
 }
 
+func TestKeycloakDeployment_testExperimentalVolumesWithSecrets(t *testing.T) {
+	testExperimentalVolumesWithSecrets(t, KeycloakDeployment)
+}
+
 func TestKeycloakDeployment_testPostgresEnvs(t *testing.T) {
 	testPostgresEnvs(t, KeycloakDeployment)
 }
