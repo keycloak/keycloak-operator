@@ -1,0 +1,85 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: bindcred
+type: Opaque
+stringData:
+  password: "test-password"
+---
+piVersion: keycloak.org/v1alpha1
+kind: KeycloakRealm
+metadata:
+  labels:
+    app: sso
+  name: ldap-realm
+spec:
+  instanceSelector:
+    matchLabels:
+      app: sso
+  realm:
+    displayName: LDAPRealm
+    enabled: true
+    id: ldap-realm
+    realm: ldap-realm
+    userFederationProviders:
+      - displayName: "ldap"
+        providerName: "ldap"
+        config:
+          vendor: "ad"
+          connectionUrl: "ldap://localhost"
+          bindDn: "USERNAME"
+          bindCredentialSecret: "bindcred"
+          usersDn: DC=example,DC=com"
+          usernameLDAPAttribute: "mail"
+          uuidLDAPAttribute: "objectGUID"
+          searchScope: "2" # sub
+          useTruststoreSpi: "ldapsOnly"
+          trustEmail: "true"
+          userObjectClasses: "person, organizationalPerson, user"
+          rdnLDAPAttribute: "cn"
+          editMode: "READ_ONLY"
+          # debug: "false"
+    userFederationMappers:
+      - name: username
+        federationProviderDisplayName: ldap
+        federationMapperType: user-attribute-ldap-mapper
+        config:
+          always.read.value.from.ldap: 'true'
+          is.binary.attribute: 'false'
+          is.mandatory.in.ldap: 'true'
+          ldap.attribute: mail
+          read.only: 'true'
+          user.model.attribute: username
+      - name: MSAD account controls
+        federationProviderDisplayName: ldap
+        federationMapperType:  msad-user-account-control-mapper
+        config:
+          ldap.password.policy.hints.enabled: 'false'
+      - name: last name
+        federationProviderDisplayName: ldap
+        federationMapperType: user-attribute-ldap-mapper
+        config:
+          always.read.value.from.ldap: 'true'
+          is.binary.attribute: 'false'
+          is.mandatory.in.ldap: 'true'
+          ldap.attribute: sn
+          read.only: 'true'
+          user.model.attribute: lastName
+      - name: email
+        federationProviderDisplayName: ldap
+        federationMapperType: user-attribute-ldap-mapper
+        config:
+          always.read.value.from.ldap: 'true'
+          is.binary.attribute: 'false'
+          is.mandatory.in.ldap: 'true'
+          ldap.attribute: mail
+          read.only: 'true'
+          user.model.attribute: email
+      - name: full name
+        federationProviderDisplayName: ldap
+        federationMapperType: full-name-ldap-mapper
+        config:
+          ldap.full.name.attribute: cn
+          read.only: 'true'
+          write.only: 'false'
