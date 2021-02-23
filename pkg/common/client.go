@@ -33,6 +33,7 @@ type Client struct {
 	requester Requester
 	URL       string
 	token     string
+	namespace string
 }
 
 // T is a generic type for keycloak spec resources
@@ -85,7 +86,11 @@ func (c *Client) Endpoint() string {
 }
 
 func (c *Client) CreateRealm(realm *v1alpha1.KeycloakRealm) (string, error) {
-	return c.create(realm.Spec.Realm, "realms", "realm")
+	realmSpec, err := ConvertRealmSecrets(realm.Spec.Realm, c.namespace)
+	if err != nil {
+		logrus.Errorf("%+v", err)
+	}
+	return c.create(realmSpec, "realms", "realm")
 }
 
 func (c *Client) CreateClient(client *v1alpha1.KeycloakAPIClient, realmName string) (string, error) {
@@ -867,9 +872,52 @@ func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (
 	client := &Client{
 		URL:       endpoint,
 		requester: defaultRequester(),
+		namespace: kc.Namespace,
 	}
 	if err := client.login(user, pass); err != nil {
 		return nil, err
 	}
 	return client, nil
+}
+
+func ConvertRealmSecrets(r *v1alpha1.KeycloakAPIRealm, ns string) (*v1alpha1.KeycloakAPIRealm, error) {
+	// This uses json.Marshal/Unmarshal to create a new KeycloakAPIRealm struct.
+	// This is done to avoid modifying the original struct, as that will
+	// Add the cleartext password to the keycloakrealm cr.
+	var newRealm *v1alpha1.KeycloakAPIRealm
+	data, err := json.Marshal(r)
+	if err != nil {
+		return nil, err
+	}
+	err = json.Unmarshal(data, &newRealm)
+
+	for i := range newRealm.UserFederationProviders {
+		if newRealm.UserFederationProviders[i].Config["bindCredentialSecret"] != "" {
+			config, err := config2.GetConfig()
+			if err != nil {
+				return nil, err
+			}
+
+			secretClient, err := kubernetes.NewForConfig(config)
+			if err != nil {
+				return nil, err
+			}
+			secret := newRealm.UserFederationProviders[i].Config["bindCredentialSecret"]
+			bindCred, err := secretClient.CoreV1().Secrets(ns).Get(context.TODO(), secret, v12.GetOptions{})
+
+			if err != nil {
+				return nil, errors.Wrapf(err, "failed to get the bind credentials from %v", secret)
+			}
+			secretKey := "password"
+			if newRealm.UserFederationProviders[i].Config["bindCredentialSecretKey"] != "" {
+				secretKey = newRealm.UserFederationProviders[i].Config["bindCredentialSecretKey"]
+				delete(newRealm.UserFederationProviders[i].Config, "bindCredentialSecretKey")
+			}
+			newRealm.UserFederationProviders[i].Config["bindCredential"] = string(bindCred.Data[secretKey])
+			delete(newRealm.UserFederationProviders[i].Config, "bindCredentialSecret")
+		}
+	}
+
+	return newRealm, nil
+
 }
