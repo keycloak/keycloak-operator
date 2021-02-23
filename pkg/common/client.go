@@ -96,6 +96,16 @@ func (c *Client) CreateClientRole(clientID string, role *v1alpha1.RoleRepresenta
 	return c.create(role, fmt.Sprintf("realms/%s/clients/%s/roles", realmName, clientID), "client role")
 }
 
+func (c *Client) CreateClientRealmScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *[]v1alpha1.RoleRepresentation, realmName string) error {
+	_, err := c.create(mappings, fmt.Sprintf("realms/%s/clients/%s/scope-mappings/realm", realmName, specClient.ID), "client realm scope mappings")
+	return err
+}
+
+func (c *Client) CreateClientClientScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *v1alpha1.ClientMappingsRepresentation, realmName string) error {
+	_, err := c.create(mappings.Mappings, fmt.Sprintf("realms/%s/clients/%s/scope-mappings/clients/%s", realmName, specClient.ID, mappings.ID), "client client scope mappings")
+	return err
+}
+
 func (c *Client) CreateUser(user *v1alpha1.KeycloakAPIUser, realmName string) (string, error) {
 	return c.create(user, fmt.Sprintf("realms/%s/users", realmName), "user")
 }
@@ -486,6 +496,14 @@ func (c *Client) DeleteClientRole(clientID, role, realmName string) error {
 	return err
 }
 
+func (c *Client) DeleteClientRealmScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *[]v1alpha1.RoleRepresentation, realmName string) error {
+	return c.delete(fmt.Sprintf("realms/%s/clients/%s/scope-mappings/realm", realmName, specClient.ID), "client realm scope mappings", mappings)
+}
+
+func (c *Client) DeleteClientClientScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *v1alpha1.ClientMappingsRepresentation, realmName string) error {
+	return c.delete(fmt.Sprintf("realms/%s/clients/%s/scope-mappings/clients/%s", realmName, specClient.ID, mappings.ID), "client client scope mappings", mappings.Mappings)
+}
+
 func (c *Client) DeleteUser(userID, realmName string) error {
 	err := c.delete(fmt.Sprintf("realms/%s/users/%s", realmName, userID), "user", nil)
 	return err
@@ -590,6 +608,26 @@ func (c *Client) ListClientRoles(clientID, realmName string) ([]v1alpha1.RoleRep
 	}
 
 	return res, nil
+}
+
+func (c *Client) ListScopeMappings(clientID, realmName string) (*v1alpha1.MappingsRepresentation, error) {
+	result, err := c.list(fmt.Sprintf("realms/%s/clients/%s/scope-mappings", realmName, clientID), "client scope mappings", func(body []byte) (T, error) {
+		var mappings v1alpha1.MappingsRepresentation
+		err := json.Unmarshal(body, &mappings)
+		return mappings, err
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	res, ok := result.(v1alpha1.MappingsRepresentation)
+
+	if !ok {
+		return nil, errors.Errorf("error decoding list client scope mappings response")
+	}
+
+	return &res, nil
 }
 
 func (c *Client) ListUsers(realmName string) ([]*v1alpha1.KeycloakAPIUser, error) {
@@ -787,9 +825,14 @@ type KeycloakInterface interface {
 	DeleteClient(clientID, realmName string) error
 	ListClients(realmName string) ([]*v1alpha1.KeycloakAPIClient, error)
 	ListClientRoles(clientID, realmName string) ([]v1alpha1.RoleRepresentation, error)
+	ListScopeMappings(clientID, realmName string) (*v1alpha1.MappingsRepresentation, error)
 	CreateClientRole(clientID string, role *v1alpha1.RoleRepresentation, realmName string) (string, error)
 	UpdateClientRole(clientID string, role, oldRole *v1alpha1.RoleRepresentation, realmName string) error
 	DeleteClientRole(clientID, role, realmName string) error
+	CreateClientRealmScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *[]v1alpha1.RoleRepresentation, realmName string) error
+	DeleteClientRealmScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *[]v1alpha1.RoleRepresentation, realmName string) error
+	CreateClientClientScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *v1alpha1.ClientMappingsRepresentation, realmName string) error
+	DeleteClientClientScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *v1alpha1.ClientMappingsRepresentation, realmName string) error
 
 	CreateUser(user *v1alpha1.KeycloakAPIUser, realmName string) (string, error)
 	CreateFederatedIdentity(fid v1alpha1.FederatedIdentity, userID string, realmName string) (string, error)

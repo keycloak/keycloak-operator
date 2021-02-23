@@ -79,6 +79,9 @@ type KeycloakSpec struct {
 	// Name of the StorageClass for Postgresql Persistent Volume Claim
 	// +optional
 	StorageClassName *string `json:"storageClassName,omitempty"`
+	// Specify PodAntiAffinity settings for Keycloak deployment in Multi AZ
+	// +optional
+	MultiAvailablityZones MultiAvailablityZonesConfig `json:"multiAvailablityZones,omitempty"`
 }
 
 type DeploymentSpec struct {
@@ -115,6 +118,9 @@ type ExperimentalSpec struct {
 	// Additional volume mounts
 	// +optional
 	Volumes VolumesSpec `json:"volumes,omitempty"`
+	// Affinity settings
+	//+optional
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 }
 
 type VolumesSpec struct {
@@ -189,6 +195,11 @@ type KeycloakExternalDatabase struct {
 
 type PodDisruptionBudgetConfig struct {
 	// If set to true, the operator will create a PodDistruptionBudget for the Keycloak deployment and set its `maxUnavailable` value to 1.
+	Enabled bool `json:"enabled,omitempty"`
+}
+
+type MultiAvailablityZonesConfig struct {
+	// If set to true, the operator will create a podAntiAffinity settings for the Keycloak deployment.
 	Enabled bool `json:"enabled,omitempty"`
 }
 

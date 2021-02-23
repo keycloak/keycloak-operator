@@ -3,6 +3,7 @@ package model
 import (
 	"testing"
 
+	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 
 	"github.com/stretchr/testify/assert"
@@ -96,4 +97,32 @@ func TestUtil_testMergeEnvsWithDuplicates1(t *testing.T) {
 		},
 	}
 	assert.Equal(t, expected, c)
+}
+
+func TestKeycloakClientReconciler_Test_Role_DifferenceIntersection(t *testing.T) {
+	// given
+	a := []v1alpha1.RoleRepresentation{
+		{Name: "a"},
+		{ID: "ignored", Name: "b"},
+		{ID: "cID", Name: "c"},
+	}
+	b := []v1alpha1.RoleRepresentation{
+		{Name: "b"},
+		{ID: "cID", Name: "differentName"},
+		{Name: "d"},
+	}
+
+	// when
+	difference, intersection := RoleDifferenceIntersection(a, b)
+
+	// then
+	expectedDifference := []v1alpha1.RoleRepresentation{
+		{Name: "a"},
+	}
+	expectedIntersection := []v1alpha1.RoleRepresentation{
+		{ID: "ignored", Name: "b"},
+		{ID: "cID", Name: "c"},
+	}
+	assert.Equal(t, expectedDifference, difference)
+	assert.Equal(t, expectedIntersection, intersection)
 }

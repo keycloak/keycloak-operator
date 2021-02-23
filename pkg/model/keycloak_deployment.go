@@ -174,7 +174,7 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 }
 
 func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
-	return &v13.StatefulSet{
+	keycloakStatefulset := &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      KeycloakDeploymentName,
 			Namespace: cr.Namespace,
@@ -234,6 +234,13 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 			},
 		},
 	}
+
+	if cr.Spec.KeycloakDeploymentSpec.Experimental.Affinity != nil {
+		keycloakStatefulset.Spec.Template.Spec.Affinity = cr.Spec.KeycloakDeploymentSpec.Experimental.Affinity
+	} else if cr.Spec.MultiAvailablityZones.Enabled {
+		keycloakStatefulset.Spec.Template.Spec.Affinity = KeycloakPodAffinity(cr)
+	}
+	return keycloakStatefulset
 }
 
 func KeycloakDeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
@@ -276,6 +283,10 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 		},
 	}
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
+	if cr.Spec.KeycloakDeploymentSpec.Experimental.Affinity != nil {
+		reconciled.Spec.Template.Spec.Affinity = cr.Spec.KeycloakDeploymentSpec.Experimental.Affinity
+	}
+
 	return reconciled
 }
 
@@ -443,5 +454,48 @@ func readinessProbe() *v1.Probe {
 		TimeoutSeconds:      ProbeTimeoutSeconds,
 		PeriodSeconds:       ProbeTimeBetweenRunsSeconds,
 		FailureThreshold:    ProbeFailureThreshold,
+	}
+}
+
+func KeycloakPodAffinity(cr *v1alpha1.Keycloak) *v1.Affinity {
+	return &v1.Affinity{
+		PodAntiAffinity: &v1.PodAntiAffinity{
+			PreferredDuringSchedulingIgnoredDuringExecution: []v1.WeightedPodAffinityTerm{
+				{
+					Weight: 100,
+					PodAffinityTerm: v1.PodAffinityTerm{
+						LabelSelector: &v12.LabelSelector{
+							MatchExpressions: []v12.LabelSelectorRequirement{
+								{
+									Key:      "app",
+									Operator: "In",
+									Values: []string{
+										ApplicationName,
+									},
+								},
+							},
+						},
+						TopologyKey: "topology.kubernetes.io/zone",
+					},
+				},
+				{
+					Weight: 90,
+					PodAffinityTerm: v1.PodAffinityTerm{
+						LabelSelector: &v12.LabelSelector{
+							MatchExpressions: []v12.LabelSelectorRequirement{
+								{
+									Key:      "app",
+									Operator: "In",
+									Values: []string{
+										ApplicationName,
+									},
+								},
+							},
+						},
+						TopologyKey: "kubernetes.io/hostname",
+					},
+				},
+			},
+		},
 	}
 }

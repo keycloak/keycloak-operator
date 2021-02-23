@@ -77,9 +77,6 @@ spec:
             realm:
               description: Keycloak Realm REST object.
               properties:
-                accountTheme:
-                  description: Account Theme
-                  type: string
                 adminEventsDetailsEnabled:
                   description: 'Enable admin events details TODO: change to values
                     and use kubebuilder default annotation once supported'
@@ -88,9 +85,6 @@ spec:
                   description: 'Enable events recording TODO: change to values and
                     use kubebuilder default annotation once supported'
                   type: boolean
-                adminTheme:
-                  description: Admin Console Theme
-                  type: string
                 authenticationFlows:
                   description: Authentication flows
                   items:
@@ -166,32 +160,6 @@ spec:
                     - alias
                     type: object
                   type: array
-                bruteForceProtected:
-                  description: Brute Force Detection
-                  type: boolean
-                clientScopeMappings:
-                  additionalProperties:
-                    items:
-                      description: https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_scopemappingrepresentation
-                      properties:
-                        client:
-                          description: Client
-                          type: string
-                        clientScope:
-                          description: Client Scope
-                          type: string
-                        roles:
-                          description: Roles
-                          items:
-                            type: string
-                          type: array
-                        self:
-                          description: Self
-                          type: string
-                      type: object
-                    type: array
-                  description: Client Scope Mappings
-                  type: object
                 clientScopes:
                   description: Client scopes
                   items:
@@ -395,9 +363,6 @@ spec:
                     - clientId
                     type: object
                   type: array
-                defaultLocale:
-                  description: Default Locale
-                  type: string
                 displayName:
                   description: Realm display name.
                   type: string
@@ -407,9 +372,6 @@ spec:
                 editUsernameAllowed:
                   description: Edit username
                   type: boolean
-                emailTheme:
-                  description: Email Theme
-                  type: string
                 enabled:
                   description: Realm enabled flag.
                   type: boolean
@@ -422,10 +384,6 @@ spec:
                   items:
                     type: string
                   type: array
-                failureFactor:
-                  description: Max Login Failures
-                  format: int32
-                  type: integer
                 id:
                   type: string
                 identityProviders:
@@ -473,34 +431,9 @@ spec:
                         type: boolean
                     type: object
                   type: array
-                internationalizationEnabled:
-                  description: Internationalization Enabled
-                  type: boolean
-                loginTheme:
-                  description: Login Theme
-                  type: string
                 loginWithEmailAllowed:
                   description: Login with email
                   type: boolean
-                maxDeltaTimeSeconds:
-                  description: Failure Reset Time
-                  format: int32
-                  type: integer
-                maxFailureWaitSeconds:
-                  description: Max Wait
-                  format: int32
-                  type: integer
-                minimumQuickLoginWaitSeconds:
-                  description: Minimum Quick Login Wait
-                  format: int32
-                  type: integer
-                permanentLockout:
-                  description: Permanent Lockout
-                  type: boolean
-                quickLoginCheckMilliSeconds:
-                  description: Quick Login Check Milli Seconds
-                  format: int64
-                  type: integer
                 realm:
                   description: Realm name.
                   type: string
@@ -516,146 +449,9 @@ spec:
                 resetPasswordAllowed:
                   description: Forgot password
                   type: boolean
-                roles:
-                  description: Roles
-                  properties:
-                    client:
-                      additionalProperties:
-                        items:
-                          description: https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_rolerepresentation
-                          properties:
-                            attributes:
-                              additionalProperties:
-                                items:
-                                  type: string
-                                type: array
-                              description: Role Attributes
-                              type: object
-                            clientRole:
-                              description: Client Role
-                              type: boolean
-                            composite:
-                              description: Composite
-                              type: boolean
-                            composites:
-                              description: Composites
-                              properties:
-                                client:
-                                  additionalProperties:
-                                    items:
-                                      type: string
-                                    type: array
-                                  description: Map client => []role
-                                  type: object
-                                realm:
-                                  description: Realm roles
-                                  items:
-                                    type: string
-                                  type: array
-                              type: object
-                            containerId:
-                              description: Container Id
-                              type: string
-                            description:
-                              description: Description
-                              type: string
-                            id:
-                              description: Id
-                              type: string
-                            name:
-                              description: Name
-                              type: string
-                          required:
-                          - name
-                          type: object
-                        type: array
-                      description: Client Roles
-                      type: object
-                    realm:
-                      description: Realm Roles
-                      items:
-                        description: https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_rolerepresentation
-                        properties:
-                          attributes:
-                            additionalProperties:
-                              items:
-                                type: string
-                              type: array
-                            description: Role Attributes
-                            type: object
-                          clientRole:
-                            description: Client Role
-                            type: boolean
-                          composite:
-                            description: Composite
-                            type: boolean
-                          composites:
-                            description: Composites
-                            properties:
-                              client:
-                                additionalProperties:
-                                  items:
-                                    type: string
-                                  type: array
-                                description: Map client => []role
-                                type: object
-                              realm:
-                                description: Realm roles
-                                items:
-                                  type: string
-                                type: array
-                            type: object
-                          containerId:
-                            description: Container Id
-                            type: string
-                          description:
-                            description: Description
-                            type: string
-                          id:
-                            description: Id
-                            type: string
-                          name:
-                            description: Name
-                            type: string
-                        required:
-                        - name
-                        type: object
-                      type: array
-                  type: object
-                scopeMappings:
-                  description: Scope Mappings
-                  items:
-                    description: https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_scopemappingrepresentation
-                    properties:
-                      client:
-                        description: Client
-                        type: string
-                      clientScope:
-                        description: Client Scope
-                        type: string
-                      roles:
-                        description: Roles
-                        items:
-                          type: string
-                        type: array
-                      self:
-                        description: Self
-                        type: string
-                    type: object
-                  type: array
-                smtpServer:
-                  additionalProperties:
-                    type: string
-                  description: Email
-                  type: object
                 sslRequired:
                   description: Require SSL
                   type: string
-                supportedLocales:
-                  description: Supported Locales
-                  items:
-                    type: string
-                  type: array
                 userFederationMappers:
                   description: User federation mappers are extension points triggered
                     by the user federation at various points.
@@ -800,10 +596,6 @@ spec:
                 verifyEmail:
                   description: Verify email
                   type: boolean
-                waitIncrementSeconds:
-                  description: Wait Increment
-                  format: int32
-                  type: integer
               required:
               - realm
               type: object

@@ -155,6 +155,28 @@ func WaitForClientToBeReady(t *testing.T, framework *framework.Framework, namesp
 	})
 }
 
+func WaitForClientToBeFailing(t *testing.T, framework *framework.Framework, namespace string, name string) error {
+	keycloakClientCR := &keycloakv1alpha1.KeycloakClient{}
+
+	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
+		err := GetNamespacedObject(framework, namespace, name, keycloakClientCR)
+		if err != nil {
+			return err
+		}
+
+		if keycloakClientCR.Status.Phase != keycloakv1alpha1.PhaseFailing {
+			keycloakRealmCRParsed, err := json.Marshal(keycloakClientCR)
+			if err != nil {
+				return err
+			}
+
+			return errors.Errorf("keycloakClient is not failing \nCurrent CR value: %s", string(keycloakRealmCRParsed))
+		}
+
+		return nil
+	})
+}
+
 func WaitForUserToBeReady(t *testing.T, framework *framework.Framework, namespace string) error {
 	keycloakUserCR := &keycloakv1alpha1.KeycloakUser{}
 

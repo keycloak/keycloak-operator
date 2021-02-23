@@ -19,3 +19,11 @@ func TestRHSSODeployment_testExperimentalCommand(t *testing.T) {
 func TestRHSSODeployment_testExperimentalVolumesWithConfigMaps(t *testing.T) {
 	testExperimentalVolumesWithConfigMaps(t, RHSSODeployment)
 }
+
+func TestRHSSODeployment_testAffinityDefaultMultiAZ(t *testing.T) {
+	testAffinityDefaultMultiAZ(t, RHSSODeployment)
+}
+
+func TestRHSSODeployment_testAffinityExperimental(t *testing.T) {
+	testAffinityExperimentalAffinitySet(t, RHSSODeployment)
+}

@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	v13 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
+	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type createDeploymentStatefulSet func(*v1alpha1.Keycloak, *v1.Secret) *v13.StatefulSet
@@ -34,6 +35,14 @@ func TestKeycloakDeployment_testExperimentalVolumesWithSecrets(t *testing.T) {
 
 func TestKeycloakDeployment_testPostgresEnvs(t *testing.T) {
 	testPostgresEnvs(t, KeycloakDeployment)
+}
+
+func TestKeycloakDeployment_testAffinityDefaultMultiAZ(t *testing.T) {
+	testAffinityDefaultMultiAZ(t, KeycloakDeployment)
+}
+
+func TestKeycloakDeployment_testAffinityExperimental(t *testing.T) {
+	testAffinityExperimentalAffinitySet(t, KeycloakDeployment)
 }
 
 func testExperimentalEnvs(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
@@ -258,4 +267,119 @@ func getEnvValueByName(envs []v1.EnvVar, name string) string {
 		}
 	}
 	return ""
+}
+
+func testAffinityDefaultMultiAZ(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
+	//given
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{}
+
+	cr.Spec.MultiAvailablityZones.Enabled = true
+
+	//when
+	affinity := deploymentFunction(cr, dbSecret).Spec.Template.Spec.Affinity
+
+	weight0 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].Weight
+	matchExprKey0 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Key
+	matchExprOperator0 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Operator
+	matchExpVal0 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Values[0]
+	topologyKey0 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.TopologyKey
+
+	weight1 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[1].Weight
+	matchExprKey1 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[1].PodAffinityTerm.LabelSelector.MatchExpressions[0].Key
+	matchExprOperator1 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[1].PodAffinityTerm.LabelSelector.MatchExpressions[0].Operator
+	matchExpVal1 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[1].PodAffinityTerm.LabelSelector.MatchExpressions[0].Values[0]
+	topologyKey1 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[1].PodAffinityTerm.TopologyKey
+
+	//then - Expect default values for Affinity
+	assert.Equal(t, int32(100), weight0)
+	assert.Equal(t, "app", matchExprKey0)
+	assert.Equal(t, "In", string(matchExprOperator0))
+	assert.Equal(t, ApplicationName, matchExpVal0)
+	assert.Equal(t, "topology.kubernetes.io/zone", topologyKey0)
+
+	assert.Equal(t, int32(90), weight1)
+	assert.Equal(t, "app", matchExprKey1)
+	assert.Equal(t, "In", string(matchExprOperator1))
+	assert.Equal(t, ApplicationName, matchExpVal1)
+	assert.Equal(t, "kubernetes.io/hostname", topologyKey1)
+}
+
+func testAffinityExperimentalAffinitySet(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
+	//given
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{}
+
+	//If expoeriemntal->affinity is defined by the user, The user defined values
+	//are used even if multiAvalabilityZones are enabled i.e. the default affinity settings
+	//wont be applied.
+	cr.Spec.MultiAvailablityZones.Enabled = true
+	cr.Spec.KeycloakDeploymentSpec.Experimental.Affinity = &v1.Affinity{
+		PodAntiAffinity: &v1.PodAntiAffinity{
+			PreferredDuringSchedulingIgnoredDuringExecution: []v1.WeightedPodAffinityTerm{
+				{
+					Weight: 95,
+					PodAffinityTerm: v1.PodAffinityTerm{
+						LabelSelector: &v12.LabelSelector{
+							MatchExpressions: []v12.LabelSelectorRequirement{
+								{
+									Key:      "app",
+									Operator: "In",
+									Values: []string{
+										ApplicationName,
+									},
+								},
+							},
+						},
+						TopologyKey: "topology.kubernetes.io/zone",
+					},
+				},
+				{
+					Weight: 75,
+					PodAffinityTerm: v1.PodAffinityTerm{
+						LabelSelector: &v12.LabelSelector{
+							MatchExpressions: []v12.LabelSelectorRequirement{
+								{
+									Key:      "app",
+									Operator: "In",
+									Values: []string{
+										ApplicationName,
+									},
+								},
+							},
+						},
+						TopologyKey: "kubernetes.io/hostname",
+					},
+				},
+			},
+		},
+	}
+
+	//when
+	affinity := deploymentFunction(cr, dbSecret).Spec.Template.Spec.Affinity
+
+	weight0 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].Weight
+	matchExprKey0 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Key
+	matchExprOperator0 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Operator
+	matchExpVal0 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Values[0]
+	topologyKey0 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.TopologyKey
+
+	weight1 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[1].Weight
+	matchExprKey1 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[1].PodAffinityTerm.LabelSelector.MatchExpressions[0].Key
+	matchExprOperator1 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[1].PodAffinityTerm.LabelSelector.MatchExpressions[0].Operator
+	matchExpVal1 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[1].PodAffinityTerm.LabelSelector.MatchExpressions[0].Values[0]
+	topologyKey1 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[1].PodAffinityTerm.TopologyKey
+
+	//then - Expect default values for Affinity
+	assert.Equal(t, int32(95), weight0)
+	assert.Equal(t, "app", matchExprKey0)
+	assert.Equal(t, "In", string(matchExprOperator0))
+	assert.Equal(t, ApplicationName, matchExpVal0)
+	assert.Equal(t, "topology.kubernetes.io/zone", topologyKey0)
+
+	assert.Equal(t, int32(75), weight1)
+	assert.Equal(t, "app", matchExprKey1)
+	assert.Equal(t, "In", string(matchExprOperator1))
+	assert.Equal(t, ApplicationName, matchExpVal1)
+	assert.Equal(t, "kubernetes.io/hostname", topologyKey1)
 }

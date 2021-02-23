@@ -164,6 +164,13 @@ type KeycloakAPIRealm struct {
 	// Roles
 	// +optional
 	Roles *RolesRepresentation `json:"roles,omitempty"`
+
+	// Scope Mappings
+	// +optional
+	ScopeMappings []ScopeMappingRepresentation `json:"scopeMappings,omitempty"`
+	// Client Scope Mappings
+	// +optional
+	ClientScopeMappings map[string]ScopeMappingRepresentationArray `json:"clientScopeMappings,omitempty"`
 }
 
 type RoleRepresentationArray []RoleRepresentation
@@ -211,6 +218,27 @@ type RoleRepresentation struct {
 
 	// Name
 	Name string `json:"name"`
+}
+
+type ScopeMappingRepresentationArray []ScopeMappingRepresentation
+
+// https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_scopemappingrepresentation
+type ScopeMappingRepresentation struct {
+	// Client
+	// +optional
+	Client string `json:"client,omitempty"`
+
+	// Client Scope
+	// +optional
+	ClientScope string `json:"clientScope,omitempty"`
+
+	// Roles
+	// +optional
+	Roles []string `json:"roles,omitempty"`
+
+	// Self
+	// +optional
+	Self string `json:"self,omitempty"`
 }
 
 // https://www.keycloak.org/docs-api/11.0/rest-api/index.html#_rolerepresentation-composites
