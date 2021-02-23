@@ -164,7 +164,7 @@ func (c *Client) DeleteUserRealmRole(role *v1alpha1.KeycloakUserRole, realmName,
 
 func (c *Client) UpdatePassword(user *v1alpha1.KeycloakAPIUser, realmName, newPass string) error {
 	passReset := &v1alpha1.KeycloakAPIPasswordReset{}
-	passReset.Type = "password"
+	passReset.Type = "password" // nolint
 	passReset.Temporary = false
 	passReset.Value = newPass
 	u := fmt.Sprintf("realms/%s/users/%s/reset-password", realmName, user.ID)
@@ -890,6 +890,9 @@ func ConvertRealmSecrets(r *v1alpha1.KeycloakAPIRealm, ns string) (*v1alpha1.Key
 		return nil, err
 	}
 	err = json.Unmarshal(data, &newRealm)
+	if err != nil {
+		return nil, err
+	}
 
 	for i := range newRealm.UserFederationProviders {
 		if newRealm.UserFederationProviders[i].Config["bindCredentialSecret"] != "" {
@@ -919,5 +922,4 @@ func ConvertRealmSecrets(r *v1alpha1.KeycloakAPIRealm, ns string) (*v1alpha1.Key
 	}
 
 	return newRealm, nil
-
 }
