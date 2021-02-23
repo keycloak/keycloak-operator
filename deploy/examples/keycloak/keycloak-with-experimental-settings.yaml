@@ -6,6 +6,13 @@ data:
   test.properties: |
     blah=true
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keytabs
+data:
+  krb5.keytab: RkFLRSBLRVlUQUIK
+---
 apiVersion: keycloak.org/v1alpha1
 kind: Keycloak
 metadata:
