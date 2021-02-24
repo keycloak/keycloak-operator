@@ -1,4 +1,4 @@
-piVersion: keycloak.org/v1alpha1
+apiVersion: keycloak.org/v1alpha1
 kind: KeycloakRealm
 metadata:
   labels:
