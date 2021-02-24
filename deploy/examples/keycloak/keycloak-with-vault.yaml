@@ -5,7 +5,7 @@ metadata:
   name: keycloak-vault
 type: Opaque
 stringData:
-  test-realm_bindCredential: "test-password"
+  ldap-realm_bindCredential: "test-password"
 ---
 apiVersion: keycloak.org/v1alpha1
 kind: Keycloak
