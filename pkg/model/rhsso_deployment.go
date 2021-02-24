@@ -64,6 +64,15 @@ func getRHSSOEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 			Name:  "OPENSHIFT_DNS_PING_SERVICE_NAME",
 			Value: KeycloakDiscoveryServiceName + "." + cr.Namespace + ".svc.cluster.local",
 		},
+		// Cache settings
+		{
+			Name:  "CACHE_OWNERS_COUNT",
+			Value: "2",
+		},
+		{
+			Name:  "CACHE_OWNERS_AUTH_SESSIONS_COUNT",
+			Value: "2",
+		},
 		{
 			Name: "SSO_ADMIN_USERNAME",
 			ValueFrom: &v1.EnvVarSource{
