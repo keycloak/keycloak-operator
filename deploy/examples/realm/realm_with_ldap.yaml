@@ -78,3 +78,19 @@ spec:
           ldap.full.name.attribute: cn
           read.only: 'true'
           write.only: 'false'
+      - name: groups
+        federationProviderDisplayName: ldap
+        federationMapperType: group-ldap-mapper
+        config:
+          membership.attribute.type: DN
+          group.name.ldap.attribute: cn
+          membership.user.ldap.attribute: sAMAccountName
+          preserve.group.inheritance: 'true'
+          groups.dn: DC=example,DC=com
+          mode: READ_ONLY
+          user.roles.retrieve.strategy: GET_GROUPS_FROM_USER_MEMBEROF_ATTRIBUTE
+          groups.ldap.filter: "(cn=EXAMPLE*)" #Only pull in groups that start with prefix EXAMPLE
+          membership.ldap.attribute: 'true'
+          memberof.ldap.attribute: memberOf
+          group.object.classes: group
+          drop.non.existing.groups.during.sync: 'true'
