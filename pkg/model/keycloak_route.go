@@ -21,7 +21,6 @@ func KeycloakRoute(cr *kc.Keycloak) *v1.Route {
 			},
 		},
 		Spec: v1.RouteSpec{
-			Host: cr.Spec.ExternalAccess.Host,
 			Port: &v1.RoutePort{
 				TargetPort: intstr.FromString(ApplicationName),
 			},
@@ -39,7 +38,6 @@ func KeycloakRoute(cr *kc.Keycloak) *v1.Route {
 func KeycloakRouteReconciled(cr *kc.Keycloak, currentState *v1.Route) *v1.Route {
 	reconciled := currentState.DeepCopy()
 	reconciled.Spec = v1.RouteSpec{
-		Host: cr.Spec.ExternalAccess.Host,
 		Port: &v1.RoutePort{
 			TargetPort: intstr.FromString(ApplicationName),
 		},
