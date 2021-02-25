@@ -169,6 +169,13 @@ func (r *ReconcileKeycloak) Reconcile(request reconcile.Request) (reconcile.Resu
 		return r.ManageError(instance, errors.Errorf("if external.enabled is true, unmanaged also needs to be true"))
 	}
 
+	if instance.Spec.ExternalAccess.Host != "" {
+		isOpenshift, _ := common.GetStateManager().GetState(common.OpenShiftAPIServerKind).(bool)
+		if isOpenshift {
+			return r.ManageError(instance, errors.Errorf("Setting Host in External Access on OpenShift is prohibited"))
+		}
+	}
+
 	// Read current state
 	err = currentState.Read(r.context, instance, r.client)
 	if err != nil {

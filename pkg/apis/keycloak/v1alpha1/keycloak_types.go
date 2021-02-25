@@ -167,9 +167,10 @@ type KeycloakExternalAccess struct {
 	// Ingress TLS configuration is the same in both cases and it is up to the user
 	// to configure TLS section of the Ingress.
 	TLSTermination TLSTerminationType `json:"tlsTermination,omitempty"`
-	// If set, the Operator will use value of host for Ingress/Route host
-	// instead of default value keycloak.local for ingress and automatically
-	// chosen name for Route
+	// If set, the Operator will use value of host for Ingress host
+	// instead of default value keycloak.local. Using this setting in OpenShift
+	// environment will result an error. Only users with special permissions are
+	// allowed to modify the hostname.
 	// +optional
 	Host string `json:"host,omitempty"`
 }
