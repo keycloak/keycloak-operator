@@ -38,16 +38,16 @@ func (p *ProfileManager) IsRHSSO(cr *v1alpha1.Keycloak) bool {
 
 func (p *ProfileManager) GetKeycloakOrRHSSOImage(cr *v1alpha1.Keycloak) string {
 	if p.IsRHSSO(cr) {
-		return Images.Images[RHSSOImage]
+		return Images[RHSSOImage].Image
 	}
-	return Images.Images[KeycloakImage]
+	return Images[KeycloakImage].Image
 }
 
 func (p *ProfileManager) GetInitContainerImage(cr *v1alpha1.Keycloak) string {
 	if p.IsRHSSO(cr) {
-		return Images.Images[RHSSOInitContainer]
+		return Images[RHSSOInitContainer].Image
 	}
-	return Images.Images[KeycloakInitContainer]
+	return Images[KeycloakInitContainer].Image
 }
 
 func (p *ProfileManager) getProfiles() []string {

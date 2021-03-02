@@ -63,10 +63,11 @@ func PostgresqlDeployment(cr *v1alpha1.Keycloak, isOpenshift bool) *v13.Deployme
 					},
 				},
 				Spec: v1.PodSpec{
+					ImagePullSecrets: PostgresqlImagePullSecrets(),
 					Containers: []v1.Container{
 						{
 							Name:  PostgresqlDeploymentName,
-							Image: Images.Images[PostgresqlImage],
+							Image: Images[PostgresqlImage].Image,
 							Ports: []v1.ContainerPort{
 								{
 									ContainerPort: 5432,
@@ -160,7 +161,7 @@ func getPostgresqlDeploymentInitContainer(cr *v1alpha1.Keycloak) []v1.Container 
 	return []v1.Container{
 		{
 			Name:  "init-pvc",
-			Image: Images.Images[PostgresqlImage],
+			Image: Images[PostgresqlImage].Image,
 			SecurityContext: &v1.SecurityContext{
 				RunAsUser: pointer.Int64Ptr(0),
 			},
@@ -192,10 +193,11 @@ func PostgresqlDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Dep
 	reconciled.Spec.Strategy = v13.DeploymentStrategy{
 		Type: v13.RecreateDeploymentStrategyType,
 	}
+	reconciled.Spec.Template.Spec.ImagePullSecrets = PostgresqlImagePullSecrets()
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:  PostgresqlDeploymentName,
-			Image: Images.Images[PostgresqlImage],
+			Image: Images[PostgresqlImage].Image,
 			Ports: []v1.ContainerPort{
 				{
 					ContainerPort: 5432,
@@ -272,4 +274,9 @@ func PostgresqlDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Dep
 		},
 	}
 	return reconciled
+}
+
+func PostgresqlImagePullSecrets() []v1.LocalObjectReference {
+	secrets := []v1.LocalObjectReference{Images[PostgresqlImage].ImagePullSecret}
+	return filterEmptyImagePullSecrets(secrets)
 }

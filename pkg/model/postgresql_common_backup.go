@@ -9,7 +9,7 @@ func postgresqlAwsBackupCommonContainers(cr *v1alpha1.KeycloakBackup) []v1.Conta
 	return []v1.Container{
 		{
 			Name:    cr.Name,
-			Image:   Images.Images[RHMIBackupContainer],
+			Image:   Images[RHMIBackupContainer].Image,
 			Command: []string{"/opt/intly/tools/entrypoint.sh", "-c", "postgres", "-n", cr.Namespace, "-b", "s3", "-e", ""},
 			Env: []v1.EnvVar{
 				{
@@ -39,4 +39,9 @@ func postgresqlAwsBackupCommonContainers(cr *v1alpha1.KeycloakBackup) []v1.Conta
 			},
 		},
 	}
+}
+
+func postgresqlAwsBackupCommonImagePullSecrets() []v1.LocalObjectReference {
+	secrets := []v1.LocalObjectReference{Images[RHMIBackupContainer].ImagePullSecret}
+	return filterEmptyImagePullSecrets(secrets)
 }

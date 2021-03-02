@@ -21,6 +21,7 @@ func PostgresqlAWSBackup(cr *v1alpha1.KeycloakBackup) *v13.Job {
 		Spec: v13.JobSpec{
 			Template: v1.PodTemplateSpec{
 				Spec: v1.PodSpec{
+					ImagePullSecrets:   postgresqlAwsBackupCommonImagePullSecrets(),
 					Containers:         postgresqlAwsBackupCommonContainers(cr),
 					RestartPolicy:      v1.RestartPolicyNever,
 					ServiceAccountName: PostgresqlBackupServiceAccountName,
@@ -39,6 +40,7 @@ func PostgresqlAWSBackupSelector(cr *v1alpha1.KeycloakBackup) client.ObjectKey {
 
 func PostgresqlAWSBackupReconciled(cr *v1alpha1.KeycloakBackup, currentState *v13.Job) *v13.Job {
 	reconciled := currentState.DeepCopy()
+	reconciled.Spec.Template.Spec.ImagePullSecrets = postgresqlAwsBackupCommonImagePullSecrets()
 	reconciled.Spec.Template.Spec.Containers = postgresqlAwsBackupCommonContainers(cr)
 	reconciled.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyNever
 	reconciled.Spec.Template.Spec.ServiceAccountName = PostgresqlBackupServiceAccountName

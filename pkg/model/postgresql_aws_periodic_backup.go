@@ -33,6 +33,7 @@ func PostgresqlAWSPeriodicBackup(cr *v1alpha1.KeycloakBackup) *v1beta1.CronJob {
 				Spec: v13.JobSpec{
 					Template: v1.PodTemplateSpec{
 						Spec: v1.PodSpec{
+							ImagePullSecrets:   postgresqlAwsBackupCommonImagePullSecrets(),
 							Containers:         postgresqlAwsBackupCommonContainers(cr),
 							RestartPolicy:      v1.RestartPolicyNever,
 							ServiceAccountName: PostgresqlBackupServiceAccountName,
@@ -54,6 +55,7 @@ func PostgresqlAWSPeriodicBackupSelector(cr *v1alpha1.KeycloakBackup) client.Obj
 func PostgresqlAWSPeriodicBackupReconciled(cr *v1alpha1.KeycloakBackup, currentState *v1beta1.CronJob) *v1beta1.CronJob {
 	reconciled := currentState.DeepCopy()
 	reconciled.Spec.Schedule = cr.Spec.AWS.Schedule
+	reconciled.Spec.JobTemplate.Spec.Template.Spec.ImagePullSecrets = postgresqlAwsBackupCommonImagePullSecrets()
 	reconciled.Spec.JobTemplate.Spec.Template.Spec.Containers = postgresqlAwsBackupCommonContainers(cr)
 	reconciled.Spec.JobTemplate.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyNever
 	reconciled.Spec.JobTemplate.Spec.Template.Spec.ServiceAccountName = PostgresqlBackupServiceAccountName

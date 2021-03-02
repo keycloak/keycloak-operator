@@ -174,3 +174,13 @@ func roleMatches(a v1alpha1.RoleRepresentation, b v1alpha1.RoleRepresentation) b
 	}
 	return a.Name == b.Name
 }
+
+func filterEmptyImagePullSecrets(secrets []v1.LocalObjectReference) []v1.LocalObjectReference {
+	var ret []v1.LocalObjectReference
+	for _, secret := range secrets {
+		if secret.Name != "" {
+			ret = append(ret, secret)
+		}
+	}
+	return ret
+}

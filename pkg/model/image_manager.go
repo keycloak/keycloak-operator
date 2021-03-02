@@ -3,6 +3,8 @@ package model
 import (
 	"os"
 	"runtime"
+
+	v1 "k8s.io/api/core/v1"
 )
 
 const (
@@ -22,30 +24,49 @@ const (
 	DefaultRHSSOInitContainer    = "registry.redhat.io/rh-sso-7-tech-preview/sso74-init-container-rhel8:7.4"
 	DefaultRHMIBackupContainer   = "quay.io/integreatly/backup-container:1.0.16"
 	DefaultPostgresqlImage       = "registry.access.redhat.com/rhscl/postgresql-10-rhel7:1"
+
+	keycloakImageIPS         = "KEYCLOAK_IMAGE_PULL_SECRET"
+	keycloakInitContainerIPS = "KEYCLOAK_INIT_CONTAINER_IMAGE_PULL_SECRET"
+	rhmiBackupContainerIPS   = "RHMI_BACKUP_CONTAINER_IMAGE_PULL_SECRET"
+	postgresqlImageIPS       = "POSTGRESQL_IMAGE_PULL_SECRET"
 )
 
 var Images = NewImageManager()
 
-type ImageManager struct {
-	Images map[string]string
+type ImageManager map[string]Image
+
+type Image struct {
+	Image           string
+	ImagePullSecret v1.LocalObjectReference
 }
 
 func NewImageManager() ImageManager {
-	ret := ImageManager{}
-	ret.Images = map[string]string{
-		KeycloakImage:         ret.getImage(KeycloakImage, DefaultKeycloakImage),
-		RHSSOImage:            ret.getRHSSOImage(),
-		RHSSOImageOpenJ9:      ret.getImage(RHSSOImageOpenJ9, DefaultRHSSOImageOpenJ9),
-		RHSSOImageOpenJDK:     ret.getImage(RHSSOImageOpenJDK, DefaultRHSSOImageOpenJDK),
-		KeycloakInitContainer: ret.getImage(KeycloakInitContainer, DefaultKeycloakInitContainer),
-		RHSSOInitContainer:    ret.getImage(RHSSOInitContainer, DefaultRHSSOInitContainer),
-		RHMIBackupContainer:   ret.getImage(RHMIBackupContainer, DefaultRHMIBackupContainer),
-		PostgresqlImage:       ret.getImage(PostgresqlImage, DefaultPostgresqlImage),
+	ret := ImageManager{
+		KeycloakImage: {
+			Image:           getImage(KeycloakImage, DefaultKeycloakImage),
+			ImagePullSecret: getImagePullSecret(keycloakImageIPS),
+		},
+		RHSSOImage:        {Image: getRHSSOImage()},
+		RHSSOImageOpenJ9:  {Image: getImage(RHSSOImageOpenJ9, DefaultRHSSOImageOpenJ9)},
+		RHSSOImageOpenJDK: {Image: getImage(RHSSOImageOpenJDK, DefaultRHSSOImageOpenJDK)},
+		KeycloakInitContainer: {
+			Image:           getImage(KeycloakInitContainer, DefaultKeycloakInitContainer),
+			ImagePullSecret: getImagePullSecret(keycloakInitContainerIPS),
+		},
+		RHSSOInitContainer: {Image: getImage(RHSSOInitContainer, DefaultRHSSOInitContainer)},
+		RHMIBackupContainer: {
+			Image:           getImage(RHMIBackupContainer, DefaultRHMIBackupContainer),
+			ImagePullSecret: getImagePullSecret(rhmiBackupContainerIPS),
+		},
+		PostgresqlImage: {
+			Image:           getImage(PostgresqlImage, DefaultPostgresqlImage),
+			ImagePullSecret: getImagePullSecret(postgresqlImageIPS),
+		},
 	}
 	return ret
 }
 
-func (p *ImageManager) getImage(environmentalVariable string, defaultValue string) string {
+func getImage(environmentalVariable string, defaultValue string) string {
 	env := os.Getenv(environmentalVariable)
 	if env == "" {
 		return defaultValue
@@ -53,18 +74,22 @@ func (p *ImageManager) getImage(environmentalVariable string, defaultValue strin
 	return env
 }
 
-func (p *ImageManager) getRHSSOImage() string {
-	defaultImage := p.getDefaultRHSSOImageForCurrentArchitecture()
-	return p.getImage(RHSSOImage, defaultImage)
+func getRHSSOImage() string {
+	defaultImage := getDefaultRHSSOImageForCurrentArchitecture()
+	return getImage(RHSSOImage, defaultImage)
 }
 
-func (p *ImageManager) getDefaultRHSSOImageForCurrentArchitecture() string {
+func getDefaultRHSSOImageForCurrentArchitecture() string {
 	// Full list of archs might be found here:
 	// https://github.com/golang/go/blob/release-branch.go1.10/src/go/build/syslist.go#L8
 	switch arch := runtime.GOARCH; arch {
 	case "ppc64", "ppc64le", "s390x", "s390":
-		return p.getImage(RHSSOImageOpenJ9, DefaultRHSSOImageOpenJ9)
+		return getImage(RHSSOImageOpenJ9, DefaultRHSSOImageOpenJ9)
 	default:
-		return p.getImage(RHSSOImageOpenJDK, DefaultRHSSOImageOpenJDK)
+		return getImage(RHSSOImageOpenJDK, DefaultRHSSOImageOpenJDK)
 	}
+}
+
+func getImagePullSecret(environmentalVariable string) v1.LocalObjectReference {
+	return v1.LocalObjectReference{Name: os.Getenv(environmentalVariable)}
 }

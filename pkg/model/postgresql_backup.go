@@ -21,6 +21,7 @@ func PostgresqlBackup(cr *v1alpha1.KeycloakBackup) *v13.Job {
 		Spec: v13.JobSpec{
 			Template: v1.PodTemplateSpec{
 				Spec: v1.PodSpec{
+					ImagePullSecrets: PostgresqlBackupImagePullSecrets(),
 					Volumes: []v1.Volume{
 						{
 							Name: PostgresqlBackupPersistentVolumeName + "-" + cr.Name,
@@ -34,7 +35,7 @@ func PostgresqlBackup(cr *v1alpha1.KeycloakBackup) *v13.Job {
 					Containers: []v1.Container{
 						{
 							Name:    cr.Name,
-							Image:   Images.Images[PostgresqlImage],
+							Image:   Images[PostgresqlImage].Image,
 							Command: []string{"/bin/sh", "-c"},
 							Args:    []string{"pg_dump $POSTGRES_DB | tee /backup/backup.sql"},
 							Env: []v1.EnvVar{
@@ -115,10 +116,11 @@ func PostgresqlBackupReconciled(cr *v1alpha1.KeycloakBackup, currentState *v13.J
 			},
 		},
 	}
+	reconciled.Spec.Template.Spec.ImagePullSecrets = PostgresqlBackupImagePullSecrets()
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:    cr.Name,
-			Image:   Images.Images[PostgresqlImage],
+			Image:   Images[PostgresqlImage].Image,
 			Command: []string{"/bin/sh", "-c"},
 			Args:    []string{"pg_dump $POSTGRES_DB | tee /backup/backup.sql"},
 			Env: []v1.EnvVar{
@@ -175,4 +177,9 @@ func PostgresqlBackupReconciled(cr *v1alpha1.KeycloakBackup, currentState *v13.J
 	reconciled.Spec.Template.Spec.RestartPolicy = v1.RestartPolicyNever
 	reconciled.Spec.Template.Spec.ServiceAccountName = PostgresqlBackupServiceAccountName
 	return reconciled
+}
+
+func PostgresqlBackupImagePullSecrets() []v1.LocalObjectReference {
+	secrets := []v1.LocalObjectReference{Images[PostgresqlImage].ImagePullSecret}
+	return filterEmptyImagePullSecrets(secrets)
 }

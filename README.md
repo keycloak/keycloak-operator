@@ -176,14 +176,16 @@ NOTE: This functionality works only in OpenShift environment.
 
 All images used by the Operator might be controlled using dedicated Environmental Variables:
 
- | *Image*             | *Environment variable*          | *Default*                                                        |
- | ------------------- | ------------------------------- | ---------------------------------------------------------------- |
- | `Keycloak`          | `RELATED_IMAGE_KEYCLOAK`                | `quay.io/keycloak/keycloak:9.0.2`                                |
- | `RHSSO` for OpenJ9  | `RELATED_IMAGE_RHSSO_OPENJ9`            | `registry.redhat.io/rh-sso-7/sso74-openshift-rhel8:7.4-1`        |
- | `RHSSO` for OpenJDK | `RELATED_IMAGE_RHSSO_OPENJDK`           | `registry.redhat.io/rh-sso-7/sso74-openshift-rhel8:7.4-1`        |
- | Init container      | `RELATED_IMAGE_KEYCLOAK_INIT_CONTAINER` | `quay.io/keycloak/keycloak-init-container:master`                |
- | Backup container    | `RELATED_IMAGE_RHMI_BACKUP_CONTAINER`   | `quay.io/integreatly/backup-container:1.0.16`                    |
- | Postgresql          | `RELATED_IMAGE_POSTGRESQL`              | `registry.redhat.io/rhel8/postgresql-10:1`                       |
+ | *Image*             | *Image Environment variable*            | *Image Default*                                                   | *imagePullSecret Environment variable*      |
+ | ------------------- | --------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------- |
+ | `Keycloak`          | `RELATED_IMAGE_KEYCLOAK`                | `quay.io/keycloak/keycloak:latest`                                | `KEYCLOAK_IMAGE_PULL_SECRET`                |
+ | `RHSSO` for OpenJ9  | `RELATED_IMAGE_RHSSO_OPENJ9`            | `registry.redhat.io/rh-sso-7/sso74-openj9-openshift-rhel8:7.4`    | N/A                                         |
+ | `RHSSO` for OpenJDK | `RELATED_IMAGE_RHSSO_OPENJDK`           | `registry.redhat.io/rh-sso-7/sso74-openshift-rhel8:7.4`           | N/A                                         |
+ | Init container      | `RELATED_IMAGE_KEYCLOAK_INIT_CONTAINER` | `quay.io/keycloak/keycloak-init-container:master`                 | `KEYCLOAK_INIT_CONTAINER_IMAGE_PULL_SECRET` |
+ | Backup container    | `RELATED_IMAGE_RHMI_BACKUP_CONTAINER`   | `quay.io/integreatly/backup-container:1.0.16`                     | `RHMI_BACKUP_CONTAINER_IMAGE_PULL_SECRET`   |
+ | Postgresql          | `RELATED_IMAGE_POSTGRESQL`              | `registry.access.redhat.com/rhscl/postgresql-10-rhel7:1`          | `POSTGRESQL_IMAGE_PULL_SECRET`              |
+
+*Note*: The `imagePullSecret` Environmental Variables allow you to specify a secret to be used when pulling the respective images.
 
 ## Contributing
 

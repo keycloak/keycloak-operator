@@ -158,7 +158,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSe
 					Containers: []v1.Container{
 						{
 							Name:  KeycloakDeploymentName,
-							Image: Images.Images[RHSSOImage],
+							Image: Images[RHSSOImage].Image,
 							Ports: []v1.ContainerPort{
 								{
 									ContainerPort: KeycloakServicePort,
@@ -215,7 +215,7 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:    KeycloakDeploymentName,
-			Image:   Images.Images[RHSSOImage],
+			Image:   Images[RHSSOImage].Image,
 			Args:    cr.Spec.KeycloakDeploymentSpec.Experimental.Args,
 			Command: cr.Spec.KeycloakDeploymentSpec.Experimental.Command,
 			Ports: []v1.ContainerPort{

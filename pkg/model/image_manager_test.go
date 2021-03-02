@@ -12,13 +12,13 @@ func TestImageManager_test_default_images(t *testing.T) {
 	imageChooser := NewImageManager()
 
 	//then
-	assert.Equal(t, DefaultKeycloakImage, imageChooser.Images[KeycloakImage])
-	assert.Equal(t, DefaultRHSSOImageOpenJ9, imageChooser.Images[RHSSOImageOpenJ9])
-	assert.Equal(t, DefaultRHSSOImageOpenJDK, imageChooser.Images[RHSSOImageOpenJDK])
-	assert.Equal(t, DefaultRHSSOImageOpenJDK, imageChooser.Images[RHSSOImage])
-	assert.Equal(t, DefaultKeycloakInitContainer, imageChooser.Images[KeycloakInitContainer])
-	assert.Equal(t, DefaultRHSSOInitContainer, imageChooser.Images[RHSSOInitContainer])
-	assert.Equal(t, DefaultRHMIBackupContainer, imageChooser.Images[RHMIBackupContainer])
+	assert.Equal(t, DefaultKeycloakImage, imageChooser[KeycloakImage].Image)
+	assert.Equal(t, DefaultRHSSOImageOpenJ9, imageChooser[RHSSOImageOpenJ9].Image)
+	assert.Equal(t, DefaultRHSSOImageOpenJDK, imageChooser[RHSSOImageOpenJDK].Image)
+	assert.Equal(t, DefaultRHSSOImageOpenJDK, imageChooser[RHSSOImage].Image)
+	assert.Equal(t, DefaultKeycloakInitContainer, imageChooser[KeycloakInitContainer].Image)
+	assert.Equal(t, DefaultRHSSOInitContainer, imageChooser[RHSSOInitContainer].Image)
+	assert.Equal(t, DefaultRHMIBackupContainer, imageChooser[RHMIBackupContainer].Image)
 }
 
 func TestImageManager_test_defining_image_using_environment_variable(t *testing.T) {
@@ -30,7 +30,28 @@ func TestImageManager_test_defining_image_using_environment_variable(t *testing.
 	os.Unsetenv(KeycloakImage)
 
 	//then
-	assert.Equal(t, "test", imageChooser.Images[KeycloakImage])
+	assert.Equal(t, "test", imageChooser[KeycloakImage].Image)
+}
+
+func TestImageManager_test_defining_image_pull_secrets_using_environment_variables(t *testing.T) {
+	//given
+	os.Setenv(keycloakImageIPS, "keycloakImagePullSecret")
+	os.Setenv(keycloakInitContainerIPS, "keycloakInitContainerImagePullSecret")
+	os.Setenv(rhmiBackupContainerIPS, "rhmiBackupContainerImagePullSecret")
+	os.Setenv(postgresqlImageIPS, "postgresqlImagePullSecret")
+
+	//when
+	imageChooser := NewImageManager()
+	os.Unsetenv(keycloakImageIPS)
+	os.Unsetenv(keycloakInitContainerIPS)
+	os.Unsetenv(rhmiBackupContainerIPS)
+	os.Unsetenv(postgresqlImageIPS)
+
+	//then
+	assert.Equal(t, "keycloakImagePullSecret", imageChooser[KeycloakImage].ImagePullSecret.Name)
+	assert.Equal(t, "keycloakInitContainerImagePullSecret", imageChooser[KeycloakInitContainer].ImagePullSecret.Name)
+	assert.Equal(t, "rhmiBackupContainerImagePullSecret", imageChooser[RHMIBackupContainer].ImagePullSecret.Name)
+	assert.Equal(t, "postgresqlImagePullSecret", imageChooser[PostgresqlImage].ImagePullSecret.Name)
 }
 
 func TestImageManager_test_overriding_rhsso_image_using_environment_variable(t *testing.T) {
@@ -42,7 +63,7 @@ func TestImageManager_test_overriding_rhsso_image_using_environment_variable(t *
 	os.Unsetenv(RHSSOImage)
 
 	//then
-	assert.Equal(t, "test", imageChooser.Images[RHSSOImage])
+	assert.Equal(t, "test", imageChooser[RHSSOImage].Image)
 }
 
 func TestImageManager_test_overriding_multiple_images_using_environment_variables(t *testing.T) {
@@ -53,14 +74,14 @@ func TestImageManager_test_overriding_multiple_images_using_environment_variable
 
 	//when
 	imageChooser := NewImageManager()
-	getRHSSOImageResult := imageChooser.getRHSSOImage()
+	getRHSSOImageResult := getRHSSOImage()
 	os.Unsetenv(RHSSOImage)
 	os.Unsetenv(RHSSOImageOpenJ9)
 	os.Unsetenv(RHSSOImageOpenJDK)
 
 	//then
 	assert.Equal(t, "RHSSOImage", getRHSSOImageResult)
-	assert.Equal(t, "RHSSOImage", imageChooser.Images[RHSSOImage])
-	assert.Equal(t, "RHSSOImageOpenJ9", imageChooser.Images[RHSSOImageOpenJ9])
-	assert.Equal(t, "RHSSOImageOpenJDK", imageChooser.Images[RHSSOImageOpenJDK])
+	assert.Equal(t, "RHSSOImage", imageChooser[RHSSOImage].Image)
+	assert.Equal(t, "RHSSOImageOpenJ9", imageChooser[RHSSOImageOpenJ9].Image)
+	assert.Equal(t, "RHSSOImageOpenJDK", imageChooser[RHSSOImageOpenJDK].Image)
 }

@@ -201,12 +201,13 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 					},
 				},
 				Spec: v1.PodSpec{
-					InitContainers: KeycloakExtensionsInitContainers(cr),
-					Volumes:        KeycloakVolumes(cr),
+					ImagePullSecrets: KeycloakImagePullSecrets(),
+					InitContainers:   KeycloakExtensionsInitContainers(cr),
+					Volumes:          KeycloakVolumes(cr),
 					Containers: []v1.Container{
 						{
 							Name:  KeycloakDeploymentName,
-							Image: Images.Images[KeycloakImage],
+							Image: Images[KeycloakImage].Image,
 							Ports: []v1.ContainerPort{
 								{
 									ContainerPort: KeycloakServicePort,
@@ -255,10 +256,11 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
 	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr)
+	reconciled.Spec.Template.Spec.ImagePullSecrets = KeycloakImagePullSecrets()
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:    KeycloakDeploymentName,
-			Image:   Images.Images[KeycloakImage],
+			Image:   Images[KeycloakImage].Image,
 			Args:    cr.Spec.KeycloakDeploymentSpec.Experimental.Args,
 			Command: cr.Spec.KeycloakDeploymentSpec.Experimental.Command,
 			Ports: []v1.ContainerPort{
@@ -470,4 +472,9 @@ func KeycloakPodAffinity(cr *v1alpha1.Keycloak) *v1.Affinity {
 			},
 		},
 	}
+}
+
+func KeycloakImagePullSecrets() []v1.LocalObjectReference {
+	secrets := []v1.LocalObjectReference{Images[KeycloakImage].ImagePullSecret, Images[KeycloakInitContainer].ImagePullSecret}
+	return filterEmptyImagePullSecrets(secrets)
 }

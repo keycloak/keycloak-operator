@@ -126,3 +126,15 @@ func TestKeycloakClientReconciler_Test_Role_DifferenceIntersection(t *testing.T)
 	assert.Equal(t, expectedDifference, difference)
 	assert.Equal(t, expectedIntersection, intersection)
 }
+
+func TestUtil_testFilterEmptyImagePullSecrets(t *testing.T) {
+	//given
+	secrets := []v1.LocalObjectReference{{Name: "foo"}, {Name: "bar"}, {Name: ""}}
+
+	//when
+	returnedSecrets := filterEmptyImagePullSecrets(secrets)
+
+	//then
+	expectedSecrets := []v1.LocalObjectReference{{Name: "foo"}, {Name: "bar"}}
+	assert.Equal(t, expectedSecrets, returnedSecrets)
+}
