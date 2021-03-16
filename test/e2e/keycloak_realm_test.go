@@ -62,6 +62,7 @@ func getKeycloakRealmCR(namespace string) *keycloakv1alpha1.KeycloakRealm {
 				Realm:                        realmName,
 				Enabled:                      true,
 				DisplayName:                  "Operator Testing Realm",
+				DisplayNameHTML:              "<div class='kc-logo-text'><span>Operator Testing Realm</span></div>",
 				BruteForceProtected:          &[]bool{true}[0],
 				PermanentLockout:             &[]bool{false}[0],
 				FailureFactor:                &[]int32{30}[0],

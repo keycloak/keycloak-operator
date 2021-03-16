@@ -401,6 +401,9 @@ spec:
                 displayName:
                   description: Realm display name.
                   type: string
+                displayNameHtml:
+                  description: Realm display name in HTML.
+                  type: string
                 duplicateEmailsAllowed:
                   description: Duplicate emails
                   type: boolean
