@@ -35,6 +35,9 @@ type KeycloakAPIRealm struct {
 	// Realm display name.
 	// +optional
 	DisplayName string `json:"displayName"`
+	// Realm HTML display name.
+	// +optional
+	DisplayNameHTML string `json:"displayNameHtml,omitempty"`
 	// A set of Keycloak Users.
 	// +optional
 	Users []*KeycloakAPIUser `json:"users,omitempty"`
