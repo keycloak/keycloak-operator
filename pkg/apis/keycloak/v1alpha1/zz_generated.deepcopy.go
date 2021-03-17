@@ -537,6 +537,13 @@ func (in *KeycloakAPIRealm) DeepCopyInto(out *KeycloakAPIRealm) {
 			(*out)[key] = val
 		}
 	}
+	if in.Attributes != nil {
+		in, out := &in.Attributes, &out.Attributes
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	if in.InternationalizationEnabled != nil {
 		in, out := &in.InternationalizationEnabled, &out.InternationalizationEnabled
 		*out = new(bool)

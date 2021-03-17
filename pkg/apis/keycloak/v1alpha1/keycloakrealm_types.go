@@ -139,6 +139,10 @@ type KeycloakAPIRealm struct {
 	// +optional
 	SMTPServer map[string]string `json:"smtpServer,omitempty"`
 
+	// Attributes
+	// +optional
+	Attributes map[string]string `json:"attributes,omitempty"`
+
 	// Login Theme
 	// +optional
 	LoginTheme string `json:"loginTheme,omitempty"`
