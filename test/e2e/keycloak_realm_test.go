@@ -80,7 +80,7 @@ func getKeycloakRealmCR(namespace string) *keycloakv1alpha1.KeycloakRealm {
 					"ssl":             "",
 				},
 				Attributes: map[string]string{
-					"clientSessionIdleTimeout":        "0",
+					"clientSessionIdleTimeout": "0",
 				},
 				InternationalizationEnabled: &[]bool{true}[0],
 				SupportedLocales:            []string{"en", "de"},
