@@ -88,7 +88,7 @@ func getKeycloakRealmCR(namespace string) *keycloakv1alpha1.KeycloakRealm {
 				EmailTheme:                  "keycloak",
 				Attributes:                  map[string]string{
 					"clientSessionIdleTimeout":        "0",
-				}
+				},
 			},
 		},
 	}
