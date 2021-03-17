@@ -648,6 +648,11 @@ spec:
                     type: string
                   description: Email
                   type: object
+                attributes:
+                  additionalProperties:
+                    type: string
+                  description: realm attributes
+                  type: object
                 sslRequired:
                   description: Require SSL
                   type: string
