@@ -86,6 +86,9 @@ func getKeycloakRealmCR(namespace string) *keycloakv1alpha1.KeycloakRealm {
 				AccountTheme:                "keycloak",
 				AdminTheme:                  "keycloak",
 				EmailTheme:                  "keycloak",
+				Attributes:                  map[string]string{
+					"clientSessionIdleTimeout":        "0",
+				}
 			},
 		},
 	}

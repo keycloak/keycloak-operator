@@ -401,6 +401,11 @@ spec:
                 displayName:
                   description: Realm display name.
                   type: string
+                attributes:
+                  additionalProperties:
+                    type: string
+                  description: A set of Attributes for the realm
+                  type: object
                 duplicateEmailsAllowed:
                   description: Duplicate emails
                   type: boolean
