@@ -6,6 +6,29 @@ data:
   test.properties: |
     blah=true
 ---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-spi
+data:
+  vault-spi.cli: |
+    embed-server --server-config=standalone-ha.xml --std-out=echo
+    batch
+    /subsystem=keycloak-server/spi=vault/:add
+    /subsystem=keycloak-server/spi=vault/provider=files-plaintext/:add(enabled=true,properties={dir => "/test-secret"})
+    /subsystem=keycloak-server/spi=vault:write-attribute(name=default-provider,value=files-plaintext)
+    run-batch
+    stop-embedded-server
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret
+data:
+  # key syntax: <realmname>_<credentialkey>
+  ldaprealm_bindCredential: Zm9v
+type: Opaque
+---
 apiVersion: keycloak.org/v1alpha1
 kind: Keycloak
 metadata:
@@ -29,6 +52,13 @@ spec:
           - configMap:
               name: test-config
               mountPath: /test-config
+          - configMap:
+              name: vault-spi
+              mountPath: /opt/jboss/startup-scripts
+          - secret:
+              name: test-secret
+              mountPath: /test-secret
+              defaultMode: 0440
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -49,4 +79,4 @@ spec:
                   operator: In
                   values:
                   - keycloak
-              topologyKey: "kubernetes.io/hostname"      
+              topologyKey: "kubernetes.io/hostname"

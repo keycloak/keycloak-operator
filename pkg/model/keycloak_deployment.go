@@ -320,7 +320,20 @@ func addVolumeMountsFromKeycloakCR(cr *v1alpha1.Keycloak, mountedVolumes []v1.Vo
 					Name:      v.ConfigMap.Name,
 					MountPath: v.ConfigMap.MountPath,
 				}
+				if v.ConfigMap.SubPath != "" {
+					configMapMount.SubPath = v.ConfigMap.SubPath
+				}
 				mountedVolumes = append(mountedVolumes, configMapMount)
+			}
+			if v.Secret != nil {
+				secretMount := v1.VolumeMount{
+					Name:      v.Secret.Name,
+					MountPath: v.Secret.MountPath,
+				}
+				if v.Secret.SubPath != "" {
+					secretMount.SubPath = v.Secret.SubPath
+				}
+				mountedVolumes = append(mountedVolumes, secretMount)
 			}
 		}
 	}
@@ -368,6 +381,10 @@ func addVolumesFromKeycloakCR(cr *v1alpha1.Keycloak, volumes []v1.Volume) []v1.V
 			// We could also add multiple ProjectedVolumeSources but then we lose the ability
 			// to specify different paths to mount them. This way it's more flexible.
 			if v.ConfigMap != nil {
+				defMode := v.ConfigMap.DefaultMode
+				if defMode == nil {
+					defMode = cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.DefaultMode
+				}
 				configMapVolume := v1.Volume{
 					Name: v.ConfigMap.Name,
 					VolumeSource: v1.VolumeSource{
@@ -382,11 +399,36 @@ func addVolumesFromKeycloakCR(cr *v1alpha1.Keycloak, volumes []v1.Volume) []v1.V
 									},
 								},
 							},
-							DefaultMode: cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.DefaultMode,
+							DefaultMode: defMode,
 						},
 					},
 				}
 				volumes = append(volumes, configMapVolume)
+			}
+			if v.Secret != nil {
+				defMode := v.Secret.DefaultMode
+				if defMode == nil {
+					defMode = cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.DefaultMode
+				}
+				secretVolume := v1.Volume{
+					Name: v.Secret.Name,
+					VolumeSource: v1.VolumeSource{
+						Projected: &v1.ProjectedVolumeSource{
+							Sources: []v1.VolumeProjection{
+								{
+									Secret: &v1.SecretProjection{
+										LocalObjectReference: v1.LocalObjectReference{
+											Name: v.Secret.Name,
+										},
+										Items: v.Secret.Items,
+									},
+								},
+							},
+							DefaultMode: defMode,
+						},
+					},
+				}
+				volumes = append(volumes, secretVolume)
 			}
 		}
 	}

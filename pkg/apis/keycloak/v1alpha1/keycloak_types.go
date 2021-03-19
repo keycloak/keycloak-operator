@@ -135,7 +135,29 @@ type ConfigMapVolumeSpec struct {
 	Name string `json:"name,omitempty"`
 	// An absolute path where to mount it
 	MountPath string `json:"mountPath"`
+	// Permissions mode.
+	// +optional
+	DefaultMode *int32 `json:"defaultMode,omitempty"`
+	// subPath of the configMap
+	// +optional
+	SubPath string `json:"subPath"`
 	// ConfigMap mount details
+	// +optional
+	Items []corev1.KeyToPath `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
+}
+
+type SecretVolumeSpec struct {
+	// Secret name
+	Name string `json:"name,omitempty"`
+	// An absolute path where to mount it
+	MountPath string `json:"mountPath"`
+	// Permissions mode.
+	// +optional
+	DefaultMode *int32 `json:"defaultMode,omitempty"`
+	// subPath of the Secret
+	// +optional
+	SubPath string `json:"subPath"`
+	// Secret mount details
 	// +optional
 	Items []corev1.KeyToPath `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
 }
@@ -144,6 +166,9 @@ type VolumeSpec struct {
 	// ConfigMap mount
 	// +optional
 	ConfigMap *ConfigMapVolumeSpec `json:"configMap,omitempty"`
+	// Secret mount
+	// +optional
+	Secret *SecretVolumeSpec `json:"secret,omitempty"`
 }
 
 type KeycloakExternal struct {
