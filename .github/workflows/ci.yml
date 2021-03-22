@@ -20,21 +20,16 @@ jobs:
     - name: Unit tests
       run: |
         make test/unit
+    - name: Start minikube
+      uses: medyagh/setup-minikube@master
+    - name: Configure Minikube
+      run: |
+        minikube addons enable ingress
+        hack/modify_etc_hosts.sh "keycloak.local"
     - name: Run e2e tests
       run: |
-        make setup/github
-        sudo chown -R $USER $HOME/.kube $HOME/.minikube
-        make cluster/prepare 
+        make cluster/prepare
         make test/e2e
     - name: Run e2e tests for local image
       run: |
         make test/e2e-local-image
-    - name: After failure
-      if: ${{ failure() }}
-      run: |
-        echo "---- Keycloak Server logs ----"
-        kubectl logs keycloak-0
-        echo "---- Testing Ingress ----"
-        curl -kv https://keycloak.local/auth
-        echo "---- Ingress Controller logs ----"
-        kubectl logs -l app.kubernetes.io/name=nginx-ingress-controller -n kube-system
