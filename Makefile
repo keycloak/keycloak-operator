@@ -4,8 +4,6 @@ PROJECT=keycloak-operator
 PKG=github.com/keycloak/keycloak-operator
 OPERATOR_SDK_VERSION=v0.18.2
 OPERATOR_SDK_DOWNLOAD_URL=https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk-$(OPERATOR_SDK_VERSION)-x86_64-linux-gnu
-MINIKUBE_DOWNLOAD_URL=https://github.com/kubernetes/minikube/releases/download/v1.9.2/minikube-linux-amd64
-KUBECTL_DOWNLOAD_URL=https://storage.googleapis.com/kubernetes-release/release/v1.18.0/bin/linux/amd64/kubectl
 
 # Compile constants
 COMPILE_TARGET=./tmp/_output/bin/$(PROJECT)
@@ -96,7 +94,7 @@ test/e2e-local-image: cluster/prepare setup/operator-sdk
 	@echo Running e2e tests with a fresh built operator image in the cluster:
 	docker build . -t keycloak-operator:test
 	@echo Running tests:
-	operator-sdk test local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --image="keycloak-operator:test" --namespace $(NAMESPACE) --up-local --debug --verbose ./test/e2e
+	operator-sdk test local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --image="keycloak-operator:test" --operator-namespace $(NAMESPACE) --up-local --debug --verbose ./test/e2e
 
 .PHONY: test/coverage/prepare
 test/coverage/prepare:
@@ -191,22 +189,6 @@ client/gen:
 	# check generated client at ./pkg/client
 	@cp -r ./tmp/github.com/keycloak/keycloak-operator/pkg/client/* ./pkg/client/
 	@rm -rf ./tmp/github.com ./tmp/code-generator
-
-##############################
-# CI                         #
-##############################
-.PHONY: setup/github
-setup/github:
-	@echo Installing Kubectl
-	@curl -Lo kubectl ${KUBECTL_DOWNLOAD_URL} && chmod +x kubectl && sudo mv kubectl /usr/local/bin/
-	@echo Installing Minikube
-	@curl -Lo minikube ${MINIKUBE_DOWNLOAD_URL} && chmod +x minikube && sudo mv minikube /usr/local/bin/
-	@echo Booting Minikube up, see Travis env. variables for more information
-	@mkdir -p $HOME/.kube $HOME/.minikube
-	@touch $KUBECONFIG
-	@sudo minikube start --vm-driver=none
-	@sudo ./hack/modify_etc_hosts.sh "keycloak.local"
-	@sudo minikube addons enable ingress
 
 .PHONY: test/goveralls
 test/goveralls: test/coverage/prepare
