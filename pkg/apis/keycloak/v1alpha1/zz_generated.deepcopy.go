@@ -415,6 +415,13 @@ func (in *KeycloakAPIRealm) DeepCopyInto(out *KeycloakAPIRealm) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.Attributes != nil {
+		in, out := &in.Attributes, &out.Attributes
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	if in.ClientScopes != nil {
 		in, out := &in.ClientScopes, &out.ClientScopes
 		*out = make([]KeycloakClientScope, len(*in))

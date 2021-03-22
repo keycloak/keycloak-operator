@@ -79,6 +79,9 @@ func getKeycloakRealmCR(namespace string) *keycloakv1alpha1.KeycloakRealm {
 					"envelopeFrom":    "sso@example.com",
 					"ssl":             "",
 				},
+				Attributes: map[string]string{
+					"custom": "attribute",
+				},
 				InternationalizationEnabled: &[]bool{true}[0],
 				SupportedLocales:            []string{"en", "de"},
 				DefaultLocale:               "en",

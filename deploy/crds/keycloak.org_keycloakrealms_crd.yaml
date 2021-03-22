@@ -91,6 +91,11 @@ spec:
                 adminTheme:
                   description: Admin Console Theme
                   type: string
+                attributes:
+                  additionalProperties:
+                    type: string
+                  description: Attributes
+                  type: object
                 authenticationFlows:
                   description: Authentication flows
                   items:

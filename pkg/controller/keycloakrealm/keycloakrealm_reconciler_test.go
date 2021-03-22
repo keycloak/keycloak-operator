@@ -33,6 +33,9 @@ func getDummyRealm() *v1alpha1.KeycloakRealm {
 				EventsEnabled:             &[]bool{true}[0],
 				AdminEventsEnabled:        &[]bool{true}[0],
 				AdminEventsDetailsEnabled: &[]bool{true}[0],
+				Attributes: map[string]string{
+					"custom": "attribute",
+				},
 				Users: []*v1alpha1.KeycloakAPIUser{
 					{
 						ID:        "dummy",
@@ -87,6 +90,7 @@ func TestKeycloakRealmReconciler_Reconcile(t *testing.T) {
 	assert.True(t, *realm.Spec.Realm.EventsEnabled)
 	assert.True(t, *realm.Spec.Realm.AdminEventsEnabled)
 	assert.True(t, *realm.Spec.Realm.AdminEventsDetailsEnabled)
+	assert.Equal(t, map[string]string{"custom": "attribute"}, *&realm.Spec.Realm.Attributes)
 
 	state.Realm = realm
 
