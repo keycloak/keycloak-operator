@@ -3,7 +3,12 @@ NAMESPACE=keycloak
 PROJECT=keycloak-operator
 PKG=github.com/keycloak/keycloak-operator
 OPERATOR_SDK_VERSION=v0.18.2
-OPERATOR_SDK_DOWNLOAD_URL=https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk-$(OPERATOR_SDK_VERSION)-x86_64-linux-gnu
+ifeq ($(shell uname),Darwin)
+  OPERATOR_SDK_ARCHITECTURE=x86_64-apple-darwin
+else
+  OPERATOR_SDK_ARCHITECTURE=x86_64-linux-gnu
+endif
+OPERATOR_SDK_DOWNLOAD_URL=https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk-$(OPERATOR_SDK_VERSION)-$(OPERATOR_SDK_ARCHITECTURE)
 
 # Compile constants
 COMPILE_TARGET=./tmp/_output/bin/$(PROJECT)
@@ -88,12 +93,20 @@ test/ibm-validation:
 	@echo Running the operator image in the cluster
 	operator-sdk test local ./test/e2e --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --operator-namespace $(NAMESPACE) --debug --verbose --global-manifest=deploy/empty-init.yaml --namespaced-manifest=deploy/operator.yaml
 
-.PHONY: test/e2e-local-image cluster/prepare setup/operator-sdk
-test/e2e-local-image: cluster/prepare setup/operator-sdk
-	@echo Running e2e tests with a fresh built operator image in the cluster:
+.PHONY: test/e2e-local-image setup/operator-sdk
+test/e2e-local-image: setup/operator-sdk
+	@echo Backing up operator.yaml
+	@cp deploy/operator.yaml deploy/operator.yaml_bckp
+	@echo Building operator image:
+	eval $$(minikube -p minikube docker-env); \
 	docker build . -t keycloak-operator:test
-	@echo Running tests:
-	operator-sdk test local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --image="keycloak-operator:test" --operator-namespace $(NAMESPACE) --up-local --debug --verbose ./test/e2e
+	@echo Modifying operator.yaml
+	@sed -i 's/imagePullPolicy: Always/imagePullPolicy: Never/g' deploy/operator.yaml
+	@echo Creating namespace
+	kubectl create namespace $(NAMESPACE) || true
+	@echo Running e2e tests with a fresh built operator image in the cluster:
+	trap 'mv -f deploy/operator.yaml_bckp deploy/operator.yaml' EXIT; \
+	operator-sdk test local --go-test-flags "-tags=integration -coverpkg ./... -coverprofile cover-e2e.coverprofile -covermode=count -timeout 0" --image="keycloak-operator:test" --debug --verbose --operator-namespace $(NAMESPACE) ./test/e2e
 
 .PHONY: test/coverage/prepare
 test/coverage/prepare:
