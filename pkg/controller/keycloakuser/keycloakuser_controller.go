@@ -163,7 +163,6 @@ func (r *ReconcileKeycloakUser) Reconcile(request reconcile.Request) (reconcile.
 			}
 
 			// Compute the current state of the realm
-			log.Info(fmt.Sprintf("got authenticated client for keycloak at %v", keycloak.Status.InternalURL))
 			userState := common.NewUserState(keycloak)
 
 			log.Info(fmt.Sprintf("read state for keycloak %v/%v, realm %v/%v",

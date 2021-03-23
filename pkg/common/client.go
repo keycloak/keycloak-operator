@@ -913,13 +913,11 @@ func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (
 		return nil, err
 	}
 
-	var credentialSecret, endpoint string
+	var credentialSecret string
 	if kc.Spec.External.Enabled {
 		credentialSecret = "credential-" + kc.Name
-		endpoint = kc.Spec.External.URL
 	} else {
 		credentialSecret = kc.Status.CredentialSecret
-		endpoint = kc.Status.InternalURL
 	}
 
 	adminCreds, err := secretClient.CoreV1().Secrets(kc.Namespace).Get(context.TODO(), credentialSecret, v12.GetOptions{})
@@ -939,8 +937,13 @@ func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (
 		return nil, err
 	}
 
+	kcURL, err := getKeycloakURL(kc, requester)
+	if err != nil {
+		return nil, err
+	}
+
 	client := &Client{
-		URL:       endpoint,
+		URL:       kcURL,
 		requester: requester,
 	}
 	if err := client.login(user, pass); err != nil {
@@ -959,4 +962,53 @@ func getKCServerCert(secretClient *kubernetes.Clientset, kc v1alpha1.Keycloak) (
 	default:
 		return nil, err
 	}
+}
+
+// At normal conditions, Keycloak should be accessible via the internalURL. However, there are some corner cases (like
+// operator running locally during development or services being inaccessible due to network policies) which requires
+// use of externalURL.
+func getKeycloakURL(kc v1alpha1.Keycloak, requester Requester) (string, error) {
+	var kcURL string
+	var err error
+
+	if kc.Status.InternalURL != "" {
+		kcURL, err = validateKeycloakURL(kc.Status.InternalURL, requester)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if kcURL == "" && kc.Status.ExternalURL != "" {
+		kcURL, err = validateKeycloakURL(kc.Status.ExternalURL, requester)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	if kcURL == "" {
+		return "", errors.Errorf("neither internal nor external url is a valid keycloak url (is keycloak instance running?)")
+	}
+
+	log.Info(fmt.Sprintf("found keycloak url: %s", kcURL))
+
+	return kcURL, nil
+}
+
+func validateKeycloakURL(url string, requester Requester) (string, error) {
+	req, err := http.NewRequest(
+		"GET",
+		url,
+		nil,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	res, err := requester.Do(req)
+	if err != nil {
+		log.Info(fmt.Sprintf("%s is not a valid keycloak url", url))
+		return "", nil
+	}
+	_ = res.Body.Close()
+	return url, nil
 }

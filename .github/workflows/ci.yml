@@ -34,6 +34,7 @@ jobs:
       run: |
         make cluster/prepare
         make test/e2e
+        make cluster/clean
     - name: Run e2e tests for local image
       run: |
         make test/e2e-local-image
