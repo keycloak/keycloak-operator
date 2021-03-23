@@ -148,7 +148,7 @@ func prepareUnmanagedKeycloaksCR(t *testing.T, f *framework.Framework, ctx *fram
 
 func prepareExternalKeycloaksCR(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
 	keycloakCR := getDeployedKeycloakCR(f, namespace)
-	keycloakInternalURL := keycloakCR.Status.InternalURL
+	keycloakURL := keycloakCR.Status.ExternalURL
 
 	secret, err := getExternalKeycloakSecret(f, namespace)
 	if err != nil {
@@ -160,7 +160,7 @@ func prepareExternalKeycloaksCR(t *testing.T, f *framework.Framework, ctx *frame
 		return err
 	}
 
-	externalKeycloakCR := getExternalKeycloakCR(namespace, keycloakInternalURL)
+	externalKeycloakCR := getExternalKeycloakCR(namespace, keycloakURL)
 	err = Create(f, externalKeycloakCR, ctx)
 	if err != nil {
 		return err
@@ -176,15 +176,22 @@ func prepareExternalKeycloaksCR(t *testing.T, f *framework.Framework, ctx *frame
 
 func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
 	keycloakCR := getDeployedKeycloakCR(f, namespace)
-	keycloakInternalURL := keycloakCR.Status.InternalURL
-	assert.NotEmpty(t, keycloakInternalURL)
+	assert.NotEmpty(t, keycloakCR.Status.InternalURL)
+	assert.NotEmpty(t, keycloakCR.Status.ExternalURL)
+
+	err := WaitForKeycloakToBeReady(t, f, namespace, testKeycloakCRName)
+	if err != nil {
+		return err
+	}
+
+	keycloakURL := keycloakCR.Status.ExternalURL
 
 	// Skipping TLS verification is actually part of the test. In Kubernetes, if there's no signing
 	// manager installed, Keycloak will generate its own, self-signed cert. Of course
 	// we don't have a matching truststore for it, hence we need to skip TLS verification.
 	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true} //nolint
 
-	err := WaitForSuccessResponse(t, f, keycloakInternalURL+"/auth")
+	err = WaitForSuccessResponse(t, f, keycloakURL+"/auth")
 	if err != nil {
 		return err
 	}
@@ -195,7 +202,7 @@ func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework
 			return http.ErrUseLastResponse
 		},
 	}
-	response, err := client.Get(keycloakInternalURL + "/auth/realms/master/metrics")
+	response, err := client.Get(keycloakURL + "/auth/realms/master/metrics")
 	response.Body.Close()
 	if err == nil && response.StatusCode != 301 {
 		return errors.Errorf("invalid response for Keycloak metrics (%v)", response.Status)
@@ -209,8 +216,8 @@ func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework
 
 func keycloakUnmanagedDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
 	keycloakCR := getDeployedKeycloakCR(f, namespace)
-	keycloakInternalURL := keycloakCR.Status.InternalURL
-	assert.Empty(t, keycloakInternalURL)
+	assert.Empty(t, keycloakCR.Status.InternalURL)
+	assert.Empty(t, keycloakCR.Status.ExternalURL)
 
 	err := WaitForCondition(t, f.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
 		sts, err := f.KubeClient.AppsV1().StatefulSets(namespace).List(context.TODO(), metav1.ListOptions{})

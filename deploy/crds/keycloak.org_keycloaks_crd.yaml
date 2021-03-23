@@ -1030,9 +1030,14 @@ spec:
             credentialSecret:
               description: The secret where the admin credentials are to be found.
               type: string
+            externalURL:
+              description: External URL for accessing Keycloak instance from outside
+                the cluster. Is identical to external.URL if it's specified, otherwise
+                is computed (e.g. from Ingress).
+              type: string
             internalURL:
-              description: Service IP and Port for in-cluster access to the keycloak
-                instance.
+              description: An internal URL (service name) to be used by the admin
+                client.
               type: string
             message:
               description: Human-readable message indicating details about current
@@ -1059,6 +1064,7 @@ spec:
               type: string
           required:
           - credentialSecret
+          - externalURL
           - internalURL
           - message
           - phase

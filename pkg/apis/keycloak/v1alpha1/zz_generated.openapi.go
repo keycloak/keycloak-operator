@@ -737,7 +737,14 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 					},
 					"internalURL": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Service IP and Port for in-cluster access to the keycloak instance.",
+							Description: "An internal URL (service name) to be used by the admin client.",
+							Type:        []string{"string"},
+							Format:      "",
+						},
+					},
+					"externalURL": {
+						SchemaProps: spec.SchemaProps{
+							Description: "External URL for accessing Keycloak instance from outside the cluster. Is identical to external.URL if it's specified, otherwise is computed (e.g. from Ingress).",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -750,7 +757,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 						},
 					},
 				},
-				Required: []string{"phase", "message", "ready", "version", "internalURL", "credentialSecret"},
+				Required: []string{"phase", "message", "ready", "version", "internalURL", "externalURL", "credentialSecret"},
 			},
 		},
 	}
