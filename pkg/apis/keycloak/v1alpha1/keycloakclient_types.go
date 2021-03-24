@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -157,6 +158,12 @@ type KeycloakAPIClient struct {
 	// assertions for this client.
 	// +optional
 	DefaultClientScopes []string `json:"defaultClientScopes,omitempty"`
+	// True if fine-grained authorization support is enabled for this client.
+	// +optional
+	AuthorizationServicesEnabled bool `json:"authorizationServicesEnabled,omitempty"`
+	// Authorization settings for this resource server.
+	// +optional
+	AuthorizationSettings *KeycloakResourceServer `json:"authorizationSettings,omitempty"`
 }
 
 type KeycloakProtocolMapper struct {
@@ -181,6 +188,157 @@ type KeycloakProtocolMapper struct {
 	// Config options.
 	// +optional
 	Config map[string]string `json:"config,omitempty"`
+}
+
+// https://www.keycloak.org/docs-api/12.0/rest-api/index.html#_resourceserverrepresentation
+type KeycloakResourceServer struct {
+	// True if resources should be managed remotely by the resource server.
+	// +optional
+	AllowRemoteResourceManagement bool `json:"allowRemoteResourceManagement,omitempty"`
+	// Client ID.
+	// +optional
+	ClientID string `json:"clientId,omitempty"`
+	// The decision strategy dictates how permissions are evaluated and how a
+	// final decision is obtained. 'Affirmative' means that at least one
+	// permission must evaluate to a positive decision in order to grant access
+	// to a resource and its scopes. 'Unanimous' means that all permissions must
+	// evaluate to a positive decision in order for the final decision to be also positive.
+	// +optional
+	DecisionStrategy string `json:"decisionStrategy,omitempty"`
+	// ID.
+	// +optional
+	ID string `json:"id,omitempty"`
+	// Name.
+	// +optional
+	Name string `json:"name,omitempty"`
+	// Policies.
+	// +optional
+	Policies []KeycloakPolicy `json:"policies,omitempty"`
+	// The policy enforcement mode dictates how policies are enforced when evaluating authorization requests.
+	// 'Enforcing' means requests are denied by default even when there is no policy associated with a given resource.
+	// 'Permissive' means requests are allowed even when there is no policy associated with a given resource.
+	// 'Disabled' completely disables the evaluation of policies and allows access to any resource.
+	// +optional
+	PolicyEnforcementMode string `json:"policyEnforcementMode,omitempty"`
+	// Resources.
+	// +optional
+	Resources []KeycloakResource `json:"resources,omitempty"`
+	// Authorization Scopes.
+	// +optional
+	Scopes []KeycloakScope `json:"scopes,omitempty"`
+}
+
+// https://www.keycloak.org/docs-api/12.0/rest-api/index.html#_policyrepresentation
+type KeycloakPolicy struct {
+	// Config.
+	// +optional
+	Config map[string]string `json:"config,omitempty"`
+	// The decision strategy dictates how the policies associated with a given permission are evaluated and how
+	// a final decision is obtained. 'Affirmative' means that at least one policy must evaluate to a positive
+	// decision in order for the final decision to be also positive. 'Unanimous' means that all policies must
+	// evaluate to a positive decision in order for the final decision to be also positive. 'Consensus' means
+	// that the number of positive decisions must be greater than the number of negative decisions. If the number
+	// of positive and negative is the same, the final decision will be negative.
+	// +optional
+	DecisionStrategy string `json:"decisionStrategy,omitempty"`
+	// A description for this policy.
+	// +optional
+	Description string `json:"description,omitempty"`
+	// ID.
+	// +optional
+	ID string `json:"id,omitempty"`
+	// The logic dictates how the policy decision should be made. If 'Positive', the resulting effect
+	// (permit or deny) obtained during the evaluation of this policy will be used to perform a decision.
+	// If 'Negative', the resulting effect will be negated, in other words, a permit becomes a deny and vice-versa.
+	// +optional
+	Logic string `json:"logic,omitempty"`
+	// The name of this policy.
+	// +optional
+	Name string `json:"name,omitempty"`
+	// Owner.
+	// +optional
+	Owner string `json:"owner,omitempty"`
+	// Policies.
+	// +optional
+	Policies []string `json:"policies,omitempty"`
+	// Resources.
+	// +optional
+	Resources []string `json:"resources,omitempty"`
+	// Resources Data.
+	// +optional
+	ResourcesData []KeycloakResource `json:"resourcesData,omitempty"`
+	// Scopes.
+	// +optional
+	Scopes []string `json:"scopes,omitempty"`
+	// Type.
+	// +optional
+	Type string `json:"type,omitempty"`
+	// Scopes Data.
+	// +optional
+	ScopesData []apiextensionsv1.JSON `json:"scopesData,omitempty"`
+	// TODO: JSON struct is a workaround for the lack of support for recursive types
+	// in CRD validation schemas. Keycloak will do validation for this field. Read more:
+	// https://github.com/kubernetes/kubernetes/issues/62872
+}
+
+// https://www.keycloak.org/docs-api/12.0/rest-api/index.html#_resourcerepresentation
+type KeycloakResource struct {
+	// ID.
+	// +optional
+	ID string `json:"_id,omitempty"`
+	// The attributes associated with the resource.
+	// +optional
+	Attributes map[string]string `json:"attributes,omitempty"`
+	// A unique name for this resource. The name can be used to uniquely identify a resource, useful when
+	// querying for a specific resource.
+	// +optional
+	DisplayName string `json:"displayName,omitempty"`
+	// An URI pointing to an icon.
+	// +optional
+	IconURI string `json:"icon_uri,omitempty"`
+	// A unique name for this resource. The name can be used to uniquely identify a resource, useful when
+	// querying for a specific resource.
+	// +optional
+	Name string `json:"name,omitempty"`
+	// True if the access to this resource can be managed by the resource owner.
+	// +optional
+	OwnerManagedAccess bool `json:"ownerManagedAccess,omitempty"`
+	// The type of this resource. It can be used to group different resource instances with the same type.
+	// +optional
+	Type string `json:"type,omitempty"`
+	// Set of URIs which are protected by resource.
+	// +optional
+	Uris []string `json:"uris,omitempty"`
+	// The scopes associated with this resource.
+	// +optional
+	Scopes []apiextensionsv1.JSON `json:"scopes,omitempty"`
+	// TODO: JSON struct is a workaround for the lack of support for recursive types
+	// in CRD validation schemas. Keycloak will do validation for this field. Read more:
+	// https://github.com/kubernetes/kubernetes/issues/62872
+}
+
+// https://www.keycloak.org/docs-api/12.0/rest-api/index.html#_scoperepresentation
+type KeycloakScope struct {
+	// A unique name for this scope. The name can be used to uniquely identify a scope, useful when querying
+	// for a specific scope.
+	// +optional
+	DisplayName string `json:"displayName,omitempty"`
+	// An URI pointing to an icon.
+	// +optional
+	IconURI string `json:"iconUri,omitempty"`
+	// ID.
+	// +optional
+	ID string `json:"id,omitempty"`
+	// A unique name for this scope. The name can be used to uniquely identify a scope, useful when querying
+	// for a specific scope.
+	// +optional
+	Name string `json:"name,omitempty"`
+	// Policies.
+	// +optional
+	Policies []KeycloakPolicy `json:"policies,omitempty"`
+	// Resources.
+	// +optional
+	Resources []KeycloakResource `json:"resources,omitempty"`
 }
 
 // KeycloakClientStatus defines the observed state of KeycloakClient
