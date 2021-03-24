@@ -157,8 +157,9 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 				MatchLabels: map[string]string{"application": "sso"},
 			},
 			Client: &v1alpha1.KeycloakAPIClient{
-				ClientID: "test",
-				Secret:   "test",
+				ClientID:                     "test",
+				Secret:                       "test",
+				AuthorizationServicesEnabled: true,
 			},
 			Roles: []v1alpha1.RoleRepresentation{
 				{ID: "delete_recreateID2", Name: "delete_recreate"},
@@ -190,6 +191,7 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 			{ID: "updateID", Name: "update"},
 			{ID: "renameID", Name: "rename"},
 			{ID: "rename_recreateID", Name: "rename_recreate"},
+			{Name: umaRoleName},
 		},
 		ScopeMappings: &v1alpha1.MappingsRepresentation{
 			ClientMappings: map[string]v1alpha1.ClientMappingsRepresentation{"someclient": {Mappings: []v1alpha1.RoleRepresentation{{Name: "a"}, {Name: "b"}}}},

@@ -8,6 +8,10 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/model"
 )
 
+const (
+	umaRoleName = "uma_protection"
+)
+
 type Reconciler interface {
 	Reconcile(cr *kc.KeycloakClient) error
 }
@@ -54,6 +58,13 @@ func (i *KeycloakClientReconciler) ReconcileRoles(state *common.ClientState, cr 
 	// delete existing roles for which no desired role is found that (matches by ID OR has no ID but matches by name)
 	// this implies that specifying a role with matching name but different ID will result in deletion (and re-creation)
 	rolesDeleted, _ := model.RoleDifferenceIntersection(state.Roles, cr.Spec.Roles)
+	// Prevent uma_protection role from deletion when fine-grained authorization support is enabled but
+	// not present in the CR. This role is automatically created by Keycloak for AuthZ - read more below:
+	// https://www.keycloak.org/docs/latest/authorization_services/#_service_protection_whatis_obtain_pat
+	// TODO: evaluate sync options (once available) for uma_protection role once implemented
+	if cr.Spec.Client.AuthorizationServicesEnabled || cr.Spec.Client.AuthorizationSettings != nil {
+		rolesDeleted = removeUMARole(rolesDeleted)
+	}
 	for _, role := range rolesDeleted {
 		desired.AddAction(i.getDeletedClientRoleState(state, cr, role.DeepCopy()))
 	}
@@ -119,6 +130,12 @@ func (i *KeycloakClientReconciler) ReconcileScopeMappings(state *common.ClientSt
 	for _, clientMappings := range mappingsDeleted.ClientMappings {
 		desired.AddAction(i.getDeletedClientClientScopeMappingsState(state, cr, clientMappings.DeepCopy()))
 	}
+}
+
+// removeUMARole removes the uma_protection role from r if it is present
+func removeUMARole(r []kc.RoleRepresentation) []kc.RoleRepresentation {
+	filteredRoles, _ := model.RoleDifferenceIntersection(r, []kc.RoleRepresentation{{Name: umaRoleName}})
+	return filteredRoles
 }
 
 // determine which scope mappings are present in a but not in b
