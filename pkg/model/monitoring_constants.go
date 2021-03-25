@@ -1,5 +1,7 @@
 package model
 
+// XXX The default context path "/auth" is hard coded into this massive block.
+// It needs to be updated to use the configuration parameter instead.
 const GrafanaDashboardJSON = `{
       "__inputs": [
         {

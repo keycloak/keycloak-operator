@@ -11,8 +11,13 @@ const (
 	KeycloakProbesName                   = ApplicationName + "-probes"
 	KeycloakMetricsRouteName             = ApplicationName + "-metrics-rewrite"
 	StartupScriptsName                   = ApplicationName + "-startup"
+	// XXX These are hard coding the default context path in a constant,
+	// which is not good. These need to be moved to a configuration
+	// parameter instead.
+	// {{{
 	KeycloakMetricsRoutePath             = "/auth/realms/master/metrics"
 	KeycloakMetricsRouteRewritePath      = "/auth/realms/master"
+	// }}}
 	PostgresqlDeploymentComponent        = "database"
 	PostgresqlServiceName                = ApplicationName + "-postgresql"
 	KeycloakDiscoveryServiceName         = ApplicationName + "-discovery"

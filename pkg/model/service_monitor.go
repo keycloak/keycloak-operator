@@ -20,6 +20,10 @@ func ServiceMonitor(cr *v1alpha1.Keycloak) *monitoringv1.ServiceMonitor {
 		Spec: monitoringv1.ServiceMonitorSpec{
 			Endpoints: []monitoringv1.Endpoint{
 				{
+					// XXX The default context path is hard
+					// coded here. It needs to be updated
+					// to use the configured context path
+					// instead.
 					Path:   "/auth/realms/master/metrics",
 					Port:   ApplicationName,
 					Scheme: "https",
