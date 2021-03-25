@@ -10,6 +10,7 @@ const (
 	PostgresqlDeploymentName             = ApplicationName + "-postgresql"
 	KeycloakProbesName                   = ApplicationName + "-probes"
 	KeycloakMetricsRouteName             = ApplicationName + "-metrics-rewrite"
+	StartupScriptsName                   = ApplicationName + "-startup"
 	KeycloakMetricsRoutePath             = "/auth/realms/master/metrics"
 	KeycloakMetricsRouteRewritePath      = "/auth/realms/master"
 	PostgresqlDeploymentComponent        = "database"

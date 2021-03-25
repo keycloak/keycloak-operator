@@ -314,6 +314,10 @@ func KeycloakVolumeMounts(cr *v1alpha1.Keycloak, extensionsPath string) []v1.Vol
 			Name:      KeycloakProbesName,
 			MountPath: "/probes",
 		},
+		{
+			Name:      StartupScriptsName,
+			MountPath: "/opt/jboss/startup-scripts",
+		},
 	}
 
 	mountedVolumes = addVolumeMountsFromKeycloakCR(cr, mountedVolumes)
@@ -359,6 +363,17 @@ func KeycloakVolumes(cr *v1alpha1.Keycloak) []v1.Volume {
 				ConfigMap: &v1.ConfigMapVolumeSource{
 					LocalObjectReference: v1.LocalObjectReference{
 						Name: KeycloakProbesName,
+					},
+					DefaultMode: &[]int32{0555}[0],
+				},
+			},
+		},
+		{
+			Name: StartupScriptsName,
+			VolumeSource: v1.VolumeSource{
+				ConfigMap: &v1.ConfigMapVolumeSource{
+					LocalObjectReference: v1.LocalObjectReference{
+						Name: StartupScriptsName,
 					},
 					DefaultMode: &[]int32{0555}[0],
 				},
