@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -22,7 +24,8 @@ import (
 )
 
 const (
-	authURL = "auth/realms/master/protocol/openid-connect/token"
+	authURL                  = "auth/realms/master/protocol/openid-connect/token"
+	KeycloakServerCertEnvKey = "KEYCLOAK_SERVER_CERT"
 )
 
 type Requester interface {
@@ -796,12 +799,32 @@ func (c *Client) login(user, pass string) error {
 }
 
 // defaultRequester returns a default client for requesting http endpoints
-func defaultRequester() Requester {
+func defaultRequester() (Requester, error) {
+	tlsConfig, err := createTLSConfig()
+	if err != nil {
+		return nil, err
+	}
 	transport := http.DefaultTransport.(*http.Transport).Clone()
-	transport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true} // nolint
+	transport.TLSClientConfig = tlsConfig
 
 	c := &http.Client{Transport: transport, Timeout: time.Second * 10}
-	return c
+	return c, nil
+}
+
+// createTLSConfig constructs and returns a TLS Config with a root CA read
+// from the ENV VAR KEYCLOAK_SERVER_CERT if present, or a permissive config which
+// is insecure otherwise
+func createTLSConfig() (*tls.Config, error) {
+	serverCert := os.Getenv(KeycloakServerCertEnvKey)
+	if serverCert == "" {
+		return &tls.Config{InsecureSkipVerify: true}, nil
+	}
+
+	rootCAPool := x509.NewCertPool()
+	if ok := rootCAPool.AppendCertsFromPEM([]byte(serverCert)); !ok {
+		return nil, errors.New("Unable to successfully load certificate from " + KeycloakServerCertEnvKey)
+	}
+	return &tls.Config{RootCAs: rootCAPool}, nil
 }
 
 //go:generate moq -out keycloakClient_moq.go . KeycloakInterface
@@ -907,9 +930,13 @@ func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (
 	}
 	user := string(adminCreds.Data[model.AdminUsernameProperty])
 	pass := string(adminCreds.Data[model.AdminPasswordProperty])
+	requester, err := defaultRequester()
+	if err != nil {
+		return nil, err
+	}
 	client := &Client{
 		URL:       endpoint,
-		requester: defaultRequester(),
+		requester: requester,
 	}
 	if err := client.login(user, pass); err != nil {
 		return nil, err
