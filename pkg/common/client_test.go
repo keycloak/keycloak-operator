@@ -1,9 +1,11 @@
 package common
 
 import (
+	"encoding/pem"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	jsoniter "github.com/json-iterator/go"
@@ -321,4 +323,28 @@ func TestClient_login(t *testing.T) {
 	// token must be set on the client now
 	assert.NoError(t, err)
 	assert.Equal(t, client.token, "dummy")
+}
+
+func TestClient_useKeycloakServerCertificate(t *testing.T) {
+	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		w.Write([]byte("dummy"))
+	})
+	ts := httptest.NewTLSServer(handler)
+	defer ts.Close()
+
+	pemCert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: ts.Certificate().Raw})
+	os.Setenv(KeycloakServerCertEnvKey, string(pemCert))
+	defer os.Setenv(KeycloakServerCertEnvKey, "")
+
+	requester, err := defaultRequester()
+	assert.NoError(t, err)
+	httpClient, ok := requester.(*http.Client)
+	assert.True(t, ok)
+	assert.False(t, httpClient.Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify)
+
+	request, err := http.NewRequest("GET", ts.URL, nil)
+	assert.NoError(t, err)
+	resp, err := requester.Do(request)
+	assert.NoError(t, err)
+	assert.Equal(t, resp.StatusCode, 200)
 }
