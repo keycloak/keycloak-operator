@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	jsoniter "github.com/json-iterator/go"
@@ -333,10 +332,8 @@ func TestClient_useKeycloakServerCertificate(t *testing.T) {
 	defer ts.Close()
 
 	pemCert := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: ts.Certificate().Raw})
-	os.Setenv(KeycloakServerCertEnvKey, string(pemCert))
-	defer os.Setenv(KeycloakServerCertEnvKey, "")
 
-	requester, err := defaultRequester()
+	requester, err := defaultRequester(pemCert)
 	assert.NoError(t, err)
 	httpClient, ok := requester.(*http.Client)
 	assert.True(t, ok)
