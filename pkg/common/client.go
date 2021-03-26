@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 
@@ -18,14 +17,14 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/model"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	config2 "sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 const (
-	authURL                  = "auth/realms/master/protocol/openid-connect/token"
-	KeycloakServerCertEnvKey = "KEYCLOAK_SERVER_CERT"
+	authURL = "auth/realms/master/protocol/openid-connect/token"
 )
 
 type Requester interface {
@@ -799,8 +798,8 @@ func (c *Client) login(user, pass string) error {
 }
 
 // defaultRequester returns a default client for requesting http endpoints
-func defaultRequester() (Requester, error) {
-	tlsConfig, err := createTLSConfig()
+func defaultRequester(serverCert []byte) (Requester, error) {
+	tlsConfig, err := createTLSConfig(serverCert)
 	if err != nil {
 		return nil, err
 	}
@@ -812,17 +811,16 @@ func defaultRequester() (Requester, error) {
 }
 
 // createTLSConfig constructs and returns a TLS Config with a root CA read
-// from the ENV VAR KEYCLOAK_SERVER_CERT if present, or a permissive config which
+// from the serverCert param if present, or a permissive config which
 // is insecure otherwise
-func createTLSConfig() (*tls.Config, error) {
-	serverCert := os.Getenv(KeycloakServerCertEnvKey)
-	if serverCert == "" {
+func createTLSConfig(serverCert []byte) (*tls.Config, error) {
+	if serverCert == nil {
 		return &tls.Config{InsecureSkipVerify: true}, nil
 	}
 
 	rootCAPool := x509.NewCertPool()
-	if ok := rootCAPool.AppendCertsFromPEM([]byte(serverCert)); !ok {
-		return nil, errors.New("Unable to successfully load certificate from " + KeycloakServerCertEnvKey)
+	if ok := rootCAPool.AppendCertsFromPEM(serverCert); !ok {
+		return nil, errors.New("Unable to successfully load certificate")
 	}
 	return &tls.Config{RootCAs: rootCAPool}, nil
 }
@@ -930,10 +928,22 @@ func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (
 	}
 	user := string(adminCreds.Data[model.AdminUsernameProperty])
 	pass := string(adminCreds.Data[model.AdminPasswordProperty])
-	requester, err := defaultRequester()
+
+	sslCertsSecret, err := secretClient.CoreV1().Secrets(kc.Namespace).Get(context.TODO(), model.ServingCertSecretName, v12.GetOptions{})
+	var serverCert []byte
+	if err == nil {
+		serverCert = sslCertsSecret.Data["tls.crt"]
+	} else if k8sErrors.IsNotFound(err) {
+		serverCert = nil
+	} else {
+		return nil, err
+	}
+
+	requester, err := defaultRequester(serverCert)
 	if err != nil {
 		return nil, err
 	}
+
 	client := &Client{
 		URL:       endpoint,
 		requester: requester,
