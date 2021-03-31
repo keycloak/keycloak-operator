@@ -326,7 +326,10 @@ func TestClient_login(t *testing.T) {
 
 func TestClient_useKeycloakServerCertificate(t *testing.T) {
 	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		w.Write([]byte("dummy"))
+		_, err := w.Write([]byte("dummy"))
+		if err != nil {
+			t.Errorf("dummy write failed with error %v", err)
+		}
 	})
 	ts := httptest.NewTLSServer(handler)
 	defer ts.Close()
@@ -343,5 +346,6 @@ func TestClient_useKeycloakServerCertificate(t *testing.T) {
 	assert.NoError(t, err)
 	resp, err := requester.Do(request)
 	assert.NoError(t, err)
+	defer resp.Body.Close()
 	assert.Equal(t, resp.StatusCode, 200)
 }

@@ -815,12 +815,12 @@ func defaultRequester(serverCert []byte) (Requester, error) {
 // is insecure otherwise
 func createTLSConfig(serverCert []byte) (*tls.Config, error) {
 	if serverCert == nil {
-		return &tls.Config{InsecureSkipVerify: true}, nil
+		return &tls.Config{InsecureSkipVerify: true}, nil // nolint
 	}
 
 	rootCAPool := x509.NewCertPool()
 	if ok := rootCAPool.AppendCertsFromPEM(serverCert); !ok {
-		return nil, errors.New("Unable to successfully load certificate")
+		return nil, errors.Errorf("unable to successfully load certificate")
 	}
 	return &tls.Config{RootCAs: rootCAPool}, nil
 }
@@ -931,11 +931,12 @@ func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (
 
 	sslCertsSecret, err := secretClient.CoreV1().Secrets(kc.Namespace).Get(context.TODO(), model.ServingCertSecretName, v12.GetOptions{})
 	var serverCert []byte
-	if err == nil {
+	switch {
+	case err == nil:
 		serverCert = sslCertsSecret.Data["tls.crt"]
-	} else if k8sErrors.IsNotFound(err) {
+	case k8sErrors.IsNotFound(err):
 		serverCert = nil
-	} else {
+	default:
 		return nil, err
 	}
 
