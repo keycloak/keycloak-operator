@@ -6,6 +6,27 @@ data:
   test.properties: |
     blah=true
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: keytabs
+data:
+  krb5.keytab: RkFLRSBLRVlUQUIK
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: realm1
+stringData:
+  realm1_bindcred: "password"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: realm2
+stringData:
+  realm2_bindcred: "password"
+---
 apiVersion: keycloak.org/v1alpha1
 kind: Keycloak
 metadata:
@@ -26,9 +47,19 @@ spec:
       volumes:
         defaultMode: 0777
         items:
-          - configMap:
-              name: test-config
-              mountPath: /test-config
+          - name: keytab
+            mountPath: /keytabs
+            secrets:
+              - keytab
+          - name: vault
+            mountPath: /opt/jboss/keycloak/secrets
+            secrets:
+              - realm1
+              - realm2
+          - name: test-config
+            mountPath: /configmap
+            configMaps:
+              - test-config
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
@@ -49,4 +80,4 @@ spec:
                   operator: In
                   values:
                   - keycloak
-              topologyKey: "kubernetes.io/hostname"      
+              topologyKey: "kubernetes.io/hostname"

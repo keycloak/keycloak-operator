@@ -29,6 +29,14 @@ func TestKeycloakDeployment_testExperimentalVolumesWithConfigMaps(t *testing.T) 
 	testExperimentalVolumesWithConfigMaps(t, KeycloakDeployment)
 }
 
+func TestKeycloakDeployment_testExperimentalVolumesWithSecrets(t *testing.T) {
+	testExperimentalVolumesWithSecrets(t, KeycloakDeployment)
+}
+
+func TestKeycloakDeployment_testExperimentalVolumesWithConfigMapsAndSecrets(t *testing.T) {
+	testExperimentalVolumesWithConfigMapsAndSecrets(t, KeycloakDeployment)
+}
+
 func TestKeycloakDeployment_testPostgresEnvs(t *testing.T) {
 	testPostgresEnvs(t, KeycloakDeployment)
 }
@@ -135,20 +143,17 @@ func testExperimentalVolumesWithConfigMaps(t *testing.T, deploymentFunction crea
 			KeycloakDeploymentSpec: v1alpha1.KeycloakDeploymentSpec{
 				Experimental: v1alpha1.ExperimentalSpec{
 					Volumes: v1alpha1.VolumesSpec{
-						Items: []v1alpha1.VolumeSpec{
-							{
-								ConfigMap: &v1alpha1.ConfigMapVolumeSpec{
-									Name:      "testName",
-									MountPath: "testMountPath",
-									Items: []v1.KeyToPath{
-										{
-											Key:  "testKey",
-											Path: "testPath",
-										},
-									},
+						Items: []v1alpha1.VolumeSpec{{
+							Name:       "testName",
+							MountPath:  "testMountPath",
+							ConfigMaps: []string{"ConfigMap1", "ConfigMap2"},
+							Items: []v1.KeyToPath{
+								{
+									Key:  "testKey",
+									Path: "testPath",
 								},
 							},
-						},
+						}},
 						DefaultMode: &[]int32{1}[0],
 					},
 				},
@@ -165,9 +170,104 @@ func testExperimentalVolumesWithConfigMaps(t *testing.T, deploymentFunction crea
 	assert.Equal(t, "testName", volumeMount.Name)
 	assert.Equal(t, "testMountPath", volumeMount.MountPath)
 	assert.Equal(t, "testName", volume.Name)
-	assert.Equal(t, "testName", volume.Projected.Sources[0].ConfigMap.Name)
+	assert.Equal(t, "ConfigMap1", volume.Projected.Sources[0].ConfigMap.Name)
 	assert.Equal(t, "testKey", volume.Projected.Sources[0].ConfigMap.Items[0].Key)
 	assert.Equal(t, "testPath", volume.Projected.Sources[0].ConfigMap.Items[0].Path)
+	assert.Equal(t, "ConfigMap2", volume.Projected.Sources[1].ConfigMap.Name)
+	assert.Equal(t, "testKey", volume.Projected.Sources[1].ConfigMap.Items[0].Key)
+	assert.Equal(t, "testPath", volume.Projected.Sources[1].ConfigMap.Items[0].Path)
+}
+
+func testExperimentalVolumesWithSecrets(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
+	//given
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			KeycloakDeploymentSpec: v1alpha1.KeycloakDeploymentSpec{
+				Experimental: v1alpha1.ExperimentalSpec{
+					Volumes: v1alpha1.VolumesSpec{
+						Items: []v1alpha1.VolumeSpec{{
+							Name:      "testName",
+							MountPath: "testMountPath",
+							Secrets:   []string{"Secret1", "Secret2"},
+							Items: []v1.KeyToPath{
+								{
+									Key:  "testKey",
+									Path: "testPath",
+								},
+							},
+						}},
+						DefaultMode: &[]int32{1}[0],
+					},
+				},
+			},
+		},
+	}
+
+	//when
+	template := deploymentFunction(cr, dbSecret).Spec.Template.Spec
+	volumeMount := template.Containers[0].VolumeMounts[3]
+	volume := template.Volumes[3]
+
+	//then
+	assert.Equal(t, "testName", volumeMount.Name)
+	assert.Equal(t, "testMountPath", volumeMount.MountPath)
+	assert.Equal(t, "testName", volume.Name)
+	assert.Equal(t, "Secret1", volume.Projected.Sources[0].Secret.Name)
+	assert.Equal(t, "testKey", volume.Projected.Sources[0].Secret.Items[0].Key)
+	assert.Equal(t, "testPath", volume.Projected.Sources[0].Secret.Items[0].Path)
+	assert.Equal(t, "Secret2", volume.Projected.Sources[1].Secret.Name)
+	assert.Equal(t, "testKey", volume.Projected.Sources[1].Secret.Items[0].Key)
+	assert.Equal(t, "testPath", volume.Projected.Sources[1].Secret.Items[0].Path)
+}
+func testExperimentalVolumesWithConfigMapsAndSecrets(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
+	//given
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			KeycloakDeploymentSpec: v1alpha1.KeycloakDeploymentSpec{
+				Experimental: v1alpha1.ExperimentalSpec{
+					Volumes: v1alpha1.VolumesSpec{
+						Items: []v1alpha1.VolumeSpec{{
+							Name:       "testName",
+							MountPath:  "testMountPath",
+							Secrets:    []string{"Secret1", "Secret2"},
+							ConfigMaps: []string{"ConfigMap1", "ConfigMap2"},
+							Items: []v1.KeyToPath{
+								{
+									Key:  "testKey",
+									Path: "testPath",
+								},
+							},
+						}},
+						DefaultMode: &[]int32{1}[0],
+					},
+				},
+			},
+		},
+	}
+
+	//when
+	template := deploymentFunction(cr, dbSecret).Spec.Template.Spec
+	volumeMount := template.Containers[0].VolumeMounts[3]
+	volume := template.Volumes[3]
+
+	//then
+	assert.Equal(t, "testName", volumeMount.Name)
+	assert.Equal(t, "testMountPath", volumeMount.MountPath)
+	assert.Equal(t, "testName", volume.Name)
+	assert.Equal(t, "ConfigMap1", volume.Projected.Sources[0].ConfigMap.Name)
+	assert.Equal(t, "testKey", volume.Projected.Sources[0].ConfigMap.Items[0].Key)
+	assert.Equal(t, "testPath", volume.Projected.Sources[0].ConfigMap.Items[0].Path)
+	assert.Equal(t, "ConfigMap2", volume.Projected.Sources[1].ConfigMap.Name)
+	assert.Equal(t, "testKey", volume.Projected.Sources[1].ConfigMap.Items[0].Key)
+	assert.Equal(t, "testPath", volume.Projected.Sources[1].ConfigMap.Items[0].Path)
+	assert.Equal(t, "Secret1", volume.Projected.Sources[2].Secret.Name)
+	assert.Equal(t, "testKey", volume.Projected.Sources[2].Secret.Items[0].Key)
+	assert.Equal(t, "testPath", volume.Projected.Sources[2].Secret.Items[0].Path)
+	assert.Equal(t, "Secret2", volume.Projected.Sources[3].Secret.Name)
+	assert.Equal(t, "testKey", volume.Projected.Sources[3].Secret.Items[0].Key)
+	assert.Equal(t, "testPath", volume.Projected.Sources[3].Secret.Items[0].Path)
 }
 
 func testPostgresEnvs(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
