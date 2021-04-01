@@ -22,6 +22,7 @@ spec:
       volumes:
         defaultMode: 0777
         items:
-          - secret:
-              name: keycloak-vault
-              mountPath: /opt/jboss/keycloak/secrets
+          - name: vault
+            mountPath: /opt/jboss/keycloak/secrets
+            secrets:
+              - keycloak-vault

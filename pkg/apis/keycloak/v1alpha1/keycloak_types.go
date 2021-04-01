@@ -130,20 +130,20 @@ type VolumesSpec struct {
 	DefaultMode *int32 `json:"defaultMode,omitempty"`
 }
 
-type ConfigMapVolumeSpec struct {
-	// ConfigMap name
+type VolumeSpec struct {
+	// Volume name
 	Name string `json:"name,omitempty"`
 	// An absolute path where to mount it
 	MountPath string `json:"mountPath"`
-	// ConfigMap mount details
+	// Allow multiple configmaps to mount to the same directory
+	// +optional
+	ConfigMaps []string `json:"configMaps,omitempty"`
+	// Secret mount
+	// +optional
+	Secrets []string `json:"secrets,omitempty"`
+	// Mount details
 	// +optional
 	Items []corev1.KeyToPath `json:"items,omitempty" protobuf:"bytes,2,rep,name=items"`
-}
-
-type VolumeSpec struct {
-	// ConfigMap mount
-	// +optional
-	ConfigMap *ConfigMapVolumeSpec `json:"configMap,omitempty"`
 }
 
 type KeycloakExternal struct {
