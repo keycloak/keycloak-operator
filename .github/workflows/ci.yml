@@ -21,7 +21,11 @@ jobs:
       run: |
         make test/unit
     - name: Start minikube
-      uses: medyagh/setup-minikube@master
+      uses: manusa/actions-setup-minikube@v2.3.1
+      with:
+        minikube version: 'v1.16.0'
+        kubernetes version: 'v1.19.2'
+        driver: 'docker'
     - name: Configure Minikube
       run: |
         minikube addons enable ingress
