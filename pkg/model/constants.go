@@ -44,7 +44,7 @@ const (
 	RouteLoadBalancingStrategy            = "source"
 	IngressDefaultHost                    = "keycloak.local"
 	PostgresqlBackupServiceAccountName    = "keycloak-operator"
-	KeycloakExtensionEnvVar               = "KEYCLOAK_EXTENSIONS"
+	KeycloakExtensionEnvVar               = "KEYCLOAK_EXTENSION"
 	KeycloakExtensionPath                 = "/opt/jboss/keycloak/standalone/deployments"
 	KeycloakExtensionsInitContainerPath   = "/opt/extensions"
 	RhssoExtensionPath                    = "/opt/eap/standalone/deployments"
