@@ -929,14 +929,8 @@ func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (
 	user := string(adminCreds.Data[model.AdminUsernameProperty])
 	pass := string(adminCreds.Data[model.AdminPasswordProperty])
 
-	sslCertsSecret, err := secretClient.CoreV1().Secrets(kc.Namespace).Get(context.TODO(), model.ServingCertSecretName, v12.GetOptions{})
-	var serverCert []byte
-	switch {
-	case err == nil:
-		serverCert = sslCertsSecret.Data["tls.crt"]
-	case k8sErrors.IsNotFound(err):
-		serverCert = nil
-	default:
+	serverCert, err := getKCServerCert(secretClient, kc)
+	if err != nil {
 		return nil, err
 	}
 
@@ -953,4 +947,16 @@ func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (
 		return nil, err
 	}
 	return client, nil
+}
+
+func getKCServerCert(secretClient *kubernetes.Clientset, kc v1alpha1.Keycloak) ([]byte, error) {
+	sslCertsSecret, err := secretClient.CoreV1().Secrets(kc.Namespace).Get(context.TODO(), model.ServingCertSecretName, v12.GetOptions{})
+	switch {
+	case err == nil:
+		return sslCertsSecret.Data["tls.crt"], nil
+	case k8sErrors.IsNotFound(err):
+		return nil, nil
+	default:
+		return nil, err
+	}
 }
