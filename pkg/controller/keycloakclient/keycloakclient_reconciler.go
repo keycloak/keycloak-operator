@@ -51,6 +51,8 @@ func (i *KeycloakClientReconciler) Reconcile(state *common.ClientState, cr *kc.K
 
 	i.ReconcileScopeMappings(state, cr, &desired)
 
+	i.ReconcileClientScopes(state, cr, &desired)
+
 	return desired
 }
 
@@ -129,6 +131,32 @@ func (i *KeycloakClientReconciler) ReconcileScopeMappings(state *common.ClientSt
 	}
 	for _, clientMappings := range mappingsDeleted.ClientMappings {
 		desired.AddAction(i.getDeletedClientClientScopeMappingsState(state, cr, clientMappings.DeepCopy()))
+	}
+}
+
+func (i *KeycloakClientReconciler) ReconcileClientScopes(state *common.ClientState, cr *kc.KeycloakClient, desired *common.DesiredClusterState) {
+	defaultClientScopes := model.FilterClientScopesByNames(state.AvailableClientScopes, cr.Spec.Client.DefaultClientScopes)
+
+	defaultClientScopesNew, _ := model.ClientScopeDifferenceIntersection(defaultClientScopes, state.DefaultClientScopes)
+	for _, clientScope := range defaultClientScopesNew {
+		desired.AddAction(i.getCreatedClientDefaultClientScopeState(state, cr, clientScope.DeepCopy()))
+	}
+
+	defaultClientScopesDeleted, _ := model.ClientScopeDifferenceIntersection(state.DefaultClientScopes, defaultClientScopes)
+	for _, clientScope := range defaultClientScopesDeleted {
+		desired.AddAction(i.getDeletedClientDefaultClientScopeState(state, cr, clientScope.DeepCopy()))
+	}
+
+	optionalClientScopes := model.FilterClientScopesByNames(state.AvailableClientScopes, cr.Spec.Client.OptionalClientScopes)
+
+	optionalClientScopesNew, _ := model.ClientScopeDifferenceIntersection(optionalClientScopes, state.OptionalClientScopes)
+	for _, clientScope := range optionalClientScopesNew {
+		desired.AddAction(i.getCreatedClientOptionalClientScopeState(state, cr, clientScope.DeepCopy()))
+	}
+
+	optionalClientScopesDeleted, _ := model.ClientScopeDifferenceIntersection(state.OptionalClientScopes, optionalClientScopes)
+	for _, clientScope := range optionalClientScopesDeleted {
+		desired.AddAction(i.getDeletedClientOptionalClientScopeState(state, cr, clientScope.DeepCopy()))
 	}
 }
 
@@ -289,5 +317,41 @@ func (i *KeycloakClientReconciler) getDeletedClientClientScopeMappingsState(stat
 		Ref:      cr,
 		Realm:    state.Realm.Spec.Realm.Realm,
 		Msg:      fmt.Sprintf("delete client client scope mappings %v/%v => %v", cr.Namespace, cr.Spec.Client.ClientID, mappings.Client),
+	}
+}
+
+func (i *KeycloakClientReconciler) getCreatedClientDefaultClientScopeState(state *common.ClientState, cr *kc.KeycloakClient, clientScope *kc.KeycloakClientScope) common.ClusterAction {
+	return common.UpdateClientDefaultClientScopeAction{
+		ClientScope: clientScope,
+		Ref:         cr,
+		Realm:       state.Realm.Spec.Realm.Realm,
+		Msg:         fmt.Sprintf("create client default client scope %v/%v => %v", cr.Namespace, cr.Spec.Client.ClientID, clientScope.Name),
+	}
+}
+
+func (i *KeycloakClientReconciler) getCreatedClientOptionalClientScopeState(state *common.ClientState, cr *kc.KeycloakClient, clientScope *kc.KeycloakClientScope) common.ClusterAction {
+	return common.UpdateClientOptionalClientScopeAction{
+		ClientScope: clientScope,
+		Ref:         cr,
+		Realm:       state.Realm.Spec.Realm.Realm,
+		Msg:         fmt.Sprintf("create client optional client scope %v/%v => %v", cr.Namespace, cr.Spec.Client.ClientID, clientScope.Name),
+	}
+}
+
+func (i *KeycloakClientReconciler) getDeletedClientDefaultClientScopeState(state *common.ClientState, cr *kc.KeycloakClient, clientScope *kc.KeycloakClientScope) common.ClusterAction {
+	return common.DeleteClientDefaultClientScopeAction{
+		ClientScope: clientScope,
+		Ref:         cr,
+		Realm:       state.Realm.Spec.Realm.Realm,
+		Msg:         fmt.Sprintf("delete client default client scope %v/%v => %v", cr.Namespace, cr.Spec.Client.ClientID, clientScope.Name),
+	}
+}
+
+func (i *KeycloakClientReconciler) getDeletedClientOptionalClientScopeState(state *common.ClientState, cr *kc.KeycloakClient, clientScope *kc.KeycloakClientScope) common.ClusterAction {
+	return common.DeleteClientOptionalClientScopeAction{
+		ClientScope: clientScope,
+		Ref:         cr,
+		Realm:       state.Realm.Spec.Realm.Realm,
+		Msg:         fmt.Sprintf("delete client optional client scope %v/%v => %v", cr.Namespace, cr.Spec.Client.ClientID, clientScope.Name),
 	}
 }

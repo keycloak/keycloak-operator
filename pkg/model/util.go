@@ -174,3 +174,48 @@ func roleMatches(a v1alpha1.RoleRepresentation, b v1alpha1.RoleRepresentation) b
 	}
 	return a.Name == b.Name
 }
+
+// FIXME Find a better way to refactor this code with role difference part above
+// returned clientScopes are always from a
+func ClientScopeDifferenceIntersection(a []v1alpha1.KeycloakClientScope, b []v1alpha1.KeycloakClientScope) (d []v1alpha1.KeycloakClientScope, i []v1alpha1.KeycloakClientScope) {
+	for _, clientScope := range a {
+		if hasMatchingClientScope(b, clientScope) {
+			i = append(i, clientScope)
+		} else {
+			d = append(d, clientScope)
+		}
+	}
+	return d, i
+}
+
+func hasMatchingClientScope(clientScopes []v1alpha1.KeycloakClientScope, otherClientScope v1alpha1.KeycloakClientScope) bool {
+	for _, clientScope := range clientScopes {
+		if clientScopeMatches(clientScope, otherClientScope) {
+			return true
+		}
+	}
+	return false
+}
+
+func clientScopeMatches(a v1alpha1.KeycloakClientScope, b v1alpha1.KeycloakClientScope) bool {
+	if a.ID != "" && b.ID != "" {
+		return a.ID == b.ID
+	}
+	return a.Name == b.Name
+}
+
+func FilterClientScopesByNames(clientScopes []v1alpha1.KeycloakClientScope, names []string) (filteredScopes []v1alpha1.KeycloakClientScope) {
+	hashMap := make(map[string]v1alpha1.KeycloakClientScope)
+
+	for _, scope := range clientScopes {
+		hashMap[scope.Name] = scope
+	}
+
+	for _, name := range names {
+		if scope, retrieved := hashMap[name]; retrieved {
+			filteredScopes = append(filteredScopes, scope)
+		}
+	}
+
+	return filteredScopes
+}

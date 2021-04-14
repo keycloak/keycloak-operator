@@ -435,6 +435,14 @@ func (c *Client) UpdateAuthenticatorConfig(authenticatorConfig *v1alpha1.Authent
 	return c.update(authenticatorConfig, fmt.Sprintf("realms/%s/authentication/config/%s", realmName, authenticatorConfig.ID), "AuthenticatorConfig")
 }
 
+func (c *Client) UpdateClientDefaultClientScope(specClient *v1alpha1.KeycloakAPIClient, clientScope *v1alpha1.KeycloakClientScope, realmName string) error {
+	return c.update(clientScope, fmt.Sprintf("realms/%s/clients/%s/default-client-scopes/%s", realmName, specClient.ID, clientScope.ID), "client default client scope")
+}
+
+func (c *Client) UpdateClientOptionalClientScope(specClient *v1alpha1.KeycloakAPIClient, clientScope *v1alpha1.KeycloakClientScope, realmName string) error {
+	return c.update(clientScope, fmt.Sprintf("realms/%s/clients/%s/optional-client-scopes/%s", realmName, specClient.ID, clientScope.ID), "client optional client scope")
+}
+
 // Generic delete function for deleting Keycloak resources
 func (c *Client) delete(resourcePath, resourceName string, obj T) error {
 	req, err := http.NewRequest(
@@ -502,6 +510,14 @@ func (c *Client) DeleteClientRealmScopeMappings(specClient *v1alpha1.KeycloakAPI
 
 func (c *Client) DeleteClientClientScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *v1alpha1.ClientMappingsRepresentation, realmName string) error {
 	return c.delete(fmt.Sprintf("realms/%s/clients/%s/scope-mappings/clients/%s", realmName, specClient.ID, mappings.ID), "client client scope mappings", mappings.Mappings)
+}
+
+func (c *Client) DeleteClientDefaultClientScope(specClient *v1alpha1.KeycloakAPIClient, clientScope *v1alpha1.KeycloakClientScope, realmName string) error {
+	return c.delete(fmt.Sprintf("realms/%s/clients/%s/default-client-scopes/%s", realmName, specClient.ID, clientScope.ID), "client default client scope", clientScope)
+}
+
+func (c *Client) DeleteClientOptionalClientScope(specClient *v1alpha1.KeycloakAPIClient, clientScope *v1alpha1.KeycloakClientScope, realmName string) error {
+	return c.delete(fmt.Sprintf("realms/%s/clients/%s/optional-client-scopes/%s", realmName, specClient.ID, clientScope.ID), "client optional client scope", clientScope)
 }
 
 func (c *Client) DeleteUser(userID, realmName string) error {
@@ -628,6 +644,38 @@ func (c *Client) ListScopeMappings(clientID, realmName string) (*v1alpha1.Mappin
 	}
 
 	return &res, nil
+}
+
+func (c *Client) listClientScopes(path string, msg string) ([]v1alpha1.KeycloakClientScope, error) {
+	result, err := c.list(path, msg, func(body []byte) (T, error) {
+		var assignedClientScopes []v1alpha1.KeycloakClientScope
+		err := json.Unmarshal(body, &assignedClientScopes)
+		return assignedClientScopes, err
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	res, ok := result.([]v1alpha1.KeycloakClientScope)
+
+	if !ok {
+		return nil, errors.Errorf("error decoding list %s response", msg)
+	}
+
+	return res, nil
+}
+
+func (c *Client) ListAvailableClientScopes(realmName string) ([]v1alpha1.KeycloakClientScope, error) {
+	return c.listClientScopes(fmt.Sprintf("realms/%s/client-scopes", realmName), "available client scopes")
+}
+
+func (c *Client) ListDefaultClientScopes(clientID, realmName string) ([]v1alpha1.KeycloakClientScope, error) {
+	return c.listClientScopes(fmt.Sprintf("realms/%s/clients/%s/default-client-scopes", realmName, clientID), "default client scopes")
+}
+
+func (c *Client) ListOptionalClientScopes(clientID, realmName string) ([]v1alpha1.KeycloakClientScope, error) {
+	return c.listClientScopes(fmt.Sprintf("realms/%s/clients/%s/optional-client-scopes", realmName, clientID), "optional client scopes")
 }
 
 func (c *Client) ListUsers(realmName string) ([]*v1alpha1.KeycloakAPIUser, error) {
@@ -826,6 +874,9 @@ type KeycloakInterface interface {
 	ListClients(realmName string) ([]*v1alpha1.KeycloakAPIClient, error)
 	ListClientRoles(clientID, realmName string) ([]v1alpha1.RoleRepresentation, error)
 	ListScopeMappings(clientID, realmName string) (*v1alpha1.MappingsRepresentation, error)
+	ListAvailableClientScopes(realmName string) ([]v1alpha1.KeycloakClientScope, error)
+	ListDefaultClientScopes(clientID, realmName string) ([]v1alpha1.KeycloakClientScope, error)
+	ListOptionalClientScopes(clientID, realmName string) ([]v1alpha1.KeycloakClientScope, error)
 	CreateClientRole(clientID string, role *v1alpha1.RoleRepresentation, realmName string) (string, error)
 	UpdateClientRole(clientID string, role, oldRole *v1alpha1.RoleRepresentation, realmName string) error
 	DeleteClientRole(clientID, role, realmName string) error
@@ -833,6 +884,10 @@ type KeycloakInterface interface {
 	DeleteClientRealmScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *[]v1alpha1.RoleRepresentation, realmName string) error
 	CreateClientClientScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *v1alpha1.ClientMappingsRepresentation, realmName string) error
 	DeleteClientClientScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *v1alpha1.ClientMappingsRepresentation, realmName string) error
+	UpdateClientDefaultClientScope(specClient *v1alpha1.KeycloakAPIClient, clientScope *v1alpha1.KeycloakClientScope, realmName string) error
+	DeleteClientDefaultClientScope(specClient *v1alpha1.KeycloakAPIClient, clientScope *v1alpha1.KeycloakClientScope, realmName string) error
+	UpdateClientOptionalClientScope(specClient *v1alpha1.KeycloakAPIClient, clientScope *v1alpha1.KeycloakClientScope, realmName string) error
+	DeleteClientOptionalClientScope(specClient *v1alpha1.KeycloakAPIClient, clientScope *v1alpha1.KeycloakClientScope, realmName string) error
 
 	CreateUser(user *v1alpha1.KeycloakAPIUser, realmName string) (string, error)
 	CreateFederatedIdentity(fid v1alpha1.FederatedIdentity, userID string, realmName string) (string, error)

@@ -11,12 +11,15 @@ import (
 )
 
 type ClientState struct {
-	Client        *kc.KeycloakAPIClient
-	ClientSecret  *v1.Secret
-	Context       context.Context
-	Realm         *kc.KeycloakRealm
-	Roles         []kc.RoleRepresentation
-	ScopeMappings *kc.MappingsRepresentation
+	Client                *kc.KeycloakAPIClient
+	ClientSecret          *v1.Secret
+	Context               context.Context
+	Realm                 *kc.KeycloakRealm
+	Roles                 []kc.RoleRepresentation
+	ScopeMappings         *kc.MappingsRepresentation
+	AvailableClientScopes []kc.KeycloakClientScope
+	DefaultClientScopes   []kc.KeycloakClientScope
+	OptionalClientScopes  []kc.KeycloakClientScope
 }
 
 func NewClientState(context context.Context, realm *kc.KeycloakRealm) *ClientState {
@@ -65,8 +68,34 @@ func (i *ClientState) Read(context context.Context, cr *kc.KeycloakClient, realm
 		if err != nil {
 			return err
 		}
+
+		err := i.readClientScopes(cr, realmClient)
+		if err != nil {
+			return err
+		}
 	}
 
+	return nil
+}
+
+func (i *ClientState) readClientScopes(cr *kc.KeycloakClient, realmClient KeycloakInterface) (err error) {
+	// It is not strictly a property of the client but rather of the realm.
+	// However could not figure out a better way to convey it to populate default and optional
+	// client scopes which requires client scope IDs.
+	i.AvailableClientScopes, err = realmClient.ListAvailableClientScopes(i.Realm.Spec.Realm.Realm)
+	if err != nil {
+		return err
+	}
+
+	i.DefaultClientScopes, err = realmClient.ListDefaultClientScopes(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
+	if err != nil {
+		return err
+	}
+
+	i.OptionalClientScopes, err = realmClient.ListOptionalClientScopes(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 

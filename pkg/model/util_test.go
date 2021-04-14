@@ -126,3 +126,31 @@ func TestKeycloakClientReconciler_Test_Role_DifferenceIntersection(t *testing.T)
 	assert.Equal(t, expectedDifference, difference)
 	assert.Equal(t, expectedIntersection, intersection)
 }
+
+func TestKeycloakClientReconciler_Test_ClientScope_DifferenceIntersection(t *testing.T) {
+	// given
+	a := []v1alpha1.KeycloakClientScope{
+		{Name: "a"},
+		{ID: "ignored", Name: "b"},
+		{ID: "cID", Name: "c"},
+	}
+	b := []v1alpha1.KeycloakClientScope{
+		{Name: "b"},
+		{ID: "cID", Name: "differentName"},
+		{Name: "d"},
+	}
+
+	// when
+	difference, intersection := ClientScopeDifferenceIntersection(a, b)
+
+	// then
+	expectedDifference := []v1alpha1.KeycloakClientScope{
+		{Name: "a"},
+	}
+	expectedIntersection := []v1alpha1.KeycloakClientScope{
+		{ID: "ignored", Name: "b"},
+		{ID: "cID", Name: "c"},
+	}
+	assert.Equal(t, expectedDifference, difference)
+	assert.Equal(t, expectedIntersection, intersection)
+}

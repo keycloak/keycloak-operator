@@ -36,6 +36,10 @@ type ActionRunner interface {
 	DeleteClientRealmScopeMappings(keycloakClient *v1alpha1.KeycloakClient, mappings *[]v1alpha1.RoleRepresentation, realm string) error
 	CreateClientClientScopeMappings(keycloakClient *v1alpha1.KeycloakClient, mappings *v1alpha1.ClientMappingsRepresentation, realm string) error
 	DeleteClientClientScopeMappings(keycloakClient *v1alpha1.KeycloakClient, mappings *v1alpha1.ClientMappingsRepresentation, realm string) error
+	UpdateClientDefaultClientScope(keycloakClient *v1alpha1.KeycloakClient, clientScope *v1alpha1.KeycloakClientScope, realm string) error
+	DeleteClientDefaultClientScope(keycloakClient *v1alpha1.KeycloakClient, clientScope *v1alpha1.KeycloakClientScope, realm string) error
+	UpdateClientOptionalClientScope(keycloakClient *v1alpha1.KeycloakClient, clientScope *v1alpha1.KeycloakClientScope, realm string) error
+	DeleteClientOptionalClientScope(keycloakClient *v1alpha1.KeycloakClient, clientScope *v1alpha1.KeycloakClientScope, realm string) error
 	CreateUser(obj *v1alpha1.KeycloakUser, realm string) error
 	UpdateUser(obj *v1alpha1.KeycloakUser, realm string) error
 	DeleteUser(id, realm string) error
@@ -190,6 +194,34 @@ func (i *ClusterActionRunner) CreateClientClientScopeMappings(keycloakClient *v1
 		return errors.Errorf("cannot perform client client scope create when client is nil")
 	}
 	return i.keycloakClient.CreateClientClientScopeMappings(keycloakClient.Spec.Client, mappings, realm)
+}
+
+func (i *ClusterActionRunner) DeleteClientDefaultClientScope(keycloakClient *v1alpha1.KeycloakClient, clientScope *v1alpha1.KeycloakClientScope, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform client default client scope delete when client is nil")
+	}
+	return i.keycloakClient.DeleteClientDefaultClientScope(keycloakClient.Spec.Client, clientScope, realm)
+}
+
+func (i *ClusterActionRunner) UpdateClientDefaultClientScope(keycloakClient *v1alpha1.KeycloakClient, clientScope *v1alpha1.KeycloakClientScope, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform client default client scope create when client is nil")
+	}
+	return i.keycloakClient.UpdateClientDefaultClientScope(keycloakClient.Spec.Client, clientScope, realm)
+}
+
+func (i *ClusterActionRunner) DeleteClientOptionalClientScope(keycloakClient *v1alpha1.KeycloakClient, clientScope *v1alpha1.KeycloakClientScope, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform client optional client scope delete when client is nil")
+	}
+	return i.keycloakClient.DeleteClientOptionalClientScope(keycloakClient.Spec.Client, clientScope, realm)
+}
+
+func (i *ClusterActionRunner) UpdateClientOptionalClientScope(keycloakClient *v1alpha1.KeycloakClient, clientScope *v1alpha1.KeycloakClientScope, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform client optional client scope create when client is nil")
+	}
+	return i.keycloakClient.UpdateClientOptionalClientScope(keycloakClient.Spec.Client, clientScope, realm)
 }
 
 func (i *ClusterActionRunner) DeleteClientClientScopeMappings(keycloakClient *v1alpha1.KeycloakClient, mappings *v1alpha1.ClientMappingsRepresentation, realm string) error {
@@ -440,6 +472,34 @@ type DeleteClientClientScopeMappingsAction struct {
 	Realm    string
 }
 
+type UpdateClientDefaultClientScopeAction struct {
+	ClientScope *v1alpha1.KeycloakClientScope
+	Ref         *v1alpha1.KeycloakClient
+	Msg         string
+	Realm       string
+}
+
+type DeleteClientDefaultClientScopeAction struct {
+	ClientScope *v1alpha1.KeycloakClientScope
+	Ref         *v1alpha1.KeycloakClient
+	Msg         string
+	Realm       string
+}
+
+type UpdateClientOptionalClientScopeAction struct {
+	ClientScope *v1alpha1.KeycloakClientScope
+	Ref         *v1alpha1.KeycloakClient
+	Msg         string
+	Realm       string
+}
+
+type DeleteClientOptionalClientScopeAction struct {
+	ClientScope *v1alpha1.KeycloakClientScope
+	Ref         *v1alpha1.KeycloakClient
+	Msg         string
+	Realm       string
+}
+
 type ConfigureRealmAction struct {
 	Ref *v1alpha1.KeycloakRealm
 	Msg string
@@ -543,6 +603,22 @@ func (i CreateClientClientScopeMappingsAction) Run(runner ActionRunner) (string,
 
 func (i DeleteClientClientScopeMappingsAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.DeleteClientClientScopeMappings(i.Ref, i.Mappings, i.Realm)
+}
+
+func (i UpdateClientDefaultClientScopeAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.UpdateClientDefaultClientScope(i.Ref, i.ClientScope, i.Realm)
+}
+
+func (i DeleteClientDefaultClientScopeAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.DeleteClientDefaultClientScope(i.Ref, i.ClientScope, i.Realm)
+}
+
+func (i UpdateClientOptionalClientScopeAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.UpdateClientOptionalClientScope(i.Ref, i.ClientScope, i.Realm)
+}
+
+func (i DeleteClientOptionalClientScopeAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.DeleteClientOptionalClientScope(i.Ref, i.ClientScope, i.Realm)
 }
 
 func (i DeleteRealmAction) Run(runner ActionRunner) (string, error) {
