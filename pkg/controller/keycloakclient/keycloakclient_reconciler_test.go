@@ -160,6 +160,8 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 				ClientID:                     "test",
 				Secret:                       "test",
 				AuthorizationServicesEnabled: true,
+				DefaultClientScopes:          []string{"profile"},
+				OptionalClientScopes:         []string{"email"},
 			},
 			Roles: []v1alpha1.RoleRepresentation{
 				{ID: "delete_recreateID2", Name: "delete_recreate"},
@@ -197,6 +199,9 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 			ClientMappings: map[string]v1alpha1.ClientMappingsRepresentation{"someclient": {Mappings: []v1alpha1.RoleRepresentation{{Name: "a"}, {Name: "b"}}}},
 			RealmMappings:  []v1alpha1.RoleRepresentation{{Name: "ra"}, {Name: "rb"}},
 		},
+		AvailableClientScopes: []v1alpha1.KeycloakClientScope{{Name: "address", ID: "222"}, {Name: "email", ID: "421"}, {Name: "profile", ID: "314"}},
+		DefaultClientScopes:   []v1alpha1.KeycloakClientScope{},
+		OptionalClientScopes:  []v1alpha1.KeycloakClientScope{{Name: "address", ID: "222"}},
 	}
 
 	// when
@@ -236,7 +241,14 @@ func TestKeycloakClientReconciler_Test_Update_Client(t *testing.T) {
 	assert.IsType(t, common.DeleteClientRealmScopeMappingsAction{}, desiredState[12])
 	assert.IsType(t, common.DeleteClientClientScopeMappingsAction{}, desiredState[13])
 
-	assert.Equal(t, 14, len(desiredState))
+	assert.IsType(t, common.UpdateClientDefaultClientScopeAction{}, desiredState[14])
+	assert.Equal(t, "314", desiredState[14].(common.UpdateClientDefaultClientScopeAction).ClientScope.ID)
+	assert.IsType(t, common.UpdateClientOptionalClientScopeAction{}, desiredState[15])
+	assert.Equal(t, "421", desiredState[15].(common.UpdateClientOptionalClientScopeAction).ClientScope.ID)
+	assert.IsType(t, common.DeleteClientOptionalClientScopeAction{}, desiredState[16])
+	assert.Equal(t, "222", desiredState[16].(common.DeleteClientOptionalClientScopeAction).ClientScope.ID)
+
+	assert.Equal(t, 17, len(desiredState))
 }
 
 func TestKeycloakClientReconciler_Test_Marshal_Client(t *testing.T) {
