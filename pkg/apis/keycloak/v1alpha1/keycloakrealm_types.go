@@ -174,6 +174,13 @@ type KeycloakAPIRealm struct {
 	// Client Scope Mappings
 	// +optional
 	ClientScopeMappings map[string]ScopeMappingRepresentationArray `json:"clientScopeMappings,omitempty"`
+
+	// Access Token Lifespan For Implicit Flow
+	// +optional
+	AccessTokenLifespanForImplicitFlow *int32 `json:"accessTokenLifespanForImplicitFlow,omitempty"`
+	// Access Token Lifespan
+	// +optional
+	AccessTokenLifespan *int32 `json:"accessTokenLifespan,omitempty"`
 }
 
 type RoleRepresentationArray []RoleRepresentation
