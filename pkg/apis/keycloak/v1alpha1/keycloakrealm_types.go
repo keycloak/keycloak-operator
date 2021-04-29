@@ -38,6 +38,9 @@ type KeycloakAPIRealm struct {
 	// Realm HTML display name.
 	// +optional
 	DisplayNameHTML string `json:"displayNameHtml,omitempty"`
+	// Realm Password Policy
+	// +optional
+	PasswordPolicy string `json:"passwordPolicy,omitempty"`
 	// A set of Keycloak Users.
 	// +optional
 	Users []*KeycloakAPIUser `json:"users,omitempty"`
