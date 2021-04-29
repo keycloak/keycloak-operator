@@ -559,6 +559,16 @@ func (in *KeycloakAPIRealm) DeepCopyInto(out *KeycloakAPIRealm) {
 			(*out)[key] = outVal
 		}
 	}
+	if in.AccessTokenLifespanForImplicitFlow != nil {
+		in, out := &in.AccessTokenLifespanForImplicitFlow, &out.AccessTokenLifespanForImplicitFlow
+		*out = new(int32)
+		**out = **in
+	}
+	if in.AccessTokenLifespan != nil {
+		in, out := &in.AccessTokenLifespan, &out.AccessTokenLifespan
+		*out = new(int32)
+		**out = **in
+	}
 	return
 }
 

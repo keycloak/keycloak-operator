@@ -77,17 +77,14 @@ spec:
             realm:
               description: Keycloak Realm REST object.
               properties:
-                accessTokenLifespanForImplicitFlow:
-                  description: 'Max time before an access token issued during OpenID Connect Implicit Flow is expired. 
-                     This value is recommended to be shorter than SSO timeout. 
-                     There is no possibility to refresh token during implicit flow, 
-                     thats why there is a separate timeout different to Access Token Lifespan.'
-                  type: integer
-                  format: int32
                 accessTokenLifespan:
-                  description: 'Max time before an access token is expired. This value is recommended to be short relative to the SSO timeout.'
-                  type: integer
+                  description: Access Token Lifespan
                   format: int32
+                  type: integer
+                accessTokenLifespanForImplicitFlow:
+                  description: Access Token Lifespan For Implicit Flow
+                  format: int32
+                  type: integer
                 accountTheme:
                   description: Account Theme
                   type: string
@@ -826,7 +823,7 @@ spec:
                   description: Realm display name.
                   type: string
                 displayNameHtml:
-                  description: Realm display name in HTML.
+                  description: Realm HTML display name.
                   type: string
                 duplicateEmailsAllowed:
                   description: Duplicate emails
@@ -921,6 +918,9 @@ spec:
                   description: Minimum Quick Login Wait
                   format: int32
                   type: integer
+                passwordPolicy:
+                  description: Realm Password Policy
+                  type: string
                 permanentLockout:
                   description: Permanent Lockout
                   type: boolean
