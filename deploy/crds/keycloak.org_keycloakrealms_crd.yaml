@@ -807,6 +807,9 @@ spec:
                       useTemplateScope:
                         description: True to use Template Scope.
                         type: boolean
+                      userManagedAccessAllowed:
+                        description: If enabled, users are allowed to manage their resources and permissions using the Account Management Console.
+                        type: boolean
                       webOrigins:
                         description: A list of valid Web Origins.
                         items:
