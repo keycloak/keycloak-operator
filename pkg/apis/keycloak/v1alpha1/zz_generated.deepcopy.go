@@ -569,6 +569,11 @@ func (in *KeycloakAPIRealm) DeepCopyInto(out *KeycloakAPIRealm) {
 		*out = new(int32)
 		**out = **in
 	}
+	if in.UserManagedAccessAllowed != nil {
+		in, out := &in.UserManagedAccessAllowed, &out.UserManagedAccessAllowed
+		*out = new(bool)
+		**out = **in
+	}
 	return
 }
 

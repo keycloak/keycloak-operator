@@ -229,7 +229,7 @@ type KeycloakStatus struct {
 	// An internal URL (service name) to be used by the admin client.
 	InternalURL string `json:"internalURL"`
 	// External URL for accessing Keycloak instance from outside the cluster. Is identical to external.URL if it's specified, otherwise is computed (e.g. from Ingress).
-	ExternalURL string `json:"externalURL"`
+	ExternalURL string `json:"externalURL,omitempty"`
 	// The secret where the admin credentials are to be found.
 	CredentialSecret string `json:"credentialSecret"`
 }

@@ -807,9 +807,6 @@ spec:
                       useTemplateScope:
                         description: True to use Template Scope.
                         type: boolean
-                      userManagedAccessAllowed:
-                        description: If enabled, users are allowed to manage their resources and permissions using the Account Management Console.
-                        type: boolean
                       webOrigins:
                         description: A list of valid Web Origins.
                         items:
@@ -1141,6 +1138,9 @@ spec:
                         type: string
                     type: object
                   type: array
+                userManagedAccessAllowed:
+                  description: User Managed Access Allowed
+                  type: boolean
                 users:
                   description: A set of Keycloak Users.
                   items:
