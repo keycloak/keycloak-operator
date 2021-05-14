@@ -1064,7 +1064,6 @@ spec:
               type: string
           required:
           - credentialSecret
-          - externalURL
           - internalURL
           - message
           - phase
