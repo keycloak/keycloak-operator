@@ -27,6 +27,7 @@ func getSpec(dbSecret *v1.Secret, serviceTypeExternal bool) v1.ServiceSpec {
 
 	spec.Ports = []v1.ServicePort{
 		{
+			Name:       PostgresqlPortName,
 			Port:       GetExternalDatabasePort(dbSecret),
 			TargetPort: intstr.Parse(fmt.Sprintf("%d", GetExternalDatabasePort(dbSecret))),
 		},
@@ -65,6 +66,7 @@ func PostgresqlServiceReconciled(currentState *v1.Service, dbSecret *v1.Secret, 
 		}
 		reconciled.Spec.Ports = []v1.ServicePort{
 			{
+				Name:       PostgresqlPortName,
 				Port:       5432,
 				TargetPort: intstr.Parse("5432"),
 			},

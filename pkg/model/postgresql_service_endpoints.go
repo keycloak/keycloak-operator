@@ -15,7 +15,8 @@ func PostgresqlServiceEndpoints(cr *v1alpha1.Keycloak) *v1.Endpoints {
 			Name:      PostgresqlServiceName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
-				"app": ApplicationName,
+				"app":       ApplicationName,
+				"component": PostgresqlDeploymentComponent,
 			},
 		},
 		Subsets: []v1.EndpointSubset{{
@@ -57,6 +58,7 @@ func PostgresqlServiceEndpointsReconciled(cr *v1alpha1.Keycloak, currentState *v
 	}
 
 	reconciled.Subsets[0].Ports = []v1.EndpointPort{{
+		Name:     PostgresqlPortName,
 		Port:     int32(portAsInt),
 		Protocol: "TCP",
 	}}

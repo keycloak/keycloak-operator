@@ -14,6 +14,7 @@ const (
 	KeycloakMetricsRouteRewritePath      = "/auth/realms/master"
 	PostgresqlDeploymentComponent        = "database"
 	PostgresqlServiceName                = ApplicationName + "-postgresql"
+	PostgresqlPortName                   = PostgresqlServiceName + "-port"
 	KeycloakDiscoveryServiceName         = ApplicationName + "-discovery"
 	KeycloakMonitoringServiceName        = ApplicationName + "-monitoring"
 	KeycloakDeploymentName               = ApplicationName
