@@ -757,7 +757,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakStatus(ref common.ReferenceCallba
 						},
 					},
 				},
-				Required: []string{"phase", "message", "ready", "version", "internalURL", "externalURL", "credentialSecret"},
+				Required: []string{"phase", "message", "ready", "version", "internalURL", "credentialSecret"},
 			},
 		},
 	}
