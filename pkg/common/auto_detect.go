@@ -72,7 +72,7 @@ func (b *Background) detectMonitoringResources() {
 
 	// detect the GrafanaDashboard resource type resourceExists on the cluster
 	resourceExists, _ = k8sutil.ResourceExists(b.dc, grafanav1alpha1.SchemeGroupVersion.String(), grafanav1alpha1.GrafanaDashboardKind)
-	stateManager.SetState(monitoringv1.ServiceMonitorsKind, resourceExists)
+	stateManager.SetState(grafanav1alpha1.GrafanaDashboardKind, resourceExists)
 }
 
 func (b *Background) detectOpenshift() {
