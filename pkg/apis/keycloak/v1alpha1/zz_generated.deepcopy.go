@@ -388,6 +388,11 @@ func (in *KeycloakAPIRealm) DeepCopyInto(out *KeycloakAPIRealm) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.EnabledEventTypes != nil {
+		in, out := &in.EnabledEventTypes, &out.EnabledEventTypes
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.AdminEventsEnabled != nil {
 		in, out := &in.AdminEventsEnabled, &out.AdminEventsEnabled
 		*out = new(bool)

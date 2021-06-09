@@ -57,6 +57,9 @@ type KeycloakAPIRealm struct {
 	// TODO: change to values and use kubebuilder default annotation once supported
 	// +optional
 	EventsEnabled *bool `json:"eventsEnabled,omitempty"`
+	// Enabled event types
+	// +optional
+	EnabledEventTypes []string `json:"enabledEventTypes,omitempty"`
 	// Enable events recording
 	// TODO: change to values and use kubebuilder default annotation once supported
 	// +optional

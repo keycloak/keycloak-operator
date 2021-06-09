@@ -39,6 +39,9 @@ func NewKeycloakRealmsCRDTestStruct() *CRDTestStruct {
 			"keycloakRealmWithUserFederationTest": {
 				testFunction: keycloakRealmWithUserFederationTest,
 			},
+			"keycloakRealmWithEventsTest": {
+				testFunction: keycloakRealmWithEventsTest,
+			},
 			"unmanagedKeycloakRealmTest": {
 				testFunction: keycloakUnmanagedRealmTest,
 			},
@@ -483,4 +486,18 @@ func keycloakUnmanagedRealmTest(t *testing.T, framework *test.Framework, ctx *te
 	}
 
 	return err
+}
+
+func keycloakRealmWithEventsTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	keycloakRealmCR := getKeycloakRealmCR(namespace)
+
+	keycloakRealmCR.Spec.Realm.EventsEnabled = &[]bool{true}[0]
+	keycloakRealmCR.Spec.Realm.EnabledEventTypes = []string{"SEND_RESET_PASSWORD", "LOGIN_ERROR"}
+
+	err := Create(framework, keycloakRealmCR, ctx)
+	if err != nil {
+		return err
+	}
+
+	return WaitForRealmToBeReady(t, framework, namespace)
 }

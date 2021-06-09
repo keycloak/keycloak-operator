@@ -837,6 +837,11 @@ spec:
                 enabled:
                   description: Realm enabled flag.
                   type: boolean
+                enabledEventTypes:
+                  description: Enabled event types
+                  items:
+                    type: string
+                  type: array
                 eventsEnabled:
                   description: 'Enable events recording TODO: change to values and
                     use kubebuilder default annotation once supported'
