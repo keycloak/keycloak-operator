@@ -7,7 +7,7 @@ import (
 	v1beta12 "k8s.io/api/policy/v1beta1"
 
 	v13 "github.com/openshift/api/route/v1"
-	"k8s.io/api/extensions/v1beta1"
+	v14 "k8s.io/api/networking/v1"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
 	grafanav1alpha1 "github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
@@ -60,7 +60,7 @@ type ClusterState struct {
 	KeycloakMonitoringService       *v1.Service
 	KeycloakDeployment              *v12.StatefulSet
 	KeycloakAdminSecret             *v1.Secret
-	KeycloakIngress                 *v1beta1.Ingress
+	KeycloakIngress                 *v14.Ingress
 	KeycloakRoute                   *v13.Route
 	KeycloakMetricsRoute            *v13.Route
 	PostgresqlServiceEndpoints      *v1.Endpoints
