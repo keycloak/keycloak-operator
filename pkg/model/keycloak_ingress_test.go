@@ -5,14 +5,14 @@ import (
 
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 )
 
 func TestKeycloakIngress_testTLSOverride(t *testing.T) {
 	//given
-	currentState := &v1beta1.Ingress{
-		Spec: v1beta1.IngressSpec{
-			TLS: []v1beta1.IngressTLS{
+	currentState := &networkingv1.Ingress{
+		Spec: networkingv1.IngressSpec{
+			TLS: []networkingv1.IngressTLS{
 				{
 					Hosts: []string{
 						IngressDefaultHost,
@@ -20,7 +20,7 @@ func TestKeycloakIngress_testTLSOverride(t *testing.T) {
 					SecretName: "keycloak-secret",
 				},
 			},
-			Rules: []v1beta1.IngressRule{
+			Rules: []networkingv1.IngressRule{
 				{
 					Host: IngressDefaultHost,
 				},
@@ -64,9 +64,9 @@ func TestKeycloakIngress_testHost(t *testing.T) {
 
 func TestKeycloakIngress_testHostReconciled(t *testing.T) {
 	//given
-	currentState := &v1beta1.Ingress{
-		Spec: v1beta1.IngressSpec{
-			Rules: []v1beta1.IngressRule{
+	currentState := &networkingv1.Ingress{
+		Spec: networkingv1.IngressSpec{
+			Rules: []networkingv1.IngressRule{
 				{
 					Host: IngressDefaultHost,
 				},
@@ -108,9 +108,9 @@ func TestKeycloakIngress_testHostOverride(t *testing.T) {
 
 func TestKeycloakIngress_testHostOverrideReconciled(t *testing.T) {
 	//given
-	currentState := &v1beta1.Ingress{
-		Spec: v1beta1.IngressSpec{
-			Rules: []v1beta1.IngressRule{
+	currentState := &networkingv1.Ingress{
+		Spec: networkingv1.IngressSpec{
+			Rules: []networkingv1.IngressRule{
 				{
 					Host: "host-override",
 				},

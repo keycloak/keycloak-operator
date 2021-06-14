@@ -8,7 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	v1 "k8s.io/api/core/v1"
-	"k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	monitoringv1 "github.com/coreos/prometheus-operator/pkg/apis/monitoring/v1"
@@ -109,7 +109,7 @@ func TestKeycloakReconciler_Test_Creating_RHSSO(t *testing.T) {
 	// then
 	var allCreateActions = true
 	var deployment *v13.StatefulSet
-	var ingress *v1beta1.Ingress
+	var ingress *networkingv1.Ingress
 	for _, v := range desiredState {
 		if reflect.TypeOf(v) != reflect.TypeOf(common.GenericCreateAction{}) {
 			allCreateActions = false
@@ -118,7 +118,7 @@ func TestKeycloakReconciler_Test_Creating_RHSSO(t *testing.T) {
 			deployment = v.(common.GenericCreateAction).Ref.(*v13.StatefulSet)
 		}
 		if reflect.TypeOf(v.(common.GenericCreateAction).Ref) == reflect.TypeOf(model.KeycloakIngress(cr)) {
-			ingress = v.(common.GenericCreateAction).Ref.(*v1beta1.Ingress)
+			ingress = v.(common.GenericCreateAction).Ref.(*networkingv1.Ingress)
 		}
 	}
 	assert.True(t, allCreateActions)

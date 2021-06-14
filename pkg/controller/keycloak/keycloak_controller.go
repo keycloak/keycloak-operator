@@ -26,7 +26,7 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"github.com/pkg/errors"
 
-	"k8s.io/api/extensions/v1beta1"
+	networkingv1 "k8s.io/api/networking/v1"
 	kubeerrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -92,7 +92,7 @@ func add(mgr manager.Manager, r reconcile.Reconciler) error {
 		return err
 	}
 
-	if err := common.WatchSecondaryResource(c, ControllerName, common.IngressKind, &v1beta1.Ingress{}, &kc.Keycloak{}); err != nil {
+	if err := common.WatchSecondaryResource(c, ControllerName, common.IngressKind, &networkingv1.Ingress{}, &kc.Keycloak{}); err != nil {
 		return err
 	}
 
