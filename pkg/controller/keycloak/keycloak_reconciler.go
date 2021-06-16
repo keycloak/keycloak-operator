@@ -33,7 +33,7 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 		desired = desired.AddAction(i.getDatabaseSecretDesiredState(clusterState, cr))
 		desired = desired.AddAction(i.getPostgresqlPersistentVolumeClaimDesiredState(clusterState, cr))
 		desired = desired.AddAction(i.getPostgresqlDeploymentDesiredState(clusterState, cr))
-		desired = desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, false))
+		desired = desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, false, false))
 	} else {
 		i.reconcileExternalDatabase(&desired, clusterState, cr)
 	}
@@ -61,12 +61,13 @@ func (i *KeycloakReconciler) reconcileExternalDatabase(desired *common.DesiredCl
 		// If the address of the external database is an IP address then we have to
 		// set up an endpoints object for the service to send traffic. An externalName
 		// type service won't work in this case. For more details, see https://cloud.google.com/blog/products/gcp/kubernetes-best-practices-mapping-external-services
+		// We also don't want to add a selector here, as it can mess up the service routing.
 		desired.AddAction(i.getPostgresqlServiceEndpointsDesiredState(clusterState, cr))
-		desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, false))
+		desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, false, true))
 	} else {
 		// If we have an URI for the external database then we can use a service of
 		// type externalName
-		desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, true))
+		desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, true, false))
 	}
 }
 
@@ -129,8 +130,8 @@ func (i *KeycloakReconciler) getPostgresqlPersistentVolumeClaimDesiredState(clus
 	}
 }
 
-func (i *KeycloakReconciler) getPostgresqlServiceDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak, isExternal bool) common.ClusterAction {
-	postgresqlService := model.PostgresqlService(cr, clusterState.DatabaseSecret, isExternal)
+func (i *KeycloakReconciler) getPostgresqlServiceDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak, isExternal, headless bool) common.ClusterAction {
+	postgresqlService := model.PostgresqlService(cr, clusterState.DatabaseSecret, isExternal, headless)
 	if clusterState.PostgresqlService == nil {
 		return common.GenericCreateAction{
 			Ref: postgresqlService,
@@ -138,7 +139,7 @@ func (i *KeycloakReconciler) getPostgresqlServiceDesiredState(clusterState *comm
 		}
 	}
 	return common.GenericUpdateAction{
-		Ref: model.PostgresqlServiceReconciled(clusterState.PostgresqlService, clusterState.DatabaseSecret, isExternal),
+		Ref: model.PostgresqlServiceReconciled(clusterState.PostgresqlService, clusterState.DatabaseSecret, isExternal, headless),
 		Msg: "Update Postgresql KeycloakService",
 	}
 }

@@ -10,7 +10,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func getSpec(dbSecret *v1.Secret, serviceTypeExternal bool) v1.ServiceSpec {
+func getSpec(dbSecret *v1.Secret, serviceTypeExternal, headless bool) v1.ServiceSpec {
 	spec := v1.ServiceSpec{}
 
 	if serviceTypeExternal {
@@ -19,9 +19,11 @@ func getSpec(dbSecret *v1.Secret, serviceTypeExternal bool) v1.ServiceSpec {
 		spec.ExternalName = GetExternalDatabaseHost(dbSecret)
 	} else {
 		spec.Type = v1.ServiceTypeClusterIP
-		spec.Selector = map[string]string{
-			"app":       ApplicationName,
-			"component": PostgresqlDeploymentComponent,
+		if !headless {
+			spec.Selector = map[string]string{
+				"app":       ApplicationName,
+				"component": PostgresqlDeploymentComponent,
+			}
 		}
 	}
 
@@ -35,7 +37,7 @@ func getSpec(dbSecret *v1.Secret, serviceTypeExternal bool) v1.ServiceSpec {
 	return spec
 }
 
-func PostgresqlService(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, serviceTypeExternal bool) *v1.Service {
+func PostgresqlService(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, serviceTypeExternal, headless bool) *v1.Service {
 	return &v1.Service{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      PostgresqlServiceName,
@@ -44,7 +46,7 @@ func PostgresqlService(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, serviceTypeEx
 				"app": ApplicationName,
 			},
 		},
-		Spec: getSpec(dbSecret, serviceTypeExternal),
+		Spec: getSpec(dbSecret, serviceTypeExternal, headless),
 	}
 }
 
@@ -55,7 +57,7 @@ func PostgresqlServiceSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 	}
 }
 
-func PostgresqlServiceReconciled(currentState *v1.Service, dbSecret *v1.Secret, serviceTypeExternal bool) *v1.Service {
+func PostgresqlServiceReconciled(currentState *v1.Service, dbSecret *v1.Secret, serviceTypeExternal, headless bool) *v1.Service {
 	reconciled := currentState.DeepCopy()
 	if !serviceTypeExternal {
 		reconciled.Spec.Type = v1.ServiceTypeClusterIP
@@ -70,7 +72,7 @@ func PostgresqlServiceReconciled(currentState *v1.Service, dbSecret *v1.Secret, 
 			},
 		}
 	} else {
-		reconciled.Spec = getSpec(dbSecret, serviceTypeExternal)
+		reconciled.Spec = getSpec(dbSecret, serviceTypeExternal, headless)
 	}
 	return reconciled
 }

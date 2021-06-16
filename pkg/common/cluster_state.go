@@ -213,7 +213,7 @@ func (i *ClusterState) readPostgresqlPersistentVolumeClaimCurrentState(context c
 }
 
 func (i *ClusterState) readPostgresqlServiceCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
-	postgresqlService := model.PostgresqlService(cr, nil, false)
+	postgresqlService := model.PostgresqlService(cr, nil, false, false)
 	postgresqlServiceSelector := model.PostgresqlServiceSelector(cr)
 
 	err := controllerClient.Get(context, postgresqlServiceSelector, postgresqlService)
