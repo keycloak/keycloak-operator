@@ -25,7 +25,7 @@ type KeycloakRealmSpec struct {
 type KeycloakAPIRealm struct {
 	// +kubebuilder:validation:Required
 	// +optional
-	ID string `json:"id"`
+	ID string `json:"id,omitempty"`
 	// Realm name.
 	// +kubebuilder:validation:Required
 	Realm string `json:"realm"`
