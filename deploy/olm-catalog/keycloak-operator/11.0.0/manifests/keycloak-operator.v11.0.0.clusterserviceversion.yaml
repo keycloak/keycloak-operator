@@ -113,6 +113,7 @@ metadata:
           }
         }
       ]
+    "olm.properties": '[{"type": "olm.maxOpenShiftVersion", "value": "4.8"}]'
   name: keycloak-operator.v11.0.0
   namespace: placeholder
 spec:
