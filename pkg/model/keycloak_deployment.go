@@ -234,6 +234,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 							Resources:      getResources(cr),
 						},
 					},
+					ServiceAccountName: getServiceAccountName(cr),
 				},
 			},
 		},
@@ -485,4 +486,11 @@ func KeycloakPodAffinity(cr *v1alpha1.Keycloak) *v1.Affinity {
 			},
 		},
 	}
+}
+
+func getServiceAccountName(cr *v1alpha1.Keycloak) string {
+	if cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName == "" {
+		return "default"
+	}
+	return cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName
 }
