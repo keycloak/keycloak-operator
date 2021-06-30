@@ -49,6 +49,14 @@ func TestKeycloakDeployment_testAffinityExperimental(t *testing.T) {
 	testAffinityExperimentalAffinitySet(t, KeycloakDeployment)
 }
 
+func TestKeycloakDeployment_testServiceAccountSetExperimental(t *testing.T) {
+	testServiceAccountSet(t, KeycloakDeployment)
+}
+
+func TestKeycloakDeployment_testServiceAccountDefaultExperimental(t *testing.T) {
+	testServiceAccountDefault(t, KeycloakDeployment)
+}
+
 func testExperimentalEnvs(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
 	//given
 	dbSecret := &v1.Secret{}
@@ -435,4 +443,31 @@ func testAffinityExperimentalAffinitySet(t *testing.T, deploymentFunction create
 	assert.Equal(t, "In", string(matchExprOperator1))
 	assert.Equal(t, ApplicationName, matchExpVal1)
 	assert.Equal(t, "kubernetes.io/hostname", topologyKey1)
+}
+
+func testServiceAccountSet(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
+	//given
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{}
+
+	//If serviceAccountName is set in the cr, is should manifest itself in the statefulset
+	cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName = "test"
+
+	//when
+	serviceAccountName := deploymentFunction(cr, dbSecret).Spec.Template.Spec.ServiceAccountName
+
+	assert.Equal(t, "test", serviceAccountName)
+}
+
+func testServiceAccountDefault(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
+	//given
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{}
+
+	//If serviceAccountName is not set in the cr, then the serviceAccountName should be default
+
+	//when
+	serviceAccountName := deploymentFunction(cr, dbSecret).Spec.Template.Spec.ServiceAccountName
+
+	assert.Equal(t, "default", serviceAccountName)
 }
