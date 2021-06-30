@@ -27,6 +27,11 @@ metadata:
 stringData:
   realm2_bindcred: "password"
 ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: service-account-keycloak
+---
 apiVersion: keycloak.org/v1alpha1
 kind: Keycloak
 metadata:
@@ -50,7 +55,7 @@ spec:
           - name: keytab
             mountPath: /keytabs
             secrets:
-              - keytab
+              - keytabs
           - name: vault
             mountPath: /opt/jboss/keycloak/secrets
             secrets:
@@ -81,3 +86,4 @@ spec:
                   values:
                   - keycloak
               topologyKey: "kubernetes.io/hostname"
+      serviceAccountName: service-account-keycloak

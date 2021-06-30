@@ -121,6 +121,9 @@ type ExperimentalSpec struct {
 	// Affinity settings
 	//+optional
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+	// ServiceAccountName settings
+	// +optional
+	ServiceAccountName string `json:"serviceAccountName,omitempty"`
 }
 
 type VolumesSpec struct {

@@ -876,6 +876,9 @@ spec:
                           - name
                           type: object
                         type: array
+                      serviceAccountName:
+                        description: ServiceAccountName settings
+                        type: string
                       volumes:
                         description: Additional volume mounts
                         properties:
