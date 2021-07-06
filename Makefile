@@ -13,7 +13,7 @@ OPERATOR_SDK_DOWNLOAD_URL=https://github.com/operator-framework/operator-sdk/rel
 # Compile constants
 COMPILE_TARGET=./tmp/_output/bin/$(PROJECT)
 GOOS=${GOOS:-${GOHOSTOS}}
-GOARCH=${GOACH:-${GOHOSTARCH}}
+GOARCH=${GOARCH:-${GOHOSTARCH}}
 CGO_ENABLED=0
 
 ##############################
