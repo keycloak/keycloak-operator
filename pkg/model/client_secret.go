@@ -10,7 +10,7 @@ import (
 func ClientSecret(cr *v1alpha1.KeycloakClient) *v1.Secret {
 	return &v1.Secret{
 		ObjectMeta: v12.ObjectMeta{
-			Name:      ClientSecretName + "-" + cr.Spec.Client.ClientID,
+			Name:      ClientSecretName + "-" + cr.Name,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
 				"app": ApplicationName,
@@ -25,7 +25,7 @@ func ClientSecret(cr *v1alpha1.KeycloakClient) *v1.Secret {
 
 func ClientSecretSelector(cr *v1alpha1.KeycloakClient) client.ObjectKey {
 	return client.ObjectKey{
-		Name:      ClientSecretName + "-" + cr.Spec.Client.ClientID,
+		Name:      ClientSecretName + "-" + cr.Name,
 		Namespace: cr.Namespace,
 	}
 }
