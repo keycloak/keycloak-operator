@@ -64,7 +64,7 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 		},
 		{
 			Name:  "DB_SCHEMA",
-			Value: "public",
+			Value: PostgresqlServiceSchema,
 		},
 		{
 			Name:  "DB_ADDR",
