@@ -147,10 +147,11 @@ func (i *KeycloakuserReconciler) getUserSecretDesiredState(state *common.UserSta
 	// deleted
 	if state.Secret == nil {
 		return &common.GenericCreateAction{
-			Ref: model.RealmCredentialSecret(&i.Realm, &cr.Spec.User, &i.Keycloak),
-			Msg: fmt.Sprintf("create credential secret for user %v in realm %v/%v",
-				cr.Spec.User.UserName,
+			Ref: model.RealmCredentialSecret(&i.Realm, cr.Namespace, &cr.Spec.User, &i.Keycloak),
+			Msg: fmt.Sprintf("create credential secret for user %v/%v in realm %v/%v",
 				cr.Namespace,
+				cr.Spec.User.UserName,
+				i.Realm.Namespace,
 				i.Realm.Spec.Realm.Realm),
 		}
 	}

@@ -97,8 +97,12 @@ func (i *KeycloakRealmReconciler) getDesiredUserSate(state *common.RealmState, c
 	val, ok := state.RealmUserSecrets[user.UserName]
 	if !ok || val == nil {
 		return &common.GenericCreateAction{
-			Ref: model.RealmCredentialSecret(cr, user, &i.Keycloak),
-			Msg: fmt.Sprintf("create credential secret for user %v in realm %v/%v", user.UserName, cr.Namespace, cr.Spec.Realm.Realm),
+			Ref: model.RealmCredentialSecret(cr, cr.Namespace, user, &i.Keycloak),
+			Msg: fmt.Sprintf("create credential secret for user %v/%v in realm %v/%v",
+				cr.Namespace,
+				user.UserName,
+				cr.Namespace,
+				cr.Spec.Realm.Realm),
 		}
 	}
 
