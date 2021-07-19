@@ -577,7 +577,7 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 				Properties: map[string]spec.Schema{
 					"unmanaged": {
 						SchemaProps: spec.SchemaProps{
-							Description: "When set to true, this Keycloak will be marked as unmanaged and will not be managed by this operator. It can then be used for targeting purposes.",
+							Description: "When set to true, this Keycloak will be marked as unmanaged and will not be managed by this operator. It can then be used for targeting purposes. To be able to connect to Keycloak, a k8s secret called \"credential-NAME\" must exist and contain ADMIN_USERNAME and ADMIN_PASSWORD",
 							Type:        []string{"boolean"},
 							Format:      "",
 						},

@@ -1043,7 +1043,8 @@ spec:
               unmanaged:
                 description: When set to true, this Keycloak will be marked as unmanaged
                   and will not be managed by this operator. It can then be used for
-                  targeting purposes.
+                  targeting purposes. To be able to connect to Keycloak, a k8s secret called
+                  "credential-NAME" must exist and contain ADMIN_USERNAME and ADMIN_PASSWORD
                 type: boolean
             type: object
           status:
