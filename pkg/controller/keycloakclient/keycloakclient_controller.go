@@ -175,6 +175,9 @@ func (r *ReconcileKeycloakClient) adjustCrDefaults(cr *kc.KeycloakClient) {
 	if cr.Spec.Client.Access == nil {
 		cr.Spec.Client.Access = make(map[string]bool)
 	}
+	if cr.Spec.Client.AuthenticationFlowBindingOverrides == nil {
+		cr.Spec.Client.AuthenticationFlowBindingOverrides = make(map[string]string)
+	}
 }
 
 func (r *ReconcileKeycloakClient) manageSuccess(client *kc.KeycloakClient, deleted bool) error {

@@ -164,6 +164,9 @@ type KeycloakAPIClient struct {
 	// Authorization settings for this resource server.
 	// +optional
 	AuthorizationSettings *KeycloakResourceServer `json:"authorizationSettings,omitempty"`
+	// Authentication Flow Binding Overrides.
+	// +optional
+	AuthenticationFlowBindingOverrides map[string]string `json:"authenticationFlowBindingOverrides,omitempty"`
 }
 
 type KeycloakProtocolMapper struct {
