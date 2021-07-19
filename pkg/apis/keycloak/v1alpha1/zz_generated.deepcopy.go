@@ -314,6 +314,13 @@ func (in *KeycloakAPIClient) DeepCopyInto(out *KeycloakAPIClient) {
 		*out = new(KeycloakResourceServer)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.AuthenticationFlowBindingOverrides != nil {
+		in, out := &in.AuthenticationFlowBindingOverrides, &out.AuthenticationFlowBindingOverrides
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	return
 }
 

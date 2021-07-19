@@ -265,6 +265,11 @@ spec:
                             type: string
                           description: Client Attributes.
                           type: object
+                        authenticationFlowBindingOverrides:
+                          additionalProperties:
+                            type: string
+                          description: Authentication Flow Binding Overrides.
+                          type: object
                         authorizationServicesEnabled:
                           description: True if fine-grained authorization support
                             is enabled for this client.
