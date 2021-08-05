@@ -1,0 +1,13 @@
+apiVersion: keycloak.org/v1alpha1
+kind: KeycloakGroup
+metadata:
+  name: example-realm-group
+  labels:
+    app: sso
+spec:
+  group:
+    name: "example-group"
+
+  realmSelector:
+    matchLabels:
+      app: sso

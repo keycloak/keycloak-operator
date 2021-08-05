@@ -129,6 +129,9 @@ rules:
       - keycloakusers
       - keycloakusers/status
       - keycloakusers/finalizers
+      - keycloakgroups
+      - keycloakgroups/status
+      - keycloakgroups/finalizers
     verbs:
       - get
       - list

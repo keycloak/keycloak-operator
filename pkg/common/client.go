@@ -112,6 +112,10 @@ func (c *Client) CreateUser(user *v1alpha1.KeycloakAPIUser, realmName string) (s
 	return c.create(user, fmt.Sprintf("realms/%s/users", realmName), "user")
 }
 
+func (c *Client) CreateGroup(group *v1alpha1.KeycloakAPIGroup, realmName string) (string, error) {
+	return c.create(group, fmt.Sprintf("realms/%s/groups", realmName), "group")
+}
+
 func (c *Client) CreateFederatedIdentity(fid v1alpha1.FederatedIdentity, userID string, realmName string) (string, error) {
 	return c.create(fid, fmt.Sprintf("realms/%s/users/%s/federated-identity/%s", realmName, userID, fid.IdentityProvider), "federated-identity")
 }
@@ -139,11 +143,28 @@ func (c *Client) CreateUserClientRole(role *v1alpha1.KeycloakUserRole, realmName
 		"user-client-role",
 	)
 }
+
+func (c *Client) CreateGroupClientRole(role *v1alpha1.KeycloakUserRole, realmName, clientID, groupID string) (string, error) {
+	return c.create(
+		[]*v1alpha1.KeycloakUserRole{role},
+		fmt.Sprintf("realms/%s/groups/%s/role-mappings/clients/%s", realmName, groupID, clientID),
+		"group-client-role",
+	)
+}
+
 func (c *Client) CreateUserRealmRole(role *v1alpha1.KeycloakUserRole, realmName, userID string) (string, error) {
 	return c.create(
 		[]*v1alpha1.KeycloakUserRole{role},
 		fmt.Sprintf("realms/%s/users/%s/role-mappings/realm", realmName, userID),
 		"user-realm-role",
+	)
+}
+
+func (c *Client) CreateGroupRealmRole(role *v1alpha1.KeycloakUserRole, realmName, groupID string) (string, error) {
+	return c.create(
+		[]*v1alpha1.KeycloakUserRole{role},
+		fmt.Sprintf("realms/%s/groups/%s/role-mappings/realm", realmName, groupID),
+		"group-realm-role",
 	)
 }
 
@@ -160,10 +181,28 @@ func (c *Client) DeleteUserClientRole(role *v1alpha1.KeycloakUserRole, realmName
 	return err
 }
 
+func (c *Client) DeleteGroupClientRole(role *v1alpha1.KeycloakUserRole, realmName, clientID, groupID string) error {
+	err := c.delete(
+		fmt.Sprintf("realms/%s/groups/%s/role-mappings/clients/%s", realmName, groupID, clientID),
+		"group-client-role",
+		[]*v1alpha1.KeycloakUserRole{role},
+	)
+	return err
+}
+
 func (c *Client) DeleteUserRealmRole(role *v1alpha1.KeycloakUserRole, realmName, userID string) error {
 	err := c.delete(
 		fmt.Sprintf("realms/%s/users/%s/role-mappings/realm", realmName, userID),
 		"user-realm-role",
+		[]*v1alpha1.KeycloakUserRole{role},
+	)
+	return err
+}
+
+func (c *Client) DeleteGroupRealmRole(role *v1alpha1.KeycloakUserRole, realmName, groupID string) error {
+	err := c.delete(
+		fmt.Sprintf("realms/%s/groups/%s/role-mappings/realm", realmName, groupID),
+		"group-realm-role",
 		[]*v1alpha1.KeycloakUserRole{role},
 	)
 	return err
@@ -350,6 +389,22 @@ func (c *Client) GetUser(userID, realmName string) (*v1alpha1.KeycloakAPIUser, e
 	return ret, err
 }
 
+func (c *Client) GetGroup(groupID, realmName string) (*v1alpha1.KeycloakAPIGroup, error) {
+	result, err := c.get(fmt.Sprintf("realms/%s/groups/%s", realmName, groupID), "group", func(body []byte) (T, error) {
+		group := &v1alpha1.KeycloakAPIGroup{}
+		err := json.Unmarshal(body, group)
+		return group, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+	ret := result.(*v1alpha1.KeycloakAPIGroup)
+	return ret, err
+}
+
 func (c *Client) GetIdentityProvider(alias string, realmName string) (*v1alpha1.KeycloakIdentityProvider, error) {
 	result, err := c.get(fmt.Sprintf("realms/%s/identity-provider/instances/%s", realmName, alias), "identity provider", func(body []byte) (T, error) {
 		provider := &v1alpha1.KeycloakIdentityProvider{}
@@ -427,6 +482,10 @@ func (c *Client) UpdateClientRole(clientID string, role, oldRole *v1alpha1.RoleR
 
 func (c *Client) UpdateUser(specUser *v1alpha1.KeycloakAPIUser, realmName string) error {
 	return c.update(specUser, fmt.Sprintf("realms/%s/users/%s", realmName, specUser.ID), "user")
+}
+
+func (c *Client) UpdateGroup(specGroup *v1alpha1.KeycloakAPIGroup, realmName string) error {
+	return c.update(specGroup, fmt.Sprintf("realms/%s/groups/%s", realmName, specGroup.ID), "group")
 }
 
 func (c *Client) UpdateIdentityProvider(specIdentityProvider *v1alpha1.KeycloakIdentityProvider, realmName string) error {
@@ -524,6 +583,11 @@ func (c *Client) DeleteClientOptionalClientScope(specClient *v1alpha1.KeycloakAP
 
 func (c *Client) DeleteUser(userID, realmName string) error {
 	err := c.delete(fmt.Sprintf("realms/%s/users/%s", realmName, userID), "user", nil)
+	return err
+}
+
+func (c *Client) DeleteGroup(groupID, realmName string) error {
+	err := c.delete(fmt.Sprintf("realms/%s/groups/%s", realmName, groupID), "group", nil)
 	return err
 }
 
@@ -719,11 +783,41 @@ func (c *Client) ListUserClientRoles(realmName, clientID, userID string) ([]*v1a
 	return objects.([]*v1alpha1.KeycloakUserRole), err
 }
 
+func (c *Client) ListGroupClientRoles(realmName, clientID, groupID string) ([]*v1alpha1.KeycloakUserRole, error) {
+	objects, err := c.list("realms/"+realmName+"/groups/"+groupID+"/role-mappings/clients/"+clientID, "groupClientRoles", func(body []byte) (t T, e error) {
+		var groupClientRoles []*v1alpha1.KeycloakUserRole
+		err := json.Unmarshal(body, &groupClientRoles)
+		return groupClientRoles, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	if objects == nil {
+		return nil, nil
+	}
+	return objects.([]*v1alpha1.KeycloakUserRole), err
+}
+
 func (c *Client) ListAvailableUserClientRoles(realmName, clientID, userID string) ([]*v1alpha1.KeycloakUserRole, error) {
 	objects, err := c.list("realms/"+realmName+"/users/"+userID+"/role-mappings/clients/"+clientID+"/available", "userClientRoles", func(body []byte) (t T, e error) {
 		var userClientRoles []*v1alpha1.KeycloakUserRole
 		err := json.Unmarshal(body, &userClientRoles)
 		return userClientRoles, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	if objects == nil {
+		return nil, nil
+	}
+	return objects.([]*v1alpha1.KeycloakUserRole), err
+}
+
+func (c *Client) ListAvailableGroupClientRoles(realmName, clientID, groupID string) ([]*v1alpha1.KeycloakUserRole, error) {
+	objects, err := c.list("realms/"+realmName+"/groups/"+groupID+"/role-mappings/clients/"+clientID+"/available", "groupClientRoles", func(body []byte) (t T, e error) {
+		var groupClientRoles []*v1alpha1.KeycloakUserRole
+		err := json.Unmarshal(body, &groupClientRoles)
+		return groupClientRoles, err
 	})
 	if err != nil {
 		return nil, err
@@ -749,11 +843,41 @@ func (c *Client) ListUserRealmRoles(realmName, userID string) ([]*v1alpha1.Keycl
 	return objects.([]*v1alpha1.KeycloakUserRole), err
 }
 
+func (c *Client) ListGroupRealmRoles(realmName, groupID string) ([]*v1alpha1.KeycloakUserRole, error) {
+	objects, err := c.list("realms/"+realmName+"/groups/"+groupID+"/role-mappings/realm", "groupRealmRoles", func(body []byte) (t T, e error) {
+		var groupRealmRoles []*v1alpha1.KeycloakUserRole
+		err := json.Unmarshal(body, &groupRealmRoles)
+		return groupRealmRoles, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	if objects == nil {
+		return nil, nil
+	}
+	return objects.([]*v1alpha1.KeycloakUserRole), err
+}
+
 func (c *Client) ListAvailableUserRealmRoles(realmName, userID string) ([]*v1alpha1.KeycloakUserRole, error) {
 	objects, err := c.list("realms/"+realmName+"/users/"+userID+"/role-mappings/realm/available", "userClientRoles", func(body []byte) (t T, e error) {
 		var userRealmRoles []*v1alpha1.KeycloakUserRole
 		err := json.Unmarshal(body, &userRealmRoles)
 		return userRealmRoles, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	if objects == nil {
+		return nil, nil
+	}
+	return objects.([]*v1alpha1.KeycloakUserRole), err
+}
+
+func (c *Client) ListAvailableGroupRealmRoles(realmName, groupID string) ([]*v1alpha1.KeycloakUserRole, error) {
+	objects, err := c.list("realms/"+realmName+"/groups/"+groupID+"/role-mappings/realm/available", "groupClientRoles", func(body []byte) (t T, e error) {
+		var groupRealmRoles []*v1alpha1.KeycloakUserRole
+		err := json.Unmarshal(body, &groupRealmRoles)
+		return groupRealmRoles, err
 	})
 	if err != nil {
 		return nil, err
@@ -922,6 +1046,11 @@ type KeycloakInterface interface {
 	DeleteUser(userID, realmName string) error
 	ListUsers(realmName string) ([]*v1alpha1.KeycloakAPIUser, error)
 
+	CreateGroup(user *v1alpha1.KeycloakAPIGroup, realmName string) (string, error)
+	GetGroup(groupID, realmName string) (*v1alpha1.KeycloakAPIGroup, error)
+	UpdateGroup(specGroup *v1alpha1.KeycloakAPIGroup, realmName string) error
+	DeleteGroup(groupID, realmName string) error
+
 	CreateIdentityProvider(identityProvider *v1alpha1.KeycloakIdentityProvider, realmName string) (string, error)
 	GetIdentityProvider(alias, realmName string) (*v1alpha1.KeycloakIdentityProvider, error)
 	UpdateIdentityProvider(specIdentityProvider *v1alpha1.KeycloakIdentityProvider, realmName string) error
@@ -937,6 +1066,16 @@ type KeycloakInterface interface {
 	ListUserRealmRoles(realmName, userID string) ([]*v1alpha1.KeycloakUserRole, error)
 	ListAvailableUserRealmRoles(realmName, userID string) ([]*v1alpha1.KeycloakUserRole, error)
 	DeleteUserRealmRole(role *v1alpha1.KeycloakUserRole, realmName, userID string) error
+
+	CreateGroupRealmRole(role *v1alpha1.KeycloakUserRole, realmName, groupID string) (string, error)
+	ListGroupRealmRoles(realmName, groupID string) ([]*v1alpha1.KeycloakUserRole, error)
+	ListAvailableGroupRealmRoles(realmName, groupID string) ([]*v1alpha1.KeycloakUserRole, error)
+	DeleteGroupRealmRole(role *v1alpha1.KeycloakUserRole, realmName, groupID string) error
+
+	CreateGroupClientRole(role *v1alpha1.KeycloakUserRole, realmName, clientID, groupID string) (string, error)
+	ListGroupClientRoles(realmName, clientID, groupID string) ([]*v1alpha1.KeycloakUserRole, error)
+	ListAvailableGroupClientRoles(realmName, clientID, groupID string) ([]*v1alpha1.KeycloakUserRole, error)
+	DeleteGroupClientRole(role *v1alpha1.KeycloakUserRole, realmName, clientID, groupID string) error
 
 	ListAuthenticationExecutionsForFlow(flowAlias, realmName string) ([]*v1alpha1.AuthenticationExecutionInfo, error)
 

@@ -13,6 +13,7 @@ type KeycloakV1alpha1Interface interface {
 	KeycloaksGetter
 	KeycloakBackupsGetter
 	KeycloakClientsGetter
+	KeycloakGroupsGetter
 	KeycloakRealmsGetter
 	KeycloakUsersGetter
 }
@@ -32,6 +33,10 @@ func (c *KeycloakV1alpha1Client) KeycloakBackups(namespace string) KeycloakBacku
 
 func (c *KeycloakV1alpha1Client) KeycloakClients(namespace string) KeycloakClientInterface {
 	return newKeycloakClients(c, namespace)
+}
+
+func (c *KeycloakV1alpha1Client) KeycloakGroups(namespace string) KeycloakGroupInterface {
+	return newKeycloakGroups(c, namespace)
 }
 
 func (c *KeycloakV1alpha1Client) KeycloakRealms(namespace string) KeycloakRealmInterface {

@@ -865,6 +865,33 @@ spec:
                     description: Max Login Failures
                     format: int32
                     type: integer
+                  groups:
+                    description: A set of Keycloak Groups.
+                    items:
+                      properties:
+                        clientRoles:
+                          additionalProperties:
+                            items:
+                              type: string
+                            type: array
+                          description: Client Roles
+                          type: object
+                        id:
+                          description: Group ID.
+                          type: string
+                        name:
+                          description: Group Name.
+                          type: string
+                        path:
+                          description: Group Path.
+                          type: string
+                        realmRoles:
+                          description: Realm Roles
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    type: array
                   id:
                     type: string
                   identityProviders:

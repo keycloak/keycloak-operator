@@ -199,6 +199,28 @@ func WaitForUserToBeReady(t *testing.T, framework *framework.Framework, namespac
 	})
 }
 
+func WaitForGroupToBeReady(t *testing.T, framework *framework.Framework, namespace string) error {
+	keycloakGroupCR := &keycloakv1alpha1.KeycloakGroup{}
+
+	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
+		err := GetNamespacedObject(framework, namespace, testKeycloakGroupCRName, keycloakGroupCR)
+		if err != nil {
+			return err
+		}
+
+		if keycloakGroupCR.Status.Phase != keycloakv1alpha1.GroupPhaseReconciled {
+			keycloakRealmCRParsed, err := json.Marshal(keycloakGroupCR)
+			if err != nil {
+				return err
+			}
+
+			return errors.Errorf("keycloakRealm is not ready \nCurrent CR value: %s", string(keycloakRealmCRParsed))
+		}
+
+		return nil
+	})
+}
+
 func WaitForResponse(t *testing.T, framework *framework.Framework, url string, condition ResponseCondition) error {
 	return WaitForCondition(t, framework.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
 		response, err := http.Get(url) //nolint

@@ -44,6 +44,9 @@ type KeycloakAPIRealm struct {
 	// A set of Keycloak Users.
 	// +optional
 	Users []*KeycloakAPIUser `json:"users,omitempty"`
+	// A set of Keycloak Groups.
+	// +optional
+	Groups []*KeycloakAPIGroup `json:"groups,omitempty"`
 	// A set of Keycloak Clients.
 	// +optional
 	Clients []*KeycloakAPIClient `json:"clients,omitempty"`

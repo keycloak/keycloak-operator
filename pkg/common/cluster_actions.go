@@ -43,10 +43,21 @@ type ActionRunner interface {
 	CreateUser(obj *v1alpha1.KeycloakUser, realm string) error
 	UpdateUser(obj *v1alpha1.KeycloakUser, realm string) error
 	DeleteUser(id, realm string) error
+
+	CreateGroup(obj *v1alpha1.KeycloakGroup, realm string) error
+	UpdateGroup(obj *v1alpha1.KeycloakGroup, realm string) error
+	DeleteGroup(id, realm string) error
+
 	AssignRealmRole(obj *v1alpha1.KeycloakUserRole, userID, realm string) error
 	RemoveRealmRole(obj *v1alpha1.KeycloakUserRole, userID, realm string) error
 	AssignClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error
 	RemoveClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error
+
+	AssignGroupRealmRole(obj *v1alpha1.KeycloakUserRole, groupID, realm string) error
+	RemoveGroupRealmRole(obj *v1alpha1.KeycloakUserRole, groupID, realm string) error
+	AssignGroupClientRole(obj *v1alpha1.KeycloakUserRole, clientID, groupID, realm string) error
+	RemoveGroupClientRole(obj *v1alpha1.KeycloakUserRole, clientID, groupID, realm string) error
+
 	ApplyOverrides(obj *v1alpha1.KeycloakRealm) error
 	Ping() error
 }
@@ -282,6 +293,42 @@ func (i *ClusterActionRunner) DeleteUser(id, realm string) error {
 	return i.keycloakClient.DeleteUser(id, realm)
 }
 
+func (i *ClusterActionRunner) CreateGroup(obj *v1alpha1.KeycloakGroup, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform user create when client is nil")
+	}
+
+	// Create the group
+	uid, err := i.keycloakClient.CreateGroup(&obj.Spec.Group, realm)
+	if err != nil {
+		return err
+	}
+
+	// Update newly created user with its uid
+	obj.Spec.Group.ID = uid
+	return i.client.Update(i.context, obj)
+}
+
+func (i *ClusterActionRunner) UpdateGroup(obj *v1alpha1.KeycloakGroup, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform user update when client is nil")
+	}
+
+	err := i.keycloakClient.UpdateGroup(&obj.Spec.Group, realm)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i *ClusterActionRunner) DeleteGroup(id, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform group delete when client is nil")
+	}
+	return i.keycloakClient.DeleteGroup(id, realm)
+}
+
 // Check if Keycloak is available
 func (i *ClusterActionRunner) Ping() error {
 	if i.keycloakClient == nil {
@@ -306,6 +353,22 @@ func (i *ClusterActionRunner) RemoveRealmRole(obj *v1alpha1.KeycloakUserRole, us
 	return i.keycloakClient.DeleteUserRealmRole(obj, realm, userID)
 }
 
+func (i *ClusterActionRunner) AssignGroupRealmRole(obj *v1alpha1.KeycloakUserRole, groupID, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform group role assign when client is nil")
+	}
+
+	_, err := i.keycloakClient.CreateGroupRealmRole(obj, realm, groupID)
+	return err
+}
+
+func (i *ClusterActionRunner) RemoveGroupRealmRole(obj *v1alpha1.KeycloakUserRole, groupID, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform group role remove when client is nil")
+	}
+	return i.keycloakClient.DeleteGroupRealmRole(obj, realm, groupID)
+}
+
 func (i *ClusterActionRunner) AssignClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error {
 	if i.keycloakClient == nil {
 		return errors.Errorf("cannot perform role assign when client is nil")
@@ -320,6 +383,22 @@ func (i *ClusterActionRunner) RemoveClientRole(obj *v1alpha1.KeycloakUserRole, c
 		return errors.Errorf("cannot perform role remove when client is nil")
 	}
 	return i.keycloakClient.DeleteUserClientRole(obj, realm, clientID, userID)
+}
+
+func (i *ClusterActionRunner) AssignGroupClientRole(obj *v1alpha1.KeycloakUserRole, clientID, groupID, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform group role assign when client is nil")
+	}
+
+	_, err := i.keycloakClient.CreateGroupClientRole(obj, realm, clientID, groupID)
+	return err
+}
+
+func (i *ClusterActionRunner) RemoveGroupClientRole(obj *v1alpha1.KeycloakUserRole, clientID, groupID, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform group role remove when client is nil")
+	}
+	return i.keycloakClient.DeleteGroupClientRole(obj, realm, clientID, groupID)
 }
 
 // Delete a realm using the keycloak api
@@ -527,6 +606,24 @@ type DeleteUserAction struct {
 	Msg   string
 }
 
+type CreateGroupAction struct {
+	Ref   *v1alpha1.KeycloakGroup
+	Realm string
+	Msg   string
+}
+
+type UpdateGroupAction struct {
+	Ref   *v1alpha1.KeycloakGroup
+	Realm string
+	Msg   string
+}
+
+type DeleteGroupAction struct {
+	ID    string
+	Realm string
+	Msg   string
+}
+
 type AssignRealmRoleAction struct {
 	UserID string
 	Ref    *v1alpha1.KeycloakUserRole
@@ -551,6 +648,36 @@ type AssignClientRoleAction struct {
 
 type RemoveClientRoleAction struct {
 	UserID   string
+	ClientID string
+	Ref      *v1alpha1.KeycloakUserRole
+	Realm    string
+	Msg      string
+}
+
+type AssignGroupRealmRoleAction struct {
+	GroupID string
+	Ref     *v1alpha1.KeycloakUserRole
+	Realm   string
+	Msg     string
+}
+
+type RemoveGroupRealmRoleAction struct {
+	GroupID string
+	Ref     *v1alpha1.KeycloakUserRole
+	Realm   string
+	Msg     string
+}
+
+type AssignGroupClientRoleAction struct {
+	GroupID  string
+	ClientID string
+	Ref      *v1alpha1.KeycloakUserRole
+	Realm    string
+	Msg      string
+}
+
+type RemoveGroupClientRoleAction struct {
+	GroupID  string
 	ClientID string
 	Ref      *v1alpha1.KeycloakUserRole
 	Realm    string
@@ -649,6 +776,18 @@ func (i DeleteUserAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.DeleteUser(i.ID, i.Realm)
 }
 
+func (i CreateGroupAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.CreateGroup(i.Ref, i.Realm)
+}
+
+func (i UpdateGroupAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.UpdateGroup(i.Ref, i.Realm)
+}
+
+func (i DeleteGroupAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.DeleteGroup(i.ID, i.Realm)
+}
+
 func (i AssignRealmRoleAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.AssignRealmRole(i.Ref, i.UserID, i.Realm)
 }
@@ -663,4 +802,20 @@ func (i AssignClientRoleAction) Run(runner ActionRunner) (string, error) {
 
 func (i RemoveClientRoleAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.RemoveClientRole(i.Ref, i.ClientID, i.UserID, i.Realm)
+}
+
+func (i AssignGroupRealmRoleAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.AssignGroupRealmRole(i.Ref, i.GroupID, i.Realm)
+}
+
+func (i RemoveGroupRealmRoleAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.RemoveGroupRealmRole(i.Ref, i.GroupID, i.Realm)
+}
+
+func (i AssignGroupClientRoleAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.AssignGroupClientRole(i.Ref, i.ClientID, i.GroupID, i.Realm)
+}
+
+func (i RemoveGroupClientRoleAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.RemoveGroupClientRole(i.Ref, i.ClientID, i.GroupID, i.Realm)
 }

@@ -13,6 +13,7 @@ const (
 	testSecondKeycloakClientCRName   = "second-keycloak-client-test"
 	testExternalKeycloakClientCRName = "external-keycloak-client-test"
 	testKeycloakUserCRName           = "keycloak-user-test"
+	testKeycloakGroupCRName          = "keycloak-group-test"
 	cleanupRetryInterval             = time.Second * 5
 	cleanupTimeout                   = time.Minute * 2
 	pollRetryInterval                = time.Second * 10

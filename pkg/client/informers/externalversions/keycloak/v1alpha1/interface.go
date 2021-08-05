@@ -14,6 +14,8 @@ type Interface interface {
 	KeycloakBackups() KeycloakBackupInformer
 	// KeycloakClients returns a KeycloakClientInformer.
 	KeycloakClients() KeycloakClientInformer
+	// KeycloakGroups returns a KeycloakGroupInformer.
+	KeycloakGroups() KeycloakGroupInformer
 	// KeycloakRealms returns a KeycloakRealmInformer.
 	KeycloakRealms() KeycloakRealmInformer
 	// KeycloakUsers returns a KeycloakUserInformer.
@@ -44,6 +46,11 @@ func (v *version) KeycloakBackups() KeycloakBackupInformer {
 // KeycloakClients returns a KeycloakClientInformer.
 func (v *version) KeycloakClients() KeycloakClientInformer {
 	return &keycloakClientInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
+}
+
+// KeycloakGroups returns a KeycloakGroupInformer.
+func (v *version) KeycloakGroups() KeycloakGroupInformer {
+	return &keycloakGroupInformer{factory: v.factory, namespace: v.namespace, tweakListOptions: v.tweakListOptions}
 }
 
 // KeycloakRealms returns a KeycloakRealmInformer.

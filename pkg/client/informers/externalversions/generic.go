@@ -43,6 +43,8 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Keycloak().V1alpha1().KeycloakBackups().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("keycloakclients"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Keycloak().V1alpha1().KeycloakClients().Informer()}, nil
+	case v1alpha1.SchemeGroupVersion.WithResource("keycloakgroups"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Keycloak().V1alpha1().KeycloakGroups().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("keycloakrealms"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Keycloak().V1alpha1().KeycloakRealms().Informer()}, nil
 	case v1alpha1.SchemeGroupVersion.WithResource("keycloakusers"):

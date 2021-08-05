@@ -24,6 +24,10 @@ func (c *FakeKeycloakV1alpha1) KeycloakClients(namespace string) v1alpha1.Keyclo
 	return &FakeKeycloakClients{c, namespace}
 }
 
+func (c *FakeKeycloakV1alpha1) KeycloakGroups(namespace string) v1alpha1.KeycloakGroupInterface {
+	return &FakeKeycloakGroups{c, namespace}
+}
+
 func (c *FakeKeycloakV1alpha1) KeycloakRealms(namespace string) v1alpha1.KeycloakRealmInterface {
 	return &FakeKeycloakRealms{c, namespace}
 }
