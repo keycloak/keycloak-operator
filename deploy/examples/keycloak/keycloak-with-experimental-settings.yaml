@@ -50,7 +50,7 @@ spec:
           - name: keytab
             mountPath: /keytabs
             secrets:
-              - keytab
+              - keytabs
           - name: vault
             mountPath: /opt/jboss/keycloak/secrets
             secrets:
