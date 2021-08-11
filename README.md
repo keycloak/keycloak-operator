@@ -27,6 +27,7 @@ Please remember to provide a good summary, description as well as steps to repro
 | --------------------------------------------------------------------- | -------------------------------------------------------- |
 | [Keycloak](./deploy/crds/keycloak.org_keycloaks_crd.yaml)             | Manages, installs and configures Keycloak on the cluster |
 | [KeycloakRealm](./deploy/crds/keycloak.org_keycloakrealms_crd.yaml)   | Represents a realm in a keycloak server                  |
+| [KeycloakUser](./deploy/crds/keycloak.org_keycloakusers_crd.yaml)     | Represents a user in a keycloak server                   |
 | [KeycloakClient](./deploy/crds/keycloak.org_keycloakclients_crd.yaml) | Represents a client in a keycloak server                 |
 | [KeycloakBackup](./deploy/crds/keycloak.org_keycloakbackups_crd.yaml) | Manage Keycloak database backups                         |
 

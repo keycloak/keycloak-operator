@@ -178,31 +178,27 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 }
 
 func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
+	labels := map[string]string{
+		"app":       ApplicationName,
+		"component": KeycloakDeploymentComponent,
+	}
+	podLabels := AddPodLabels(cr, labels)
 	keycloakStatefulset := &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      KeycloakDeploymentName,
 			Namespace: cr.Namespace,
-			Labels: map[string]string{
-				"app":       ApplicationName,
-				"component": KeycloakDeploymentComponent,
-			},
+			Labels:    podLabels,
 		},
 		Spec: v13.StatefulSetSpec{
 			Replicas: SanitizeNumberOfReplicas(cr.Spec.Instances, true),
 			Selector: &v12.LabelSelector{
-				MatchLabels: map[string]string{
-					"app":       ApplicationName,
-					"component": KeycloakDeploymentComponent,
-				},
+				MatchLabels: labels,
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: v12.ObjectMeta{
 					Name:      KeycloakDeploymentName,
 					Namespace: cr.Namespace,
-					Labels: map[string]string{
-						"app":       ApplicationName,
-						"component": KeycloakDeploymentComponent,
-					},
+					Labels:    podLabels,
 				},
 				Spec: v1.PodSpec{
 					InitContainers: KeycloakExtensionsInitContainers(cr),
