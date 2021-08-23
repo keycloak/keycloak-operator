@@ -361,3 +361,4 @@ spec:
   provider:
     name: Red Hat
   version: 15.0.1
+  replaces: keycloak-operator.v15.0.0
