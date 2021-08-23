@@ -35,7 +35,10 @@ metadata:
           "apiVersion": "keycloak.org/v1alpha1",
           "kind": "KeycloakRealm",
           "metadata": {
-            "name": "example-keycloakrealm"
+            "name": "example-keycloakrealm",
+            "labels": {
+              "app": "sso"
+            }
           },
           "spec": {
             "realm": {
@@ -358,4 +361,3 @@ spec:
   provider:
     name: Red Hat
   version: 15.0.1
-  replaces: keycloak-operator.v15.0.0

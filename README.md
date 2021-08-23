@@ -59,6 +59,7 @@ Once the CRDs and RBAC rules are applied and the operator is running. Use the ex
 
 1.  clone this repo to `$GOPATH/src/github.com/keycloak/keycloak-operator`
 2.  run `make setup/mod cluster/prepare`
+2.  operator-sdk version [0.18.2] is mandatory. You can install it running `make setup/operator-sdk`    
 3.  run `make code/run`
 -- The above step will launch the operator on the local machine
 -- To see how do debug the operator or how to deploy to a cluster, see below alternatives to step 3
