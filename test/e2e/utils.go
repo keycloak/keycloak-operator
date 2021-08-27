@@ -269,9 +269,9 @@ func Delete(f *framework.Framework, obj runtime.Object) error {
 }
 
 func CreateLabel(namespace string) map[string]string {
-	return map[string]string{"app": "keycloak-in-" + namespace}
+	return map[string]string{"app": "kc-in-" + namespace}
 }
 
 func CreateExternalLabel(namespace string) map[string]string {
-	return map[string]string{"app": "external-keycloak-in-" + namespace}
+	return map[string]string{"app": "ext-kc-in-" + namespace}
 }
