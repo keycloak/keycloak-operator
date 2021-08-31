@@ -957,7 +957,7 @@ type LocalConfigKeycloakFactory struct {
 }
 
 // AuthenticatedClient returns an authenticated client for requesting endpoints from the Keycloak api
-func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (KeycloakInterface, error) {
+func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak, insecureSsl bool) (KeycloakInterface, error) {
 	config, err := config2.GetConfig()
 	if err != nil {
 		return nil, err
@@ -982,9 +982,12 @@ func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak) (
 	user := string(adminCreds.Data[model.AdminUsernameProperty])
 	pass := string(adminCreds.Data[model.AdminPasswordProperty])
 
-	serverCert, err := getKCServerCert(secretClient, kc)
-	if err != nil {
-		return nil, err
+	var serverCert []byte = nil
+	if !insecureSsl {
+		serverCert, err = getKCServerCert(secretClient, kc)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	requester, err := defaultRequester(serverCert)

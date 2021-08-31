@@ -54,7 +54,7 @@ func WaitForConditionWithClient(t *testing.T, framework *framework.Framework, ke
 
 func MakeAuthenticatedClient(keycloakCR keycloakv1alpha1.Keycloak) (common.KeycloakInterface, error) {
 	keycloakFactory := common.LocalConfigKeycloakFactory{}
-	return keycloakFactory.AuthenticatedClient(keycloakCR)
+	return keycloakFactory.AuthenticatedClient(keycloakCR, true)
 }
 
 // Stolen from https://github.com/kubernetes/kubernetes/blob/master/test/e2e/framework/util.go
