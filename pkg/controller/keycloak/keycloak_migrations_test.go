@@ -31,7 +31,7 @@ func TestKeycloakMigration_Test_No_Need_For_Migration_On_Missing_Deployment_In_D
 	cr := &v1alpha1.Keycloak{}
 	migrator, _ := GetMigrator(cr)
 
-	keycloakDeployment := model.KeycloakDeployment(cr, nil)
+	keycloakDeployment := model.KeycloakDeployment(cr, nil, nil)
 	SetDeployment(keycloakDeployment, 5, "old_image")
 
 	currentState := common.ClusterState{
@@ -56,10 +56,10 @@ func TestKeycloakMigration_Test_Migrating_Image(t *testing.T) {
 	cr := &v1alpha1.Keycloak{}
 	migrator, _ := GetMigrator(cr)
 
-	keycloakCurrentDeployment := model.KeycloakDeployment(cr, model.DatabaseSecret(cr))
+	keycloakCurrentDeployment := model.KeycloakDeployment(cr, model.DatabaseSecret(cr), nil)
 	SetDeployment(keycloakCurrentDeployment, 5, "old_image")
 
-	keycloakDesiredDeployment := model.KeycloakDeployment(cr, nil)
+	keycloakDesiredDeployment := model.KeycloakDeployment(cr, nil, nil)
 	SetDeployment(keycloakDesiredDeployment, 5, "")
 
 	currentState := common.ClusterState{
@@ -91,10 +91,10 @@ func TestKeycloakMigration_Test_Migrating_RHSSO_Image(t *testing.T) {
 	}
 	migrator, _ := GetMigrator(cr)
 
-	keycloakCurrentDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr))
+	keycloakCurrentDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr), nil)
 	SetDeployment(keycloakCurrentDeployment, 5, "old_image")
 
-	keycloakDesiredDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr))
+	keycloakDesiredDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr), nil)
 	SetDeployment(keycloakDesiredDeployment, 5, "")
 
 	currentState := common.ClusterState{
@@ -131,10 +131,10 @@ func TBackup(t *testing.T, backupEnabled bool) {
 	cr.Spec.Migration.Backups.Enabled = backupEnabled
 	migrator, _ := GetMigrator(cr)
 
-	keycloakCurrentDeployment := model.KeycloakDeployment(cr, nil)
+	keycloakCurrentDeployment := model.KeycloakDeployment(cr, nil, nil)
 	SetDeployment(keycloakCurrentDeployment, 0, "old_image")
 
-	keycloakDesiredDeployment := model.KeycloakDeployment(cr, nil)
+	keycloakDesiredDeployment := model.KeycloakDeployment(cr, nil, nil)
 	SetDeployment(keycloakDesiredDeployment, 0, "")
 
 	currentState := common.ClusterState{
@@ -164,10 +164,10 @@ func TestKeycloakMigration_Test_No_Migration_Happens_With_Rolling_Migrator(t *te
 	cr.Spec.Migration.MigrationStrategy = v1alpha1.StrategyRolling
 	migrator, _ := GetMigrator(cr)
 
-	keycloakCurrentDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr))
+	keycloakCurrentDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr), nil)
 	SetDeployment(keycloakCurrentDeployment, 5, "old_image")
 
-	keycloakDesiredDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr))
+	keycloakDesiredDeployment := model.RHSSODeployment(cr, model.DatabaseSecret(cr), nil)
 	SetDeployment(keycloakDesiredDeployment, 5, "")
 
 	currentState := common.ClusterState{

@@ -302,11 +302,11 @@ func (i *KeycloakReconciler) getDatabaseSecretDesiredState(clusterState *common.
 func (i *KeycloakReconciler) getKeycloakDeploymentOrRHSSODesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
 	isRHSSO := model.Profiles.IsRHSSO(cr)
 
-	deployment := model.KeycloakDeployment(cr, clusterState.DatabaseSecret)
+	deployment := model.KeycloakDeployment(cr, clusterState.DatabaseSecret, clusterState.DatabaseSSLSecret)
 	deploymentName := "Keycloak"
 
 	if isRHSSO {
-		deployment = model.RHSSODeployment(cr, clusterState.DatabaseSecret)
+		deployment = model.RHSSODeployment(cr, clusterState.DatabaseSecret, clusterState.DatabaseSSLSecret)
 		deploymentName = model.RHSSOProfile
 	}
 
@@ -317,9 +317,9 @@ func (i *KeycloakReconciler) getKeycloakDeploymentOrRHSSODesiredState(clusterSta
 		}
 	}
 
-	deploymentReconciled := model.KeycloakDeploymentReconciled(cr, clusterState.KeycloakDeployment, clusterState.DatabaseSecret)
+	deploymentReconciled := model.KeycloakDeploymentReconciled(cr, clusterState.KeycloakDeployment, clusterState.DatabaseSecret, clusterState.DatabaseSSLSecret)
 	if isRHSSO {
-		deploymentReconciled = model.RHSSODeploymentReconciled(cr, clusterState.KeycloakDeployment, clusterState.DatabaseSecret)
+		deploymentReconciled = model.RHSSODeploymentReconciled(cr, clusterState.KeycloakDeployment, clusterState.DatabaseSecret, clusterState.DatabaseSSLSecret)
 	}
 
 	return common.GenericUpdateAction{

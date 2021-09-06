@@ -52,6 +52,7 @@ type ClusterState struct {
 	KeycloakPrometheusRule          *monitoringv1.PrometheusRule
 	KeycloakGrafanaDashboard        *grafanav1alpha1.GrafanaDashboard
 	DatabaseSecret                  *v1.Secret
+	DatabaseSSLSecret               *v1.Secret
 	PostgresqlPersistentVolumeClaim *v1.PersistentVolumeClaim
 	PostgresqlService               *v1.Service
 	PostgresqlDeployment            *v12.Deployment
@@ -94,6 +95,11 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 	}
 
 	err = i.readDatabaseSecretCurrentState(context, cr, controllerClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readDatabaseSSLSecretCurrentState(context, cr, controllerClient)
 	if err != nil {
 		return err
 	}
@@ -351,6 +357,29 @@ func (i *ClusterState) readKeycloakGrafanaDashboardCurrentState(context context.
 	return nil
 }
 
+func (i *ClusterState) readDatabaseSSLSecretCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
+	databaseSSLSecret := &v1.Secret{}
+	databaseSSLSecretSelector := client.ObjectKey{
+		Name:      model.DatabaseSecretSslCert,
+		Namespace: cr.Namespace,
+	}
+
+	err := controllerClient.Get(context, databaseSSLSecretSelector, databaseSSLSecret)
+
+	if err != nil {
+		// If the resource type doesn't exist on the cluster or does exist but is not found
+		if meta.IsNoMatchError(err) || apiErrors.IsNotFound(err) {
+			i.DatabaseSSLSecret = nil
+		} else {
+			return err
+		}
+	} else {
+		i.DatabaseSSLSecret = databaseSSLSecret.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.DatabaseSSLSecret.Kind, i.DatabaseSSLSecret.Name)
+	}
+	return nil
+}
+
 func (i *ClusterState) readDatabaseSecretCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
 	databaseSecret := model.DatabaseSecret(cr)
 	databaseSecretSelector := model.DatabaseSecretSelector(cr)
@@ -394,10 +423,10 @@ func (i *ClusterState) readProbesCurrentState(context context.Context, cr *kc.Ke
 func (i *ClusterState) readKeycloakOrRHSSODeploymentCurrentState(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
 	isRHSSO := model.Profiles.IsRHSSO(cr)
 
-	deployment := model.KeycloakDeployment(cr, nil)
+	deployment := model.KeycloakDeployment(cr, nil, nil)
 	selector := model.KeycloakDeploymentSelector(cr)
 	if isRHSSO {
-		deployment = model.RHSSODeployment(cr, nil)
+		deployment = model.RHSSODeployment(cr, nil, nil)
 		selector = model.RHSSODeploymentSelector(cr)
 	}
 

@@ -30,7 +30,6 @@ func TestKeycloakCRDS(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to add custom resource scheme to framework: %v", err)
 	}
-
 	t.Run("KeycloaksCRDTest", func(t *testing.T) {
 		runTestsFromCRDInterface(t, NewKeycloaksCRDTestStruct())
 		runTestsFromCRDInterface(t, NewUnmanagedKeycloaksCRDTestStruct())
@@ -46,6 +45,9 @@ func TestKeycloakCRDS(t *testing.T) {
 	})
 	t.Run("KeycloakClientsCRDTest", func(t *testing.T) {
 		runTestsFromCRDInterface(t, NewKeycloakClientsCRDTestStruct())
+	})
+	t.Run("KeycloaksSSLTest", func(t *testing.T) {
+		runTestsFromCRDInterface(t, NewKeycloaksSSLTestStruct())
 	})
 }
 

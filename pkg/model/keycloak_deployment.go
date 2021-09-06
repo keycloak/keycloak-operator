@@ -174,10 +174,35 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 		env = MergeEnvs(cr.Spec.KeycloakDeploymentSpec.Experimental.Env, env)
 	}
 
+	env = KeycloakSslEnvVariables(dbSecret, env)
+
 	return env
 }
 
-func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
+func KeycloakSslEnvVariables(dbSecret *v1.Secret, env []v1.EnvVar) []v1.EnvVar {
+	if dbSecret != nil {
+		sslMode := string(dbSecret.Data[DatabaseSecretSslModeProperty])
+
+		if sslMode != "" {
+			dbParams := ""
+			// is the deployment already having JDBC_PARAMS set ?
+			for _, element := range env {
+				if strings.EqualFold(element.Name, KeycloakDatabaseConnectionParamsProperty) {
+					dbParams = element.Value + "&"
+					break
+				}
+			}
+			// append env variable
+			env = append(env, v1.EnvVar{
+				Name:  KeycloakDatabaseConnectionParamsProperty,
+				Value: dbParams + "sslmode=" + sslMode + "&sslrootcert=" + KeycloakCertificatePath + "/root.crt",
+			})
+		}
+	}
+	return env
+}
+
+func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret *v1.Secret) *v13.StatefulSet {
 	keycloakStatefulset := &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      KeycloakDeploymentName,
@@ -206,7 +231,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 				},
 				Spec: v1.PodSpec{
 					InitContainers: KeycloakExtensionsInitContainers(cr),
-					Volumes:        KeycloakVolumes(cr),
+					Volumes:        KeycloakVolumes(cr, dbSSLSecret),
 					Containers: []v1.Container{
 						{
 							Name:  KeycloakDeploymentName,
@@ -225,7 +250,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 									Protocol:      "TCP",
 								},
 							},
-							VolumeMounts:   KeycloakVolumeMounts(cr, KeycloakExtensionPath),
+							VolumeMounts:   KeycloakVolumeMounts(cr, KeycloakExtensionPath, dbSSLSecret, KeycloakCertificatePath),
 							LivenessProbe:  livenessProbe(),
 							ReadinessProbe: readinessProbe(),
 							Env:            getKeycloakEnv(cr, dbSecret),
@@ -245,6 +270,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 	} else if cr.Spec.MultiAvailablityZones.Enabled {
 		keycloakStatefulset.Spec.Template.Spec.Affinity = KeycloakPodAffinity(cr)
 	}
+
 	return keycloakStatefulset
 }
 
@@ -255,11 +281,11 @@ func KeycloakDeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 	}
 }
 
-func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet, dbSecret *v1.Secret) *v13.StatefulSet {
+func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet, dbSecret *v1.Secret, dbSSLSecret *v1.Secret) *v13.StatefulSet {
 	reconciled := currentState.DeepCopy()
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
-	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr)
+	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr, dbSSLSecret)
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:    KeycloakDeploymentName,
@@ -280,7 +306,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 					Protocol:      "TCP",
 				},
 			},
-			VolumeMounts:   KeycloakVolumeMounts(cr, KeycloakExtensionPath),
+			VolumeMounts:   KeycloakVolumeMounts(cr, KeycloakExtensionPath, dbSSLSecret, KeycloakCertificatePath),
 			LivenessProbe:  livenessProbe(),
 			ReadinessProbe: readinessProbe(),
 			Env:            getKeycloakEnv(cr, dbSecret),
@@ -295,7 +321,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	return reconciled
 }
 
-func KeycloakVolumeMounts(cr *v1alpha1.Keycloak, extensionsPath string) []v1.VolumeMount {
+func KeycloakVolumeMounts(cr *v1alpha1.Keycloak, extensionsPath string, dbSSLSecret *v1.Secret, certificatePath string) []v1.VolumeMount {
 	mountedVolumes := []v1.VolumeMount{
 		{
 			Name:      ServingCertSecretName,
@@ -310,6 +336,14 @@ func KeycloakVolumeMounts(cr *v1alpha1.Keycloak, extensionsPath string) []v1.Vol
 			Name:      KeycloakProbesName,
 			MountPath: "/probes",
 		},
+	}
+
+	if dbSSLSecret != nil {
+		mountedVolumes = append(mountedVolumes, v1.VolumeMount{
+			Name:      DatabaseSecretSslCert + "-vol",
+			ReadOnly:  true,
+			MountPath: certificatePath,
+		})
 	}
 
 	mountedVolumes = addVolumeMountsFromKeycloakCR(cr, mountedVolumes)
@@ -330,7 +364,7 @@ func addVolumeMountsFromKeycloakCR(cr *v1alpha1.Keycloak, mountedVolumes []v1.Vo
 	return mountedVolumes
 }
 
-func KeycloakVolumes(cr *v1alpha1.Keycloak) []v1.Volume {
+func KeycloakVolumes(cr *v1alpha1.Keycloak, dbSSLSecret *v1.Secret) []v1.Volume {
 	volumes := []v1.Volume{
 		{
 			Name: ServingCertSecretName,
@@ -358,6 +392,17 @@ func KeycloakVolumes(cr *v1alpha1.Keycloak) []v1.Volume {
 				},
 			},
 		},
+	}
+	if dbSSLSecret != nil {
+		volumes = append(volumes, v1.Volume{
+			Name: DatabaseSecretSslCert + "-vol",
+			VolumeSource: v1.VolumeSource{
+				Secret: &v1.SecretVolumeSource{
+					SecretName: DatabaseSecretSslCert,
+					Optional:   &[]bool{false}[0],
+				},
+			},
+		})
 	}
 
 	volumes = addVolumesFromKeycloakCR(cr, volumes)

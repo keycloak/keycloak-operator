@@ -11,7 +11,7 @@ import (
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type createDeploymentStatefulSet func(*v1alpha1.Keycloak, *v1.Secret) *v13.StatefulSet
+type createDeploymentStatefulSet func(*v1alpha1.Keycloak, *v1.Secret, *v1.Secret) *v13.StatefulSet
 
 func TestKeycloakDeployment_testExperimentalEnvs(t *testing.T) {
 	testExperimentalEnvs(t, KeycloakDeployment)
@@ -82,7 +82,7 @@ func testExperimentalEnvs(t *testing.T, deploymentFunction createDeploymentState
 	}
 
 	//when
-	envs := deploymentFunction(cr, dbSecret).Spec.Template.Spec.Containers[0].Env
+	envs := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.Containers[0].Env
 
 	//then
 	hasTestNameKey := false
@@ -117,7 +117,7 @@ func testExperimentalArgs(t *testing.T, deploymentFunction createDeploymentState
 	}
 
 	//when
-	args := deploymentFunction(cr, dbSecret).Spec.Template.Spec.Containers[0].Args
+	args := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.Containers[0].Args
 
 	//then
 	assert.Equal(t, []string{"test"}, args)
@@ -137,7 +137,7 @@ func testExperimentalCommand(t *testing.T, deploymentFunction createDeploymentSt
 	}
 
 	//when
-	command := deploymentFunction(cr, dbSecret).Spec.Template.Spec.Containers[0].Command
+	command := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.Containers[0].Command
 
 	//then
 	assert.Equal(t, []string{"test"}, command)
@@ -170,7 +170,7 @@ func testExperimentalVolumesWithConfigMaps(t *testing.T, deploymentFunction crea
 	}
 
 	//when
-	template := deploymentFunction(cr, dbSecret).Spec.Template.Spec
+	template := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec
 	volumeMount := template.Containers[0].VolumeMounts[3]
 	volume := template.Volumes[3]
 
@@ -213,7 +213,7 @@ func testExperimentalVolumesWithSecrets(t *testing.T, deploymentFunction createD
 	}
 
 	//when
-	template := deploymentFunction(cr, dbSecret).Spec.Template.Spec
+	template := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec
 	volumeMount := template.Containers[0].VolumeMounts[3]
 	volume := template.Volumes[3]
 
@@ -256,7 +256,7 @@ func testExperimentalVolumesWithConfigMapsAndSecrets(t *testing.T, deploymentFun
 	}
 
 	//when
-	template := deploymentFunction(cr, dbSecret).Spec.Template.Spec
+	template := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec
 	volumeMount := template.Containers[0].VolumeMounts[3]
 	volume := template.Volumes[3]
 
@@ -283,7 +283,7 @@ func testPostgresEnvs(t *testing.T, deploymentFunction createDeploymentStatefulS
 	cr := &v1alpha1.Keycloak{}
 
 	//when
-	envs := deploymentFunction(cr, nil).Spec.Template.Spec.Containers[0].Env
+	envs := deploymentFunction(cr, nil, nil).Spec.Template.Spec.Containers[0].Env
 
 	//then
 	assert.Equal(t, getEnvValueByName(envs, "DB_VENDOR"), "POSTGRES")
@@ -310,7 +310,7 @@ func testPostgresEnvs(t *testing.T, deploymentFunction createDeploymentStatefulS
 			DatabaseSecretExternalPortProperty:    []byte("12345"),
 		},
 	}
-	envs = deploymentFunction(cr, dbSecret).Spec.Template.Spec.Containers[0].Env
+	envs = deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.Containers[0].Env
 
 	//then
 	assert.Equal(t, "POSTGRES", getEnvValueByName(envs, "DB_VENDOR"))
@@ -338,7 +338,7 @@ func testAffinityDefaultMultiAZ(t *testing.T, deploymentFunction createDeploymen
 	cr.Spec.MultiAvailablityZones.Enabled = true
 
 	//when
-	affinity := deploymentFunction(cr, dbSecret).Spec.Template.Spec.Affinity
+	affinity := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.Affinity
 
 	weight0 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].Weight
 	matchExprKey0 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Key
@@ -417,7 +417,7 @@ func testAffinityExperimentalAffinitySet(t *testing.T, deploymentFunction create
 	}
 
 	//when
-	affinity := deploymentFunction(cr, dbSecret).Spec.Template.Spec.Affinity
+	affinity := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.Affinity
 
 	weight0 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].Weight
 	matchExprKey0 := affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution[0].PodAffinityTerm.LabelSelector.MatchExpressions[0].Key
@@ -454,7 +454,7 @@ func testServiceAccountSet(t *testing.T, deploymentFunction createDeploymentStat
 	cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName = "test"
 
 	//when
-	serviceAccountName := deploymentFunction(cr, dbSecret).Spec.Template.Spec.ServiceAccountName
+	serviceAccountName := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.ServiceAccountName
 
 	assert.Equal(t, "test", serviceAccountName)
 }
@@ -467,7 +467,7 @@ func testServiceAccountDefault(t *testing.T, deploymentFunction createDeployment
 	//If serviceAccountName is not set in the cr, then the serviceAccountName should be default
 
 	//when
-	serviceAccountName := deploymentFunction(cr, dbSecret).Spec.Template.Spec.ServiceAccountName
+	serviceAccountName := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.ServiceAccountName
 
 	assert.Equal(t, "default", serviceAccountName)
 }
