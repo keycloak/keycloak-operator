@@ -23,6 +23,7 @@ func KeycloakIngress(cr *kc.Keycloak) *networkingv1.Ingress {
 				"app": ApplicationName,
 			},
 			Annotations: map[string]string{
+				"kubernetes.io/ingress.class":                  "nginx",
 				"nginx.ingress.kubernetes.io/backend-protocol": "HTTPS",
 				"nginx.ingress.kubernetes.io/server-snippet": `
                       location ~* "^/auth/realms/master/metrics" {
