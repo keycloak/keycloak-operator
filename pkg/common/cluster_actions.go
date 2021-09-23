@@ -47,8 +47,12 @@ type ActionRunner interface {
 	RemoveRealmRole(obj *v1alpha1.KeycloakUserRole, userID, realm string) error
 	AssignClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error
 	RemoveClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error
+
 	AddDefaultRoles(obj *[]v1alpha1.RoleRepresentation, defaultRealmRoleID, realm string) error
 	DeleteDefaultRoles(obj *[]v1alpha1.RoleRepresentation, defaultRealmRoleID, realm string) error
+
+	SetServiceAccountRealmRoles(obj *v1alpha1.KeycloakClient, roles []string, realmName string) error
+
 	ApplyOverrides(obj *v1alpha1.KeycloakRealm) error
 	Ping() error
 }
@@ -338,6 +342,14 @@ func (i *ClusterActionRunner) DeleteDefaultRoles(obj *[]v1alpha1.RoleRepresentat
 	return i.keycloakClient.DeleteRealmRoleComposites(realm, defaultRealmRoleID, obj)
 }
 
+func (i *ClusterActionRunner) SetServiceAccountRealmRoles(obj *v1alpha1.KeycloakClient, roles []string, realmName string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform role assign when client is nil")
+	}
+
+	return i.keycloakClient.SetServiceAccountRealmRoles(realmName, obj.Spec.Client.ClientID, roles)
+}
+
 // Delete a realm using the keycloak api
 func (i *ClusterActionRunner) ApplyOverrides(obj *v1alpha1.KeycloakRealm) error {
 	if i.keycloakClient == nil {
@@ -589,6 +601,22 @@ type RemoveClientRoleAction struct {
 	Msg      string
 }
 
+type SetServiceAccountRealmRolesAction struct {
+	ClientID string
+	Ref      *v1alpha1.KeycloakClient
+	Roles    []string
+	Realm    string
+	Msg      string
+}
+
+type SetServiceAccountClientRolesAction struct {
+	ClientID string
+	Ref      *v1alpha1.KeycloakClient
+	Roles    []string
+	Realm    string
+	Msg      string
+}
+
 func (i GenericCreateAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.Create(i.Ref)
 }
@@ -703,4 +731,8 @@ func (i AssignClientRoleAction) Run(runner ActionRunner) (string, error) {
 
 func (i RemoveClientRoleAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.RemoveClientRole(i.Ref, i.ClientID, i.UserID, i.Realm)
+}
+
+func (i SetServiceAccountRealmRolesAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.SetServiceAccountRealmRoles(i.Ref, i.Roles, i.Realm)
 }

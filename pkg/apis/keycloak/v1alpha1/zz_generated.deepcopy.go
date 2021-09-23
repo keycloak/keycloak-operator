@@ -976,6 +976,11 @@ func (in *KeycloakClientSpec) DeepCopyInto(out *KeycloakClientSpec) {
 		*out = new(MappingsRepresentation)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.ServiceAccountRealmRoles != nil {
+		in, out := &in.ServiceAccountRealmRoles, &out.ServiceAccountRealmRoles
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

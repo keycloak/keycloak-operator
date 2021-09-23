@@ -58,6 +58,9 @@ func NewKeycloakClientsCRDTestStruct() *CRDTestStruct {
 				},
 				testFunction: keycloakClientScopeMappingsTest,
 			},
+			"keycloakClientServiceAccountRealmRolesTest": {
+				testFunction: keycloakClientServiceAccountRealmRolesTest,
+			},
 		},
 	}
 }
@@ -589,6 +592,75 @@ func keycloakClientScopeMappingsTest(t *testing.T, framework *test.Framework, ct
 		expected.ClientMappings[secondClientName].Mappings)
 	assert.Equal(t, 0, len(difference))
 	assert.Equal(t, 2, len(intersection))
+
+	return nil
+}
+
+func keycloakClientServiceAccountRealmRolesTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	err := WaitForClientToBeReady(t, framework, namespace, testSecondKeycloakClientCRName)
+	if err != nil {
+		return err
+	}
+	keycloakCR := getDeployedKeycloakCR(framework, namespace)
+	authenticatedClient, err := MakeAuthenticatedClient(keycloakCR)
+	if err != nil {
+		return err
+	}
+
+	// add service account roles
+
+	// first we set some roles that do not exist, so that we can monitor the change to "failing"
+	var retrievedClient keycloakv1alpha1.KeycloakClient
+	err = GetNamespacedObject(framework, namespace, testKeycloakClientCRName, &retrievedClient)
+	if err != nil {
+		return err
+	}
+	retrievedClient.Spec.Client.ServiceAccountsEnabled = true
+	retrievedClient.Spec.ServiceAccountRealmRoles = []string{"does-not-exist"}
+	err = Update(framework, &retrievedClient)
+	if err != nil {
+		return err
+	}
+
+	// wait for the client to fail
+
+	err = WaitForClientToBeFailing(t, framework, namespace, testKeycloakClientCRName)
+	if err != nil {
+		return err
+	}
+
+	// apply a working version, so that we can monitor the change back to "ok"
+
+	err = GetNamespacedObject(framework, namespace, testKeycloakClientCRName, &retrievedClient)
+	if err != nil {
+		return err
+	}
+	retrievedClient.Spec.Client.ServiceAccountsEnabled = true
+	retrievedClient.Spec.ServiceAccountRealmRoles = []string{"realmRoleA", "realmRoleB"}
+	err = Update(framework, &retrievedClient)
+	if err != nil {
+		return err
+	}
+
+	// wait for the update to become applied
+
+	err = WaitForClientToBeReady(t, framework, namespace, testKeycloakClientCRName)
+	if err != nil {
+		return err
+	}
+
+	// now, we can retrieve the assigned roles using keycloak client ...
+
+	retrievedRoles, err := authenticatedClient.GetServiceAccountRealmRoles(realmName, retrievedClient.Spec.Client.ID)
+	if err != nil {
+		return err
+	}
+
+	// ... and assert
+
+	assert.Equal(t, []string{"realmRoleA", "realmRoleB"}, retrievedRoles)
+
+	// done
 
 	return nil
 }

@@ -804,6 +804,11 @@ spec:
                       type: object
                     type: array
                 type: object
+              serviceAccountRealmRoles:
+                description: Service account realm roles for this client.
+                items:
+                  type: string
+                type: array
             required:
             - client
             - realmSelector

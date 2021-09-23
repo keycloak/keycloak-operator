@@ -55,6 +55,8 @@ func (i *KeycloakClientReconciler) Reconcile(state *common.ClientState, cr *kc.K
 
 	i.ReconcileDefaultClientRoles(state, cr, &desired)
 
+	i.ReconcileServiceAccountRoles(state, cr, &desired)
+
 	return desired
 }
 
@@ -160,6 +162,10 @@ func (i *KeycloakClientReconciler) ReconcileClientScopes(state *common.ClientSta
 	for _, clientScope := range optionalClientScopesDeleted {
 		desired.AddAction(i.getDeletedClientOptionalClientScopeState(state, cr, clientScope.DeepCopy()))
 	}
+}
+
+func (i *KeycloakClientReconciler) ReconcileServiceAccountRoles(state *common.ClientState, cr *kc.KeycloakClient, desired *common.DesiredClusterState) {
+	desired.AddAction(i.setServiceAccountRealmRoles(state, cr, cr.Spec.ServiceAccountRealmRoles))
 }
 
 // removeUMARole removes the uma_protection role from r if it is present
@@ -431,5 +437,15 @@ func (i *KeycloakClientReconciler) getDeletedClientOptionalClientScopeState(stat
 		Ref:         cr,
 		Realm:       state.Realm.Spec.Realm.Realm,
 		Msg:         fmt.Sprintf("delete client optional client scope %v/%v => %v", cr.Namespace, cr.Spec.Client.ClientID, clientScope.Name),
+	}
+}
+
+func (i *KeycloakClientReconciler) setServiceAccountRealmRoles(state *common.ClientState, cr *kc.KeycloakClient, roles []string) common.ClusterAction {
+	return common.SetServiceAccountRealmRolesAction{
+		ClientID: cr.Spec.Client.ClientID,
+		Ref:      cr,
+		Roles:    roles,
+		Realm:    state.Realm.Spec.Realm.Realm,
+		Msg:      fmt.Sprintf("set service account realm roles %v/%v => %v", cr.Namespace, cr.Spec.Client.ClientID, roles),
 	}
 }
