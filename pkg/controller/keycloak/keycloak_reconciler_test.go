@@ -428,20 +428,20 @@ func TestKeycloakReconciler_Test_Given_SSLMODE_And_RHSSO_When_Reconcile_Then_New
 	keycloakSpec := desiredState[5].(common.GenericCreateAction).Ref.(*v13.StatefulSet).Spec.Template.Spec
 
 	// then
-	envVarFound := 0
+	envVarFound := false
 	for _, a := range keycloakSpec.Containers[0].Env {
-		if strings.Contains(a.Name, model.RhssoDatabaseNONXAConnectionParamsProperty) && strings.EqualFold(a.Value, "required") {
-			envVarFound++
-		} else if strings.Contains(a.Name, model.RhssoDatabaseXAConnectionParamsProperty) && strings.EqualFold(a.Value, "required") {
-			envVarFound++
+		if strings.Contains(a.Name, model.RhssoDatabaseXAConnectionParamsProperty) && strings.EqualFold(a.Value, "required") {
+			envVarFound = true
+			break
 		}
 	}
-	assert.Equal(t, 2, envVarFound)
+	assert.True(t, envVarFound)
 
 	sslVolumeExists := false
 	for _, volume := range keycloakSpec.Volumes {
 		if strings.Contains(volume.Name, model.DatabaseSecretSslCert+"-vol") {
 			sslVolumeExists = true
+			break
 		}
 	}
 	assert.True(t, sslVolumeExists)
