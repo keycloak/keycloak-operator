@@ -12,16 +12,21 @@ import (
 
 func getSpec(dbSecret *v1.Secret, serviceTypeExternal bool) v1.ServiceSpec {
 	spec := v1.ServiceSpec{}
+	isIPAddress := dbSecret != nil && dbSecret.Data[DatabaseSecretExternalAddressProperty] != nil && IsIP(dbSecret.Data[DatabaseSecretExternalAddressProperty])
 
-	if serviceTypeExternal {
+	if serviceTypeExternal && !isIPAddress {
 		spec.Type = v1.ServiceTypeExternalName
 		spec.Selector = nil
 		spec.ExternalName = GetExternalDatabaseHost(dbSecret)
 	} else {
 		spec.Type = v1.ServiceTypeClusterIP
-		spec.Selector = map[string]string{
-			"app":       ApplicationName,
-			"component": PostgresqlDeploymentComponent,
+		if !isIPAddress {
+			spec.Selector = map[string]string{
+				"app":       ApplicationName,
+				"component": PostgresqlDeploymentComponent,
+			}
+		} else {
+			spec.Selector = nil
 		}
 	}
 
