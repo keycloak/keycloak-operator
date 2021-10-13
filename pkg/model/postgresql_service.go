@@ -12,11 +12,18 @@ import (
 
 func getSpec(dbSecret *v1.Secret, serviceTypeExternal bool) v1.ServiceSpec {
 	spec := v1.ServiceSpec{}
+	isIPAddress := dbSecret != nil && dbSecret.Data[DatabaseSecretExternalAddressProperty] != nil && IsIP(dbSecret.Data[DatabaseSecretExternalAddressProperty])
 
 	if serviceTypeExternal {
-		spec.Type = v1.ServiceTypeExternalName
+		// KEYCLOAK-18388 no sense for selectors when we have an external DB
 		spec.Selector = nil
-		spec.ExternalName = GetExternalDatabaseHost(dbSecret)
+		// ExternalName doesn't work with IP addresses
+		if !isIPAddress {
+			spec.Type = v1.ServiceTypeExternalName
+			spec.ExternalName = GetExternalDatabaseHost(dbSecret)
+		} else {
+			spec.Type = v1.ServiceTypeClusterIP
+		}
 	} else {
 		spec.Type = v1.ServiceTypeClusterIP
 		spec.Selector = map[string]string{
