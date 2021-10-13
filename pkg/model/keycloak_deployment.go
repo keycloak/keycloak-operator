@@ -187,7 +187,7 @@ func KeycloakSslEnvVariables(dbSecret *v1.Secret, env []v1.EnvVar) []v1.EnvVar {
 			dbParams := ""
 			// is the deployment already having JDBC_PARAMS set ?
 			for _, element := range env {
-				if strings.EqualFold(element.Name, KeycloakDatabaseConnectionParamsProperty) {
+				if element.Name == KeycloakDatabaseConnectionParamsProperty {
 					dbParams = element.Value + "&"
 					break
 				}
