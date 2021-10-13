@@ -110,7 +110,7 @@ func runTestsFromCRDInterface(t *testing.T, crd *CRDTestStruct) {
 
 			t.Logf("running test %s", testName)
 			if err = testStep.testFunction(t, f, testCTX, namespace); err != nil {
-				t.Logf("test %s failed, cleaning context", testName)
+				t.Logf("test %s failed, cleaning context : %s", testName, err)
 				testCTX.Cleanup()
 				t.Fatal(err)
 			}

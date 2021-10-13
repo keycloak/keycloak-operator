@@ -54,7 +54,7 @@ func WaitForConditionWithClient(t *testing.T, framework *framework.Framework, ke
 
 func MakeAuthenticatedClient(keycloakCR keycloakv1alpha1.Keycloak) (common.KeycloakInterface, error) {
 	keycloakFactory := common.LocalConfigKeycloakFactory{}
-	return keycloakFactory.AuthenticatedClient(keycloakCR)
+	return keycloakFactory.AuthenticatedClient(keycloakCR, true)
 }
 
 // Stolen from https://github.com/kubernetes/kubernetes/blob/master/test/e2e/framework/util.go
@@ -269,9 +269,25 @@ func Delete(f *framework.Framework, obj runtime.Object) error {
 }
 
 func CreateLabel(namespace string) map[string]string {
-	return map[string]string{"app": "keycloak-in-" + namespace}
+	return map[string]string{"app": "kc-in-" + namespace}
 }
 
 func CreateExternalLabel(namespace string) map[string]string {
-	return map[string]string{"app": "external-keycloak-in-" + namespace}
+	return map[string]string{"app": "ext-kc-in-" + namespace}
+}
+
+func GetSuccessfulResponseBody(url string) ([]byte, error) {
+	client := &http.Client{}
+	response, err := client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+
+	ret, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return ret, nil
 }

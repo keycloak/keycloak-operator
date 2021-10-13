@@ -144,7 +144,7 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 			return r.ManageError(instance, errors.Errorf("realms cannot be created for unmanaged keycloak instances"))
 		}
 
-		authenticated, err := keycloakFactory.AuthenticatedClient(keycloak)
+		authenticated, err := keycloakFactory.AuthenticatedClient(keycloak, false)
 
 		if err != nil {
 			return r.ManageError(instance, err)

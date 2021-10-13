@@ -62,12 +62,8 @@ func (i *KeycloakReconciler) reconcileExternalDatabase(desired *common.DesiredCl
 		// set up an endpoints object for the service to send traffic. An externalName
 		// type service won't work in this case. For more details, see https://cloud.google.com/blog/products/gcp/kubernetes-best-practices-mapping-external-services
 		desired.AddAction(i.getPostgresqlServiceEndpointsDesiredState(clusterState, cr))
-		desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, false))
-	} else {
-		// If we have an URI for the external database then we can use a service of
-		// type externalName
-		desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, true))
 	}
+	desired.AddAction(i.getPostgresqlServiceDesiredState(clusterState, cr, true))
 }
 
 func (i *KeycloakReconciler) reconcileExternalAccess(desired *common.DesiredClusterState, clusterState *common.ClusterState, cr *kc.Keycloak) {
