@@ -49,6 +49,9 @@ func NewKeycloakClientsCRDTestStruct() *CRDTestStruct {
 			"keycloakClientRolesTest": {
 				testFunction: keycloakClientRolesTest,
 			},
+			"keycloakClientDefaultRolesTest": {
+				testFunction: keycloakClientDefaultRolesTest,
+			},
 			"keycloakClientScopeMappingsTest": {
 				prepareTestEnvironmentSteps: []environmentInitializationStep{
 					prepareKeycloakClientWithRolesCR,
@@ -308,6 +311,51 @@ func keycloakClientRolesTest(t *testing.T, framework *test.Framework, ctx *test.
 	return WaitForClientToBeReady(t, framework, namespace, testKeycloakClientCRName)
 }
 
+func keycloakClientDefaultRolesTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	// create
+	client := getKeycloakClientCR(namespace, false)
+	client.Spec.Roles = []keycloakv1alpha1.RoleRepresentation{{Name: "a"}, {Name: "b"}, {Name: "c"}}
+	client.Spec.Client.DefaultRoles = []string{"a", "b"}
+	err := Create(framework, client, ctx)
+	if err != nil {
+		return err
+	}
+	err = WaitForClientToBeReady(t, framework, namespace, testKeycloakClientCRName)
+	if err != nil {
+		return err
+	}
+
+	keycloakCR := getDeployedKeycloakCR(framework, namespace)
+	if err != nil {
+		return err
+	}
+
+	// are roles "a" and "b" the ONLY default roles for this client?
+	err = waitForDefaultClientRoles(t, framework, keycloakCR, client, "a", "b")
+	if err != nil {
+		return err
+	}
+
+	// update default client roles
+	err = GetNamespacedObject(framework, namespace, testKeycloakClientCRName, client)
+	if err != nil {
+		return err
+	}
+	client.Spec.Client.DefaultRoles = []string{"b", "c"}
+	err = Update(framework, client)
+	if err != nil {
+		return err
+	}
+
+	// are roles "b" and "c" the ONLY default roles for this client?
+	err = waitForDefaultClientRoles(t, framework, keycloakCR, client, "b", "c")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func getClientRoleID(authenticatedClient common.KeycloakInterface, clientName, roleName string) (string, error) {
 	retrievedRoles, err := authenticatedClient.ListClientRoles(clientName, realmName)
 	if err != nil {
@@ -357,6 +405,48 @@ func waitForClientRoles(t *testing.T, framework *test.Framework, keycloakCR keyc
 				"actual  : %v",
 				expected, roles)
 		}
+		return nil
+	})
+}
+
+func waitForDefaultClientRoles(t *testing.T, framework *test.Framework, keycloakCR keycloakv1alpha1.Keycloak, clientCR *keycloakv1alpha1.KeycloakClient, expectedRoleNames ...string) error {
+	return WaitForConditionWithClient(t, framework, keycloakCR, func(authenticatedClient common.KeycloakInterface) error {
+		fail := false
+
+		realm, err := authenticatedClient.GetRealm(realmName)
+		if err != nil {
+			return err
+		}
+
+		defaultRoles, err := authenticatedClient.ListRealmRoleClientRoleComposites(realmName, realm.Spec.Realm.DefaultRole.ID, clientCR.Spec.Client.ID)
+		if err != nil {
+			return err
+		}
+
+		// check if roles and defaultRoles equal
+		if len(expectedRoleNames) != len(defaultRoles) {
+			fail = true
+		}
+		for _, expected := range expectedRoleNames {
+			found := false
+			for _, actual := range defaultRoles {
+				if expected == actual.Name {
+					found = true
+					break
+				}
+			}
+			if !found {
+				fail = true
+			}
+		}
+
+		if fail {
+			return errors.Errorf("default roles not as expected:\n"+
+				"expected: %v\n"+
+				"actual  : %v",
+				expectedRoleNames, defaultRoles)
+		}
+
 		return nil
 	})
 }

@@ -16,6 +16,8 @@ type ClientState struct {
 	Context               context.Context
 	Realm                 *kc.KeycloakRealm
 	Roles                 []kc.RoleRepresentation
+	DefaultRoleID         string
+	DefaultRoles          []kc.RoleRepresentation
 	ScopeMappings         *kc.MappingsRepresentation
 	AvailableClientScopes []kc.KeycloakClientScope
 	DefaultClientScopes   []kc.KeycloakClientScope
@@ -73,6 +75,11 @@ func (i *ClientState) Read(context context.Context, cr *kc.KeycloakClient, realm
 		if err != nil {
 			return err
 		}
+
+		err = i.readDefaultRoles(cr, realmClient)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -113,4 +120,16 @@ func (i *ClientState) readClientSecret(context context.Context, cr *kc.KeycloakC
 		cr.UpdateStatusSecondaryResources(i.ClientSecret.Kind, i.ClientSecret.Name)
 	}
 	return nil
+}
+
+func (i *ClientState) readDefaultRoles(cr *kc.KeycloakClient, realmClient KeycloakInterface) error {
+	// we can't use state.Realm as it is the CR, not actual Realm state, and is missing defaultRole
+	realm, err := realmClient.GetRealm(i.Realm.Spec.Realm.Realm)
+	if err != nil {
+		return err
+	}
+
+	i.DefaultRoleID = realm.Spec.Realm.DefaultRole.ID
+	i.DefaultRoles, err = realmClient.ListRealmRoleClientRoleComposites(i.Realm.Spec.Realm.Realm, i.DefaultRoleID, cr.Spec.Client.ID)
+	return err
 }

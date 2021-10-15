@@ -98,6 +98,11 @@ func (c *Client) CreateClientRole(clientID string, role *v1alpha1.RoleRepresenta
 	return c.create(role, fmt.Sprintf("realms/%s/clients/%s/roles", realmName, clientID), "client role")
 }
 
+func (c *Client) AddRealmRoleComposites(realmName, roleID string, roles *[]v1alpha1.RoleRepresentation) error {
+	_, err := c.create(roles, fmt.Sprintf("realms/%s/roles-by-id/%s/composites", realmName, roleID), "realm role composites")
+	return err
+}
+
 func (c *Client) CreateClientRealmScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *[]v1alpha1.RoleRepresentation, realmName string) error {
 	_, err := c.create(mappings, fmt.Sprintf("realms/%s/clients/%s/scope-mappings/realm", realmName, specClient.ID), "client realm scope mappings")
 	return err
@@ -506,6 +511,10 @@ func (c *Client) DeleteClientRole(clientID, role, realmName string) error {
 	return err
 }
 
+func (c *Client) DeleteRealmRoleComposites(realmName, roleID string, roles *[]v1alpha1.RoleRepresentation) error {
+	return c.delete(fmt.Sprintf("realms/%s/roles-by-id/%s/composites", realmName, roleID), "realm role composites", roles)
+}
+
 func (c *Client) DeleteClientRealmScopeMappings(specClient *v1alpha1.KeycloakAPIClient, mappings *[]v1alpha1.RoleRepresentation, realmName string) error {
 	return c.delete(fmt.Sprintf("realms/%s/clients/%s/scope-mappings/realm", realmName, specClient.ID), "client realm scope mappings", mappings)
 }
@@ -586,6 +595,26 @@ func (c *Client) ListRealms() ([]*v1alpha1.KeycloakRealm, error) {
 		return nil, err
 	}
 	return resultAsRealm, err
+}
+
+func (c *Client) ListRealmRoleClientRoleComposites(realmName, roleID, clientID string) ([]v1alpha1.RoleRepresentation, error) {
+	result, err := c.list(fmt.Sprintf("realms/%s/roles-by-id/%s/composites/clients/%s", realmName, roleID, clientID), "realm role client role composites", func(body []byte) (T, error) {
+		var roles []v1alpha1.RoleRepresentation
+		err := json.Unmarshal(body, &roles)
+		return roles, err
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	res, ok := result.([]v1alpha1.RoleRepresentation)
+
+	if !ok {
+		return nil, errors.Errorf("error decoding list realm role client role composites")
+	}
+
+	return res, nil
 }
 
 func (c *Client) ListClients(realmName string) ([]*v1alpha1.KeycloakAPIClient, error) {
@@ -885,6 +914,10 @@ type KeycloakInterface interface {
 	UpdateRealm(specRealm *v1alpha1.KeycloakRealm) error
 	DeleteRealm(realmName string) error
 	ListRealms() ([]*v1alpha1.KeycloakRealm, error)
+
+	ListRealmRoleClientRoleComposites(realmName, roleID, clientID string) ([]v1alpha1.RoleRepresentation, error)
+	AddRealmRoleComposites(realmName, roleID string, roles *[]v1alpha1.RoleRepresentation) error
+	DeleteRealmRoleComposites(realmName, roleID string, roles *[]v1alpha1.RoleRepresentation) error
 
 	CreateClient(client *v1alpha1.KeycloakAPIClient, realmName string) (string, error)
 	GetClient(clientID, realmName string) (*v1alpha1.KeycloakAPIClient, error)

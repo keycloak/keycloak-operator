@@ -47,6 +47,8 @@ type ActionRunner interface {
 	RemoveRealmRole(obj *v1alpha1.KeycloakUserRole, userID, realm string) error
 	AssignClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error
 	RemoveClientRole(obj *v1alpha1.KeycloakUserRole, clientID, userID, realm string) error
+	AddDefaultRoles(obj *[]v1alpha1.RoleRepresentation, defaultRealmRoleID, realm string) error
+	DeleteDefaultRoles(obj *[]v1alpha1.RoleRepresentation, defaultRealmRoleID, realm string) error
 	ApplyOverrides(obj *v1alpha1.KeycloakRealm) error
 	Ping() error
 }
@@ -322,6 +324,20 @@ func (i *ClusterActionRunner) RemoveClientRole(obj *v1alpha1.KeycloakUserRole, c
 	return i.keycloakClient.DeleteUserClientRole(obj, realm, clientID, userID)
 }
 
+func (i *ClusterActionRunner) AddDefaultRoles(obj *[]v1alpha1.RoleRepresentation, defaultRealmRoleID, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform default role add when client is nil")
+	}
+	return i.keycloakClient.AddRealmRoleComposites(realm, defaultRealmRoleID, obj)
+}
+
+func (i *ClusterActionRunner) DeleteDefaultRoles(obj *[]v1alpha1.RoleRepresentation, defaultRealmRoleID, realm string) error {
+	if i.keycloakClient == nil {
+		return errors.Errorf("cannot perform default role delete when client is nil")
+	}
+	return i.keycloakClient.DeleteRealmRoleComposites(realm, defaultRealmRoleID, obj)
+}
+
 // Delete a realm using the keycloak api
 func (i *ClusterActionRunner) ApplyOverrides(obj *v1alpha1.KeycloakRealm) error {
 	if i.keycloakClient == nil {
@@ -442,6 +458,22 @@ type DeleteClientRoleAction struct {
 	Ref   *v1alpha1.KeycloakClient
 	Msg   string
 	Realm string
+}
+
+type AddDefaultRolesAction struct {
+	Roles              *[]v1alpha1.RoleRepresentation
+	DefaultRealmRoleID string
+	Ref                *v1alpha1.KeycloakClient
+	Msg                string
+	Realm              string
+}
+
+type DeleteDefaultRolesAction struct {
+	Roles              *[]v1alpha1.RoleRepresentation
+	DefaultRealmRoleID string
+	Ref                *v1alpha1.KeycloakClient
+	Msg                string
+	Realm              string
 }
 
 type CreateClientRealmScopeMappingsAction struct {
@@ -587,6 +619,14 @@ func (i UpdateClientRoleAction) Run(runner ActionRunner) (string, error) {
 
 func (i DeleteClientRoleAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.DeleteClientRole(i.Ref, i.Role.Name, i.Realm)
+}
+
+func (i AddDefaultRolesAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.AddDefaultRoles(i.Roles, i.DefaultRealmRoleID, i.Realm)
+}
+
+func (i DeleteDefaultRolesAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.DeleteDefaultRoles(i.Roles, i.DefaultRealmRoleID, i.Realm)
 }
 
 func (i CreateClientRealmScopeMappingsAction) Run(runner ActionRunner) (string, error) {
