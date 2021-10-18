@@ -1064,7 +1064,7 @@ func validateKeycloakURL(url string, requester Requester) (string, error) {
 
 	res, err := requester.Do(req)
 	if err != nil {
-		log.Info(fmt.Sprintf("%s is not a valid keycloak url", url))
+		log.Info(fmt.Sprintf("%s is not a valid keycloak url : %s", url, err))
 		return "", nil
 	}
 	_ = res.Body.Close()
