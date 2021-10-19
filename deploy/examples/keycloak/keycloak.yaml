@@ -12,3 +12,6 @@ spec:
     enabled: True
   podDisruptionBudget:
     enabled: True
+  # User needs to provision the external database
+  externalDatabase:
+    enabled: True

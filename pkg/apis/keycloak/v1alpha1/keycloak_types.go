@@ -179,8 +179,7 @@ type KeycloakExternalAccess struct {
 }
 
 type KeycloakExternalDatabase struct {
-	// If set to true, the Operator will use an external database.
-	// pointing to Keycloak.
+	// If set to true, the Operator will use an external database pointing to Keycloak. The embedded database (externalDatabase.enabled = false) is deprecated.
 	Enabled bool `json:"enabled,omitempty"`
 }
 
