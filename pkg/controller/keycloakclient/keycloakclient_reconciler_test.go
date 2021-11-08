@@ -94,7 +94,7 @@ func TestKeycloakClientReconciler_Test_Creating_ClientWithNonAlfhaNumCharsInClie
 	assert.IsType(t, common.CreateClientAction{}, desiredState[1])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
 	assert.IsType(t, model.ClientSecret(cr), desiredState[2].(common.GenericCreateAction).Ref)
-	assert.Equal(t, model.ClientSecretName+"-a-httpstest.dothello-goodbye-a", model.ClientSecret(cr).Name)
+	assert.Equal(t, model.ClientSecretName+"--httpstest.dothello-goodbye-a", model.ClientSecret(cr).Name)
 }
 
 func TestKeycloakClientReconciler_Test_PartialUpdate_Client(t *testing.T) {

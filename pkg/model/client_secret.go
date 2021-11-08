@@ -9,10 +9,10 @@ import (
 )
 
 func ClientSecret(cr *v1alpha1.KeycloakClient) *v1.Secret {
-	escapedClientIDName := SanitizeResourceNameWithAlphaNum(cr.Spec.Client.ClientID)
+	escapedSecretName := SanitizeResourceNameWithAlphaNum(ClientSecretName + "-" + cr.Spec.Client.ClientID)
 	return &v1.Secret{
 		ObjectMeta: v12.ObjectMeta{
-			Name:      ClientSecretName + "-" + escapedClientIDName,
+			Name:      escapedSecretName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
 				"app": ApplicationName,
@@ -26,9 +26,9 @@ func ClientSecret(cr *v1alpha1.KeycloakClient) *v1.Secret {
 }
 
 func ClientSecretSelector(cr *v1alpha1.KeycloakClient) client.ObjectKey {
-	escapedClientIDName := SanitizeResourceNameWithAlphaNum(cr.Spec.Client.ClientID)
+	escapedSelectorName := SanitizeResourceNameWithAlphaNum(ClientSecretName + "-" + cr.Spec.Client.ClientID)
 	return client.ObjectKey{
-		Name:      ClientSecretName + "-" + escapedClientIDName,
+		Name:      escapedSelectorName,
 		Namespace: cr.Namespace,
 	}
 }
