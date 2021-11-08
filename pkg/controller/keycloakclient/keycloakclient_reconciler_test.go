@@ -56,6 +56,47 @@ func TestKeycloakClientReconciler_Test_Creating_Client(t *testing.T) {
 	assert.Equal(t, []byte("test"), model.ClientSecret(cr).Data[model.ClientSecretClientSecretProperty])
 }
 
+func TestKeycloakClientReconciler_Test_Creating_ClientWithNonAlfhaNumCharsInClientID(t *testing.T) {
+	// given
+	keycloakCr := v1alpha1.Keycloak{}
+	cr := &v1alpha1.KeycloakClient{
+		ObjectMeta: v13.ObjectMeta{
+			Name:      "test",
+			Namespace: "test",
+		},
+		Spec: v1alpha1.KeycloakClientSpec{
+			RealmSelector: &v13.LabelSelector{
+				MatchLabels: map[string]string{"application": "sso"},
+			},
+			Client: &v1alpha1.KeycloakAPIClient{
+				ClientID: "-https://test.dot+hello-goodbye-",
+				Secret:   "test",
+			},
+		},
+	}
+
+	currentState := &common.ClientState{
+		Realm: &v1alpha1.KeycloakRealm{
+			Spec: v1alpha1.KeycloakRealmSpec{
+				Realm: &v1alpha1.KeycloakAPIRealm{
+					Realm: "test",
+				},
+			},
+		},
+	}
+
+	// when
+	reconciler := NewKeycloakClientReconciler(keycloakCr)
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	assert.IsType(t, common.PingAction{}, desiredState[0])
+	assert.IsType(t, common.CreateClientAction{}, desiredState[1])
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
+	assert.IsType(t, model.ClientSecret(cr), desiredState[2].(common.GenericCreateAction).Ref)
+	assert.Equal(t, model.ClientSecretName+"-a-httpstest.dothello-goodbye-a", model.ClientSecret(cr).Name)
+}
+
 func TestKeycloakClientReconciler_Test_PartialUpdate_Client(t *testing.T) {
 	// given
 	keycloakCr := v1alpha1.Keycloak{}
