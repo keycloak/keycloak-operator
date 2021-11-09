@@ -6,6 +6,7 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	networkingv1 "k8s.io/api/networking/v1"
+	"os"
 )
 
 func TestKeycloakIngress_testTLSOverride(t *testing.T) {
@@ -131,4 +132,31 @@ func TestKeycloakIngress_testHostOverrideReconciled(t *testing.T) {
 
 	//then
 	assert.Equal(t, "host-override", reconciledIngress.Spec.Rules[0].Host)
+}
+
+func TestKeycloakIngress_testAnnotations(t *testing.T) {
+	snippet := `
+                      location ~* "^/auth/realms/master/metrics" {
+                          return 301 /auth/realms/master;
+                        }`
+
+	//given
+	os.Setenv(IngressNginxSkipMetricsEnvironmentVariable, "true")
+
+	//when
+	annotations := getIngressAnnotations()
+
+	//then
+	assert.Equal(t, "HTTPS", annotations["nginx.ingress.kubernetes.io/backend-protocol"])
+	assert.Equal(t, "", annotations["nginx.ingress.kubernetes.io/server-snippet"])
+
+	//given
+	os.Unsetenv(IngressNginxSkipMetricsEnvironmentVariable)
+
+	//when
+	annotations = getIngressAnnotations()
+
+	//then
+	assert.Equal(t, "HTTPS", annotations["nginx.ingress.kubernetes.io/backend-protocol"])
+	assert.Equal(t, snippet, annotations["nginx.ingress.kubernetes.io/server-snippet"])
 }
