@@ -1,5 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/keycloak/keycloak-operator)](https://goreportcard.com/report/github.com/keycloak/keycloak-operator)
-[![Coverage Status](https://coveralls.io/repos/github/keycloak/keycloak-operator/badge.svg?branch=master)](https://coveralls.io/github/keycloak/keycloak-operator?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/keycloak/keycloak-operator/badge.svg?branch=main)](https://coveralls.io/github/keycloak/keycloak-operator?branch=main)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # Keycloak Operator
@@ -10,7 +10,7 @@ A Kubernetes Operator based on the Operator SDK for creating and syncing resourc
 The official documentation might be found in the [here](https://www.keycloak.org/docs/latest/server_installation/index.html#_operator).
 
 * [Keycloak documentation](https://www.keycloak.org/documentation.html)
-* [User Mailing List](https://lists.jboss.org/mailman/listinfo/keycloak-user) - Mailing list for help and general questions about Keycloak
+* [User Mailing List](https://groups.google.com/g/keycloak-user) - Mailing list for help and general questions about Keycloak
 * [JIRA](https://issues.redhat.com/browse/KEYCLOAK-16220?jql=project%20%3D%20KEYCLOAK%20AND%20component%20%3D%20%22Container%20-%20Operator%22%20ORDER%20BY%20updated%20DESC) - Issue tracker for bugs and feature requests
 
 ## Reporting Security Vulnerabilities

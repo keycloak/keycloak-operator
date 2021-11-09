@@ -61,4 +61,4 @@ jobs:
           platforms: ${{ env.PLATFORMS }}
           tags: ${{ steps.meta.outputs.tags }}
           pull: true
-          push: ${{ github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/') }}
+          push: ${{ github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/') }}
