@@ -1,11 +1,15 @@
 package model
 
 import (
+	"os"
+
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	networkingv1 "k8s.io/api/networking/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
+
+const IngressNginxSkipMetricsEnvironmentVariable = "SKIP_INGRESS_METRICS_REDIRECT"
 
 func KeycloakIngress(cr *kc.Keycloak) *networkingv1.Ingress {
 	ingressHost := cr.Spec.ExternalAccess.Host
@@ -15,6 +19,8 @@ func KeycloakIngress(cr *kc.Keycloak) *networkingv1.Ingress {
 
 	pathTypeImplementationSpecific := networkingv1.PathTypeImplementationSpecific // a workaround to get constant's address
 
+	annotations := getIngressAnnotations()
+
 	return &networkingv1.Ingress{
 		ObjectMeta: v1.ObjectMeta{
 			Name:      ApplicationName,
@@ -22,13 +28,7 @@ func KeycloakIngress(cr *kc.Keycloak) *networkingv1.Ingress {
 			Labels: map[string]string{
 				"app": ApplicationName,
 			},
-			Annotations: map[string]string{
-				"nginx.ingress.kubernetes.io/backend-protocol": "HTTPS",
-				"nginx.ingress.kubernetes.io/server-snippet": `
-                      location ~* "^/auth/realms/master/metrics" {
-                          return 301 /auth/realms/master;
-                        }`,
-			},
+			Annotations: annotations,
 		},
 		Spec: networkingv1.IngressSpec{
 			Rules: []networkingv1.IngressRule{
@@ -99,4 +99,17 @@ func KeycloakIngressSelector(cr *kc.Keycloak) client.ObjectKey {
 		Name:      ApplicationName,
 		Namespace: cr.Namespace,
 	}
+}
+
+func getIngressAnnotations() map[string]string {
+	annotations := map[string]string{
+		"nginx.ingress.kubernetes.io/backend-protocol": "HTTPS",
+	}
+	if skip := os.Getenv(IngressNginxSkipMetricsEnvironmentVariable); skip == "" {
+		annotations["nginx.ingress.kubernetes.io/server-snippet"] = `
+                      location ~* "^/auth/realms/master/metrics" {
+                          return 301 /auth/realms/master;
+                        }`
+	}
+	return annotations
 }
