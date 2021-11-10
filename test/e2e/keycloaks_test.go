@@ -112,7 +112,7 @@ func prepareKeycloaksSSLWithDB(t *testing.T, f *framework.Framework, ctx *framew
 	// deploying the Keycloak CR
 	cr.Spec.ExternalDatabase.Enabled = true
 	secret.Data["SSLMODE"] = []byte("verify-ca")
-	secret.Data["POSTGRES_EXTERNAL_ADDRESS"] = []byte(postgresvc.Name + ".keycloak.svc.cluster.local")
+	secret.Data["POSTGRES_EXTERNAL_ADDRESS"] = []byte(postgresvc.Name + "." + namespace + ".svc.cluster.local")
 
 	err = f.Client.Create(context.TODO(), secret, &framework.CleanupOptions{TestContext: ctx, Timeout: cleanupTimeout, RetryInterval: cleanupRetryInterval})
 	if err != nil {

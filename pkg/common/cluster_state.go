@@ -52,7 +52,7 @@ type ClusterState struct {
 	KeycloakPrometheusRule          *monitoringv1.PrometheusRule
 	KeycloakGrafanaDashboard        *grafanav1alpha1.GrafanaDashboard
 	DatabaseSecret                  *v1.Secret
-	DatabaseSSLSecret               *v1.Secret
+	DatabaseSSLCert                 *v1.Secret
 	PostgresqlPersistentVolumeClaim *v1.PersistentVolumeClaim
 	PostgresqlService               *v1.Service
 	PostgresqlDeployment            *v12.Deployment
@@ -369,13 +369,13 @@ func (i *ClusterState) readDatabaseSSLSecretCurrentState(context context.Context
 	if err != nil {
 		// If the resource type doesn't exist on the cluster or does exist but is not found
 		if meta.IsNoMatchError(err) || apiErrors.IsNotFound(err) {
-			i.DatabaseSSLSecret = nil
+			i.DatabaseSSLCert = nil
 		} else {
 			return err
 		}
 	} else {
-		i.DatabaseSSLSecret = databaseSSLSecret.DeepCopy()
-		cr.UpdateStatusSecondaryResources(i.DatabaseSSLSecret.Kind, i.DatabaseSSLSecret.Name)
+		i.DatabaseSSLCert = databaseSSLSecret.DeepCopy()
+		cr.UpdateStatusSecondaryResources(i.DatabaseSSLCert.Kind, i.DatabaseSSLCert.Name)
 	}
 	return nil
 }

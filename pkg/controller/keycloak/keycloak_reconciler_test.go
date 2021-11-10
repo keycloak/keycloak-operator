@@ -391,7 +391,7 @@ func TestKeycloakReconciler_Test_Given_SSLMODE_When_Reconcile_Then_NewEnvVarsAnd
 	currentState := common.NewClusterState()
 	currentState.DatabaseSecret = model.DatabaseSecret(cr)
 	currentState.DatabaseSecret.Data[model.DatabaseSecretSslModeProperty] = []byte("required")
-	currentState.DatabaseSSLSecret = model.DatabaseSecret(cr)
+	currentState.DatabaseSSLCert = model.DatabaseSecret(cr)
 
 	// when
 	reconciler := NewKeycloakReconciler()
@@ -426,7 +426,7 @@ func TestKeycloakReconciler_Test_Given_SSLMODE_And_RHSSO_When_Reconcile_Then_New
 	currentState := common.NewClusterState()
 	currentState.DatabaseSecret = model.DatabaseSecret(cr)
 	currentState.DatabaseSecret.Data[model.DatabaseSecretSslModeProperty] = []byte("required")
-	currentState.DatabaseSSLSecret = model.DatabaseSecret(cr)
+	currentState.DatabaseSSLCert = model.DatabaseSecret(cr)
 
 	// when
 	reconciler := NewKeycloakReconciler()
