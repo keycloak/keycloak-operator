@@ -88,6 +88,12 @@ type DeploymentSpec struct {
 	// Resources (Requests and Limits) for the Pods.
 	// +optional
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+	// Toleration for the Pods when using taints and toleration on nodes
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+	// NodeSelector to constrain pods to run on particular set of Node(s)
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
 type KeycloakDeploymentSpec struct {

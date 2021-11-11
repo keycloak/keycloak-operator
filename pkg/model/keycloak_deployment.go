@@ -235,6 +235,8 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.Statefu
 						},
 					},
 					ServiceAccountName: getServiceAccountName(cr),
+					Tolerations:        cr.Spec.KeycloakDeploymentSpec.Tolerations,
+					NodeSelector:       cr.Spec.KeycloakDeploymentSpec.NodeSelector,
 				},
 			},
 		},
