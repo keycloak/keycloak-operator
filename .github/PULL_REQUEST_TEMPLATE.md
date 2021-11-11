@@ -1,5 +1,5 @@
-## JIRA ID
-<!-- Add any additional information needed. Such as the Jira or GH issue this PR relates to or any other context you feel is necessary.) -->
+## Related GH Issue
+Closes <!-- Your issue ID -->
 
 ## Additional Information
 <!-- What/Why/How or any other context you feel is necessary.) -->
