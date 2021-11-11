@@ -120,6 +120,8 @@ func prepareKeycloaksCRWithExtension(t *testing.T, f *framework.Framework, ctx *
 
 func prepareKeycloaksCRWithPodLabels(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
 	keycloakCR := getKeycloakCR(namespace)
+	keycloakCR.ObjectMeta.Labels["orig.test.label"] = "orig.test.value"
+	keycloakCR.ObjectMeta.Labels["orig.test.label2"] = "orig.test.value2"
 	keycloakCR.Spec.KeycloakDeploymentSpec.PodLabels = map[string]string{"first.label": "first.value", "second.label": "second.value"}
 	return deployKeycloaksCR(t, f, ctx, namespace, keycloakCR)
 }
@@ -234,6 +236,8 @@ func keycloakDeploymentWithLabelsTest(t *testing.T, f *framework.Framework, ctx 
 
 	assert.Contains(t, keycloakPod.Labels, "first.label")
 	assert.Contains(t, keycloakPod.Labels, "second.label")
+	assert.Contains(t, keycloakPod.Labels, "orig.test.label")
+	assert.Contains(t, keycloakPod.Labels, "orig.test.label2")
 
 	return nil
 }
