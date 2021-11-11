@@ -138,7 +138,7 @@ func RHSSOSslEnvVariables(dbSecret *v1.Secret, env []v1.EnvVar) []v1.EnvVar {
 					Value: sslMode,
 				},
 				v1.EnvVar{
-					Name:  RhssoDatabaseNONXAConnectionParamsProperty + "_sslmode",
+					Name:  RhssoDatabaseNONXAConnectionParamsProperty + "_sslMode",
 					Value: sslMode,
 				},
 			)
