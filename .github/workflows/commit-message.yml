@@ -9,5 +9,5 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - name: Check if JIRA ID is in the commit message
-        run: git log -n 1 --pretty=format:'%s' --abbrev-commit | grep -E 'KEYCLOAK-[0-9]+' > /dev/null
+      - name: Check if GH Issue ID is in the commit message
+        run: git log -n 1 --pretty=format:'%s' --abbrev-commit | grep -E '\#[0-9]+' > /dev/null
