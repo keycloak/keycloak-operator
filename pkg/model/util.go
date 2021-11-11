@@ -234,3 +234,17 @@ func SanitizeResourceNameWithAlphaNum(text string) string {
 
 	return string(reg)
 }
+
+func AddPodLabels(cr *v1alpha1.Keycloak, labels map[string]string) map[string]string {
+	// We add the Pod Labels defined in the constants
+	for key, value := range PodLabels {
+		labels[key] = value
+	}
+
+	// We add the PodLabel labels coming from CR Env Vars
+	for key, value := range cr.Spec.KeycloakDeploymentSpec.PodLabels {
+		labels[key] = value
+	}
+
+	return labels
+}

@@ -946,6 +946,11 @@ spec:
                             type: array
                         type: object
                     type: object
+                  podlabels:
+                    additionalProperties:
+                      type: string
+                    description: List of labels to set in the keycloak pods
+                    type: object
                   resources:
                     description: Resources (Requests and Limits) for the Pods.
                     properties:

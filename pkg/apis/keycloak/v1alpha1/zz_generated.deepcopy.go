@@ -1040,6 +1040,13 @@ func (in *KeycloakCredential) DeepCopy() *KeycloakCredential {
 func (in *KeycloakDeploymentSpec) DeepCopyInto(out *KeycloakDeploymentSpec) {
 	*out = *in
 	in.DeploymentSpec.DeepCopyInto(&out.DeploymentSpec)
+	if in.PodLabels != nil {
+		in, out := &in.PodLabels, &out.PodLabels
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	in.Experimental.DeepCopyInto(&out.Experimental)
 	return
 }

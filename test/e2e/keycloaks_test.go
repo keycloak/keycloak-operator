@@ -31,6 +31,17 @@ func NewKeycloaksCRDTestStruct() *CRDTestStruct {
 	}
 }
 
+func NewKeycloaksWithLabelsCRDTestStruct() *CRDTestStruct {
+	return &CRDTestStruct{
+		prepareEnvironmentSteps: []environmentInitializationStep{
+			prepareKeycloaksCRWithPodLabels,
+		},
+		testSteps: map[string]deployedOperatorTestStep{
+			"keycloakWithPodLabelsDeploymentTest": {testFunction: keycloakDeploymentWithLabelsTest},
+		},
+	}
+}
+
 func NewUnmanagedKeycloaksCRDTestStruct() *CRDTestStruct {
 	return &CRDTestStruct{
 		prepareEnvironmentSteps: []environmentInitializationStep{
@@ -104,6 +115,12 @@ func prepareKeycloaksCRWithExtension(t *testing.T, f *framework.Framework, ctx *
 	keycloakCR := getKeycloakCR(namespace)
 	keycloakCR.Spec.Extensions = []string{"https://github.com/aerogear/keycloak-metrics-spi/releases/download/1.0.4/keycloak-metrics-spi-1.0.4.jar"}
 
+	return deployKeycloaksCR(t, f, ctx, namespace, keycloakCR)
+}
+
+func prepareKeycloaksCRWithPodLabels(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
+	keycloakCR := getKeycloakCR(namespace)
+	keycloakCR.Spec.KeycloakDeploymentSpec.PodLabels = map[string]string{"first.label": "first.value", "second.label": "second.value"}
 	return deployKeycloaksCR(t, f, ctx, namespace, keycloakCR)
 }
 
@@ -210,6 +227,15 @@ func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework
 	assert.Equal(t, masterRealmBody, metricsBody)
 
 	return err
+}
+func keycloakDeploymentWithLabelsTest(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
+	keycloakPod := v1.Pod{}
+	_ = GetNamespacedObject(f, namespace, "keycloak-0", &keycloakPod)
+
+	assert.Contains(t, keycloakPod.Labels, "first.label")
+	assert.Contains(t, keycloakPod.Labels, "second.label")
+
+	return nil
 }
 
 func keycloakUnmanagedDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {

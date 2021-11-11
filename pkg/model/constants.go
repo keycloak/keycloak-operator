@@ -55,3 +55,5 @@ const (
 	ServiceMonitorName                    = ApplicationName + "-service-monitor"
 	MigrateBackupName                     = "migrate-backup"
 )
+
+var PodLabels = map[string]string{}
