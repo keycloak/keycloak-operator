@@ -257,7 +257,6 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	reconciled.ObjectMeta.Labels = AddPodLabels(cr, reconciled.ObjectMeta.Labels)
 	reconciled.Spec.Template.ObjectMeta.Labels = AddPodLabels(cr, reconciled.Spec.Template.ObjectMeta.Labels)
 
-	reconciled.Spec.UpdateStrategy.Type = "RollingUpdate"
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
 	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr)
