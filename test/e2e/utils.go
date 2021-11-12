@@ -74,6 +74,22 @@ func WaitForStatefulSetReplicasReady(t *testing.T, c kubernetes.Interface, state
 	})
 }
 
+func WaitForPodHavingLabels(t *testing.T, c kubernetes.Interface, podName, ns string, labels map[string]string) error {
+	t.Logf("waiting up to %v for Pod %s to have all labels expected", pollTimeout, podName)
+	return WaitForCondition(t, c, func(t *testing.T, c kubernetes.Interface) error {
+		pod, err := c.CoreV1().Pods(ns).Get(context.TODO(), podName, metav1.GetOptions{})
+		if err != nil {
+			return errors.Errorf("get Pod %s failed, ignoring for %v: %v", podName, pollRetryInterval, err)
+		}
+		for key, _ := range labels {
+			if _, ok := pod.Labels[key]; !ok {
+				return errors.Errorf("Pod %s doesn't have %s label, ignoring for %v: %v", podName, key, pollRetryInterval, err)
+			}
+		}
+		return nil
+	})
+}
+
 func WaitForPersistentVolumeClaimCreated(t *testing.T, c kubernetes.Interface, persistentVolumeClaimName, ns string) error {
 	t.Logf("waiting up to %v for PersistentVolumeClaim %s to be created", pollTimeout, persistentVolumeClaimName)
 	return WaitForCondition(t, c, func(t *testing.T, c kubernetes.Interface) error {
