@@ -81,7 +81,7 @@ func WaitForPodHavingLabels(t *testing.T, c kubernetes.Interface, podName, ns st
 		if err != nil {
 			return errors.Errorf("get Pod %s failed, ignoring for %v: %v", podName, pollRetryInterval, err)
 		}
-		for key, _ := range labels {
+		for key := range labels {
 			if _, ok := pod.Labels[key]; !ok {
 				return errors.Errorf("Pod %s doesn't have %s label, ignoring for %v: %v", podName, key, pollRetryInterval, err)
 			}

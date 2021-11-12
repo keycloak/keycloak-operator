@@ -237,8 +237,8 @@ func keycloakDeploymentWithLabelsTest(t *testing.T, f *framework.Framework, ctx 
 	assert.Contains(t, keycloakPod.Labels, "cr.second.label")
 
 	//add runtime labels to the pod (as if it was the existing labels from previous installation)
-	keycloakPod.ObjectMeta.Labels["pod.label.one"] = "value"
-	keycloakPod.ObjectMeta.Labels["pod.label.two"] = "value"
+	keycloakPod.ObjectMeta.Labels["pod.label.one"] = "value1"
+	keycloakPod.ObjectMeta.Labels["pod.label.two"] = "value2"
 	err := Update(f, &keycloakPod)
 	if err != nil {
 		return err
@@ -254,7 +254,10 @@ func keycloakDeploymentWithLabelsTest(t *testing.T, f *framework.Framework, ctx 
 	}
 
 	// we need to wait for the reconciliation
-	WaitForPodHavingLabels(t, f.KubeClient, podName, namespace, keycloakCR.Spec.KeycloakDeploymentSpec.PodLabels)
+	err = WaitForPodHavingLabels(t, f.KubeClient, podName, namespace, keycloakCR.Spec.KeycloakDeploymentSpec.PodLabels)
+	if err != nil {
+		return err
+	}
 
 	// assert that runtime  labels added directly to the pod are still there
 	// assert that new labels added to the CR are also present in the pod
