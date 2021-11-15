@@ -24,3 +24,15 @@ jobs:
         GOROOT: ""
       with:
         target: setup/mod/verify
+    - name: Re-generate code
+      uses: ouzi-dev/go-make-action@v1.3.0
+      env:
+        GOROOT: ""
+      with:
+        target: setup
+    - name: Check generated code is reproducible
+      uses: ouzi-dev/go-make-action@v1.3.0
+      env:
+        GOROOT: ""
+      with:
+        target: code/check-generated

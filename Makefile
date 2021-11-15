@@ -129,7 +129,7 @@ test/coverage: test/coverage/prepare
 # Local Development          #
 ##############################
 .PHONY: setup
-setup: setup/mod setup/githooks code/gen
+setup: setup/mod setup/githooks setup/operator-sdk code/gen
 
 .PHONY: setup/githooks
 setup/githooks:
@@ -149,7 +149,7 @@ setup/mod/verify:
 .PHONY: setup/operator-sdk
 setup/operator-sdk:
 	@echo Installing Operator SDK
-	@curl -Lo operator-sdk ${OPERATOR_SDK_DOWNLOAD_URL} && chmod +x operator-sdk && sudo mv operator-sdk /usr/local/bin/
+	/usr/local/bin/operator-sdk version || (curl -Lo operator-sdk ${OPERATOR_SDK_DOWNLOAD_URL} && chmod +x operator-sdk && mv operator-sdk /usr/local/bin/)
 
 .PHONY: setup/linter
 setup/linter:
@@ -166,11 +166,17 @@ code/compile:
 
 .PHONY: code/gen
 code/gen: client/gen
+	export GOROOT=$(shell go env GOROOT)
 	operator-sdk generate k8s
 	operator-sdk generate crds --crd-version v1
 	# This is a copy-paste part of `operator-sdk generate openapi` command (suggested by the manual)
 	which ./bin/openapi-gen > /dev/null || go build -o ./bin/openapi-gen k8s.io/kube-openapi/cmd/openapi-gen
 	./bin/openapi-gen --logtostderr=true -o "" -i ./pkg/apis/keycloak/v1alpha1 -O zz_generated.openapi -p ./pkg/apis/keycloak/v1alpha1 -h ./hack/boilerplate.go.txt -r "-"
+
+.PHONY: code/check-generated
+code/check-generated:
+	@echo check generated code
+	./check-diff.sh
 
 .PHONY: code/check
 code/check:
