@@ -120,7 +120,7 @@ func prepareKeycloaksCRWithExtension(t *testing.T, f *framework.Framework, ctx *
 
 func prepareKeycloaksCRWithPodLabels(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
 	keycloakCR := getKeycloakCR(namespace)
-	keycloakCR.Spec.KeycloakDeploymentSpec.PodLabels = map[string]string{"first.label": "first.value", "second.label": "second.value"}
+	keycloakCR.Spec.KeycloakDeploymentSpec.PodLabels = map[string]string{"cr.first.label": "first.value", "cr.second.label": "second.value"}
 	return deployKeycloaksCR(t, f, ctx, namespace, keycloakCR)
 }
 
@@ -229,11 +229,48 @@ func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework
 	return err
 }
 func keycloakDeploymentWithLabelsTest(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
+	// check that the creation labels are present
 	keycloakPod := v1.Pod{}
-	_ = GetNamespacedObject(f, namespace, "keycloak-0", &keycloakPod)
+	podName := "keycloak-0"
+	_ = GetNamespacedObject(f, namespace, podName, &keycloakPod)
+	assert.Contains(t, keycloakPod.Labels, "cr.first.label")
+	assert.Contains(t, keycloakPod.Labels, "cr.second.label")
 
-	assert.Contains(t, keycloakPod.Labels, "first.label")
-	assert.Contains(t, keycloakPod.Labels, "second.label")
+	//add runtime labels to the pod (as if it was the existing labels from previous installation)
+	keycloakPod.ObjectMeta.Labels["pod.label.one"] = "value1"
+	keycloakPod.ObjectMeta.Labels["pod.label.two"] = "value2"
+	err := Update(f, &keycloakPod)
+	if err != nil {
+		return err
+	}
+
+	//modify the CR adding labels, to see ifthe reconcile process also adds the labels
+	keycloakCR := getDeployedKeycloakCR(f, namespace)
+	newlabels := map[string]string{"cr-reconc.label.one": "value1", "cr-reconc.label.two": "value1"}
+	keycloakCR.Spec.KeycloakDeploymentSpec.PodLabels = model.AddPodLabels(&keycloakCR, newlabels)
+	err = Update(f, &keycloakCR)
+	if err != nil {
+		return err
+	}
+
+	// we need to wait for the reconciliation
+	err = WaitForPodHavingLabels(t, f.KubeClient, podName, namespace, keycloakCR.Spec.KeycloakDeploymentSpec.PodLabels)
+	if err != nil {
+		return err
+	}
+
+	// assert that runtime  labels added directly to the pod are still there
+	// assert that new labels added to the CR are also present in the pod
+	_ = GetNamespacedObject(f, namespace, podName, &keycloakPod)
+	// Labels set in the CR on the creation
+	assert.Contains(t, keycloakPod.Labels, "cr.first.label")
+	assert.Contains(t, keycloakPod.Labels, "cr.second.label")
+	// Labels in the pod set by the user
+	assert.Contains(t, keycloakPod.Labels, "pod.label.one")
+	assert.Contains(t, keycloakPod.Labels, "pod.label.two")
+	// Labels added to the CR during runtime
+	assert.Contains(t, keycloakPod.Labels, "cr-reconc.label.one")
+	assert.Contains(t, keycloakPod.Labels, "cr-reconc.label.two")
 
 	return nil
 }
