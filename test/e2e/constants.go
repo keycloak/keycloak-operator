@@ -17,4 +17,5 @@ const (
 	cleanupTimeout                   = time.Minute * 2
 	pollRetryInterval                = time.Second * 10
 	pollTimeout                      = time.Minute * 10
+	externalPostgresClaim            = "external-postgres-claim"
 )

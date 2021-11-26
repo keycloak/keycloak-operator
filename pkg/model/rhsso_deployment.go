@@ -121,10 +121,33 @@ func getRHSSOEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 		env = MergeEnvs(cr.Spec.KeycloakDeploymentSpec.Experimental.Env, env)
 	}
 
+	env = RHSSOSslEnvVariables(dbSecret, env)
+
 	return env
 }
 
-func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSet {
+func RHSSOSslEnvVariables(dbSecret *v1.Secret, env []v1.EnvVar) []v1.EnvVar {
+	if dbSecret != nil {
+		sslMode := string(dbSecret.Data[DatabaseSecretSslModeProperty])
+
+		if sslMode != "" {
+			// append env variable
+			env = append(env,
+				v1.EnvVar{
+					Name:  RhssoDatabaseXAConnectionParamsProperty + "_sslMode",
+					Value: sslMode,
+				},
+				v1.EnvVar{
+					Name:  RhssoDatabaseNONXAConnectionParamsProperty + "_sslmode",
+					Value: sslMode,
+				},
+			)
+		}
+	}
+	return env
+}
+
+func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret *v1.Secret) *v13.StatefulSet {
 	labels := map[string]string{
 		"app":       ApplicationName,
 		"component": KeycloakDeploymentComponent,
@@ -148,7 +171,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSe
 					Labels:    podLabels,
 				},
 				Spec: v1.PodSpec{
-					Volumes:        KeycloakVolumes(cr),
+					Volumes:        KeycloakVolumes(cr, dbSSLSecret),
 					InitContainers: KeycloakExtensionsInitContainers(cr),
 					Affinity:       KeycloakPodAffinity(cr),
 					Containers: []v1.Container{
@@ -178,7 +201,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSe
 							Env:             getRHSSOEnv(cr, dbSecret),
 							Args:            cr.Spec.KeycloakDeploymentSpec.Experimental.Args,
 							Command:         cr.Spec.KeycloakDeploymentSpec.Experimental.Command,
-							VolumeMounts:    KeycloakVolumeMounts(cr, RhssoExtensionPath),
+							VolumeMounts:    KeycloakVolumeMounts(cr, RhssoExtensionPath, dbSSLSecret, RhssoCertificatePath),
 							Resources:       getResources(cr),
 							ImagePullPolicy: "Always",
 						},
@@ -193,6 +216,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) *v13.StatefulSe
 	} else if cr.Spec.MultiAvailablityZones.Enabled {
 		rhssoStatefulSet.Spec.Template.Spec.Affinity = KeycloakPodAffinity(cr)
 	}
+
 	return rhssoStatefulSet
 }
 
@@ -203,7 +227,7 @@ func RHSSODeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 	}
 }
 
-func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet, dbSecret *v1.Secret) *v13.StatefulSet {
+func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet, dbSecret *v1.Secret, dbSSLSecret *v1.Secret) *v13.StatefulSet {
 	reconciled := currentState.DeepCopy()
 
 	reconciled.ObjectMeta.Labels = AddPodLabels(cr, reconciled.ObjectMeta.Labels)
@@ -211,7 +235,7 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
-	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr)
+	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr, dbSSLSecret)
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:    KeycloakDeploymentName,
@@ -236,7 +260,7 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 					Protocol:      "TCP",
 				},
 			},
-			VolumeMounts:    KeycloakVolumeMounts(cr, RhssoExtensionPath),
+			VolumeMounts:    KeycloakVolumeMounts(cr, RhssoExtensionPath, dbSSLSecret, RhssoCertificatePath),
 			LivenessProbe:   livenessProbe(),
 			ReadinessProbe:  readinessProbe(),
 			Env:             getRHSSOEnv(cr, dbSecret),

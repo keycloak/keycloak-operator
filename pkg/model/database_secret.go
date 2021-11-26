@@ -23,6 +23,7 @@ func DatabaseSecret(cr *v1alpha1.Keycloak) *v1.Secret {
 			DatabaseSecretDatabaseProperty: []byte(PostgresqlDatabase),
 			DatabaseSecretHostProperty:     []byte(PostgresqlServiceName),
 			DatabaseSecretVersionProperty:  []byte("10"),
+			DatabaseSecretSslModeProperty:  []byte(nil),
 		},
 	}
 }
