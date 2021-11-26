@@ -53,6 +53,8 @@ func (i *KeycloakClientReconciler) Reconcile(state *common.ClientState, cr *kc.K
 
 	i.ReconcileClientScopes(state, cr, &desired)
 
+	i.ReconcileDefaultClientRoles(state, cr, &desired)
+
 	return desired
 }
 
@@ -212,6 +214,62 @@ func scopeMappingDifference(a *kc.MappingsRepresentation, b *kc.MappingsRepresen
 	return d
 }
 
+// ReconcileDefaultClientRoles see KEYCLOAK-19086
+func (i *KeycloakClientReconciler) ReconcileDefaultClientRoles(state *common.ClientState, cr *kc.KeycloakClient, desired *common.DesiredClusterState) {
+	var defaultRolesAdded []kc.RoleRepresentation
+	var defaultRolesDeleted []kc.RoleRepresentation
+
+	for _, defaultRole := range cr.Spec.Client.DefaultRoles {
+		// let's check if it needs to be added as default
+		found := false
+		for _, existingDefaultRole := range state.DefaultRoles {
+			if defaultRole == existingDefaultRole.Name {
+				found = true
+				break
+			}
+		}
+		if !found {
+			// try to get roleID for the defaultRole; notice that state contains already existing role, not the ones created
+			// in this reconciler loop
+			var roleID string
+			for _, existingRole := range state.Roles {
+				if defaultRole == existingRole.Name {
+					roleID = existingRole.ID
+					break
+				}
+			}
+
+			// roleID might be empty, but it is intentional: REST API will probably return error (doesn't search by role
+			// name in current version), but it will at least re-trigger the reconciler which will correctly set the role as default
+			// yes, it is a nasty workaround
+			defaultRolesAdded = append(defaultRolesAdded, kc.RoleRepresentation{ID: roleID, Name: defaultRole})
+		}
+	}
+
+	// check which roles need to be removed from defaults
+	// notice that we don't delete that role, we just remove it from the default roles
+	for _, existingDefaultRole := range state.DefaultRoles {
+		found := false
+		for _, desiredDefaultRole := range cr.Spec.Client.DefaultRoles {
+			if existingDefaultRole.Name == desiredDefaultRole {
+				found = true
+				break
+			}
+		}
+		if !found {
+			defaultRolesDeleted = append(defaultRolesDeleted, kc.RoleRepresentation{ID: existingDefaultRole.ID})
+		}
+	}
+
+	if len(defaultRolesAdded) > 0 {
+		desired.AddAction(i.getAddedDefaultClientRolesState(state, cr, &defaultRolesAdded))
+	}
+
+	if len(defaultRolesDeleted) > 0 {
+		desired.AddAction(i.getDeletedDefaultClientRolesState(state, cr, &defaultRolesDeleted))
+	}
+}
+
 func (i *KeycloakClientReconciler) pingKeycloak() common.ClusterAction {
 	return common.PingAction{
 		Msg: "check if keycloak is available",
@@ -281,6 +339,26 @@ func (i *KeycloakClientReconciler) getDeletedClientRoleState(state *common.Clien
 		Ref:   cr,
 		Realm: state.Realm.Spec.Realm.Realm,
 		Msg:   fmt.Sprintf("delete client role %v/%v/%v", cr.Namespace, cr.Spec.Client.ClientID, role.Name),
+	}
+}
+
+func (i *KeycloakClientReconciler) getAddedDefaultClientRolesState(state *common.ClientState, cr *kc.KeycloakClient, roles *[]kc.RoleRepresentation) common.ClusterAction {
+	return common.AddDefaultRolesAction{
+		Roles:              roles,
+		DefaultRealmRoleID: state.DefaultRoleID,
+		Ref:                cr,
+		Realm:              state.Realm.Spec.Realm.Realm,
+		Msg:                fmt.Sprintf("add default client roles %v/%v: %v", cr.Namespace, cr.Spec.Client.ClientID, roles),
+	}
+}
+
+func (i *KeycloakClientReconciler) getDeletedDefaultClientRolesState(state *common.ClientState, cr *kc.KeycloakClient, roles *[]kc.RoleRepresentation) common.ClusterAction {
+	return common.DeleteDefaultRolesAction{
+		Roles:              roles,
+		DefaultRealmRoleID: state.DefaultRoleID,
+		Ref:                cr,
+		Realm:              state.Realm.Spec.Realm.Realm,
+		Msg:                fmt.Sprintf("delete default client roles %v/%v: %v", cr.Namespace, cr.Spec.Client.ClientID, roles),
 	}
 }
 

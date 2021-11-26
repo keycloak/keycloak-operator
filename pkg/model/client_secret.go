@@ -4,13 +4,15 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func ClientSecret(cr *v1alpha1.KeycloakClient) *v1.Secret {
+	escapedSecretName := SanitizeResourceNameWithAlphaNum(ClientSecretName + "-" + cr.Spec.Client.ClientID)
 	return &v1.Secret{
 		ObjectMeta: v12.ObjectMeta{
-			Name:      ClientSecretName + "-" + cr.Spec.Client.ClientID,
+			Name:      escapedSecretName,
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
 				"app": ApplicationName,
@@ -24,8 +26,9 @@ func ClientSecret(cr *v1alpha1.KeycloakClient) *v1.Secret {
 }
 
 func ClientSecretSelector(cr *v1alpha1.KeycloakClient) client.ObjectKey {
+	escapedSelectorName := SanitizeResourceNameWithAlphaNum(ClientSecretName + "-" + cr.Spec.Client.ClientID)
 	return client.ObjectKey{
-		Name:      ClientSecretName + "-" + cr.Spec.Client.ClientID,
+		Name:      escapedSelectorName,
 		Namespace: cr.Namespace,
 	}
 }

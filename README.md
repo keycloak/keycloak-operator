@@ -1,5 +1,5 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/keycloak/keycloak-operator)](https://goreportcard.com/report/github.com/keycloak/keycloak-operator)
-[![Coverage Status](https://coveralls.io/repos/github/keycloak/keycloak-operator/badge.svg?branch=master)](https://coveralls.io/github/keycloak/keycloak-operator?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/keycloak/keycloak-operator/badge.svg?branch=main)](https://coveralls.io/github/keycloak/keycloak-operator?branch=main)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # Keycloak Operator
@@ -10,8 +10,7 @@ A Kubernetes Operator based on the Operator SDK for creating and syncing resourc
 The official documentation might be found in the [here](https://www.keycloak.org/docs/latest/server_installation/index.html#_operator).
 
 * [Keycloak documentation](https://www.keycloak.org/documentation.html)
-* [User Mailing List](https://lists.jboss.org/mailman/listinfo/keycloak-user) - Mailing list for help and general questions about Keycloak
-* [JIRA](https://issues.redhat.com/browse/KEYCLOAK-16220?jql=project%20%3D%20KEYCLOAK%20AND%20component%20%3D%20%22Container%20-%20Operator%22%20ORDER%20BY%20updated%20DESC) - Issue tracker for bugs and feature requests
+* [User Mailing List](https://groups.google.com/g/keycloak-user) - Mailing list for help and general questions about Keycloak
 
 ## Reporting Security Vulnerabilities
 
@@ -19,7 +18,7 @@ If you've found a security vulnerability, please look at the [instructions on ho
 
 ## Reporting an issue
 
-If you believe you have discovered a defect in the Keycloak Operator please open an issue in our [Issue Tracker](https://issues.jboss.org/projects/KEYCLOAK).
+If you believe you have discovered a defect in the Keycloak Operator please open an [an issue](https://github.com/keycloak/keycloak-operator/issues).
 Please remember to provide a good summary, description as well as steps to reproduce the issue.
 
 ## Supported Custom Resources
@@ -27,8 +26,9 @@ Please remember to provide a good summary, description as well as steps to repro
 | --------------------------------------------------------------------- | -------------------------------------------------------- |
 | [Keycloak](./deploy/crds/keycloak.org_keycloaks_crd.yaml)             | Manages, installs and configures Keycloak on the cluster |
 | [KeycloakRealm](./deploy/crds/keycloak.org_keycloakrealms_crd.yaml)   | Represents a realm in a keycloak server                  |
+| [KeycloakUser](./deploy/crds/keycloak.org_keycloakusers_crd.yaml)     | Represents a user in a keycloak server                   |
 | [KeycloakClient](./deploy/crds/keycloak.org_keycloakclients_crd.yaml) | Represents a client in a keycloak server                 |
-| [KeycloakBackup](./deploy/crds/keycloak.org_keycloakbackups_crd.yaml) | Manage Keycloak database backups                         |
+| [KeycloakBackup](./deploy/crds/keycloak.org_keycloakbackups_crd.yaml) | Manage Keycloak database backups -- _This feature is deprecated_                        |
 
 
 ## Deployment to a Kubernetes or Openshift cluster
@@ -56,13 +56,17 @@ Once the CRDs and RBAC rules are applied and the operator is running. Use the ex
 ### Local Development
 *Note*: You will need a running Kubernetes or OpenShift cluster to use the Operator
 
-1.  clone this repo to `$GOPATH/src/github.com/keycloak/keycloak-operator`
-2.  run `make setup/mod cluster/prepare`
-3.  run `make code/run`
+1. clone this repo to `$GOPATH/src/github.com/keycloak/keycloak-operator`
+2. run `make setup/mod cluster/prepare`
+3. deploy a PostgreSQL Database -- The embedded database installation is deprecated
+4. run `make code/run`
 -- The above step will launch the operator on the local machine
 -- To see how do debug the operator or how to deploy to a cluster, see below alternatives to step 3
-4. In a new terminal run `make cluster/create/examples`
-5. Optional: configure Ingress and DNS Resolver
+5. check the IP/url of the installed Database
+6. modify secret [external-db-secret.yaml](./deploy/examples/keycloak/external-db-secret.yaml) setting the values
+7. execute the secret with `kubectl apply -f ./deploy/examples/keycloak/external-db-secret.yaml`
+8. In a new terminal run `make cluster/create/examples`
+9. Optional: configure Ingress and DNS Resolver
    - minikube: \
      -- run `minikube addons enable ingress` \
      -- run `./hack/modify_etc_hosts.sh`
@@ -70,7 +74,7 @@ Once the CRDs and RBAC rules are applied and the operator is running. Use the ex
      -- run `kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-0.32.0/deploy/static/provider/cloud/deploy.yaml`
         (see also https://kubernetes.github.io/ingress-nginx/deploy/) \
      -- run `./hack/modify_etc_hosts.sh keycloak.local 127.0.0.1`
-6. Run `make test/e2e`
+10. Run `make test/e2e`
 
 To clean the cluster (Removes CRDs, CRs, RBAC and namespace)
 1. run `make cluster/clean`

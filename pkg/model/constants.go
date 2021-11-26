@@ -62,3 +62,5 @@ const (
 	KeycloakCertificatePath                    = "/opt/jboss/.postgresql"
 	RhssoCertificatePath                       = "/home/jboss/.postgresql"
 )
+
+var PodLabels = map[string]string{}

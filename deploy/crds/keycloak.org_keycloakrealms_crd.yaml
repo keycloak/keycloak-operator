@@ -265,6 +265,11 @@ spec:
                             type: string
                           description: Client Attributes.
                           type: object
+                        authenticationFlowBindingOverrides:
+                          additionalProperties:
+                            type: string
+                          description: Authentication Flow Binding Overrides.
+                          type: object
                         authorizationServicesEnabled:
                           description: True if fine-grained authorization support
                             is enabled for this client.
@@ -829,6 +834,53 @@ spec:
                   defaultLocale:
                     description: Default Locale
                     type: string
+                  defaultRole:
+                    description: Default role
+                    properties:
+                      attributes:
+                        additionalProperties:
+                          items:
+                            type: string
+                          type: array
+                        description: Role Attributes
+                        type: object
+                      clientRole:
+                        description: Client Role
+                        type: boolean
+                      composite:
+                        description: Composite
+                        type: boolean
+                      composites:
+                        description: Composites
+                        properties:
+                          client:
+                            additionalProperties:
+                              items:
+                                type: string
+                              type: array
+                            description: Map client => []role
+                            type: object
+                          realm:
+                            description: Realm roles
+                            items:
+                              type: string
+                            type: array
+                        type: object
+                      containerId:
+                        description: Container Id
+                        type: string
+                      description:
+                        description: Description
+                        type: string
+                      id:
+                        description: Id
+                        type: string
+                      name:
+                        description: Name
+                        type: string
+                    required:
+                    - name
+                    type: object
                   displayName:
                     description: Realm display name.
                     type: string

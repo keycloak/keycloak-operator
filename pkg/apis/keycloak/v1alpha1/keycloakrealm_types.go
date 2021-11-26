@@ -174,6 +174,10 @@ type KeycloakAPIRealm struct {
 	// +optional
 	Roles *RolesRepresentation `json:"roles,omitempty"`
 
+	// Default role
+	// +optional
+	DefaultRole *RoleRepresentation `json:"defaultRole,omitempty"`
+
 	// Scope Mappings
 	// +optional
 	ScopeMappings []ScopeMappingRepresentation `json:"scopeMappings,omitempty"`

@@ -92,6 +92,10 @@ type DeploymentSpec struct {
 
 type KeycloakDeploymentSpec struct {
 	DeploymentSpec `json:",inline"`
+	// List of labels to set in the keycloak pods
+	// +optional
+	PodLabels map[string]string `json:"podlabels,omitempty"`
+
 	// Experimental section
 	// NOTE: This section might change or get removed without any notice. It may also cause
 	// the deployment to behave in an unpredictable fashion. Please use with care.
@@ -179,8 +183,7 @@ type KeycloakExternalAccess struct {
 }
 
 type KeycloakExternalDatabase struct {
-	// If set to true, the Operator will use an external database.
-	// pointing to Keycloak.
+	// If set to true, the Operator will use an external database pointing to Keycloak. The embedded database (externalDatabase.enabled = false) is deprecated.
 	Enabled bool `json:"enabled,omitempty"`
 }
 

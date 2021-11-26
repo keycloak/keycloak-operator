@@ -148,31 +148,27 @@ func RHSSOSslEnvVariables(dbSecret *v1.Secret, env []v1.EnvVar) []v1.EnvVar {
 }
 
 func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret *v1.Secret) *v13.StatefulSet {
+	labels := map[string]string{
+		"app":       ApplicationName,
+		"component": KeycloakDeploymentComponent,
+	}
+	podLabels := AddPodLabels(cr, labels)
 	rhssoStatefulSet := &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      KeycloakDeploymentName,
 			Namespace: cr.Namespace,
-			Labels: map[string]string{
-				"app":       ApplicationName,
-				"component": KeycloakDeploymentComponent,
-			},
+			Labels:    podLabels,
 		},
 		Spec: v13.StatefulSetSpec{
 			Replicas: SanitizeNumberOfReplicas(cr.Spec.Instances, true),
 			Selector: &v12.LabelSelector{
-				MatchLabels: map[string]string{
-					"app":       ApplicationName,
-					"component": KeycloakDeploymentComponent,
-				},
+				MatchLabels: labels,
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: v12.ObjectMeta{
 					Name:      KeycloakDeploymentName,
 					Namespace: cr.Namespace,
-					Labels: map[string]string{
-						"app":       ApplicationName,
-						"component": KeycloakDeploymentComponent,
-					},
+					Labels:    podLabels,
 				},
 				Spec: v1.PodSpec{
 					Volumes:        KeycloakVolumes(cr, dbSSLSecret),
@@ -233,6 +229,10 @@ func RHSSODeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 
 func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet, dbSecret *v1.Secret, dbSSLSecret *v1.Secret) *v13.StatefulSet {
 	reconciled := currentState.DeepCopy()
+
+	reconciled.ObjectMeta.Labels = AddPodLabels(cr, reconciled.ObjectMeta.Labels)
+	reconciled.Spec.Template.ObjectMeta.Labels = AddPodLabels(cr, reconciled.Spec.Template.ObjectMeta.Labels)
+
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
 	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr, dbSSLSecret)

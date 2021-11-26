@@ -96,7 +96,8 @@ spec:
                 properties:
                   enabled:
                     description: If set to true, the Operator will use an external
-                      database. pointing to Keycloak.
+                      database pointing to Keycloak. The embedded database (externalDatabase.enabled
+                      = false) is deprecated.
                     type: boolean
                 type: object
               instances:
@@ -944,6 +945,11 @@ spec:
                               type: object
                             type: array
                         type: object
+                    type: object
+                  podlabels:
+                    additionalProperties:
+                      type: string
+                    description: List of labels to set in the keycloak pods
                     type: object
                   resources:
                     description: Resources (Requests and Limits) for the Pods.

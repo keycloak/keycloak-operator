@@ -154,3 +154,33 @@ func TestKeycloakClientReconciler_Test_ClientScope_DifferenceIntersection(t *tes
 	assert.Equal(t, expectedDifference, difference)
 	assert.Equal(t, expectedIntersection, intersection)
 }
+
+func TestPodLabels_When_EnvVars_Then_FullListOfLabels(t *testing.T) {
+	cr := v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			KeycloakDeploymentSpec: v1alpha1.KeycloakDeploymentSpec{
+				PodLabels: map[string]string{
+					"LabelToTest":       "thisisthelabelvalue",
+					"SecondLabelToTest": "anotherthisisthelabelvalue",
+				},
+			},
+		}}
+
+	PodLabels = map[string]string{
+		"FirstLabel":  "firstLabelValue",
+		"SecondLabel": "secondLabelValue",
+	}
+
+	labels := map[string]string{
+		"app":       ApplicationName,
+		"component": KeycloakDeploymentComponent,
+	}
+	totalLabels := AddPodLabels(&cr, labels)
+	assert.Equal(t, 6, len(totalLabels))
+	assert.Contains(t, totalLabels, "LabelToTest")
+	assert.Contains(t, totalLabels, "SecondLabelToTest")
+	assert.Contains(t, totalLabels, "FirstLabel")
+	assert.Contains(t, totalLabels, "SecondLabel")
+	assert.Contains(t, totalLabels, "app")
+	assert.Contains(t, totalLabels, "component")
+}
