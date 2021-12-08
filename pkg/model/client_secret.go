@@ -10,19 +10,27 @@ import (
 
 func ClientSecret(cr *v1alpha1.KeycloakClient) *v1.Secret {
 	escapedSecretName := SanitizeResourceNameWithAlphaNum(ClientSecretName + "-" + cr.Spec.Client.ClientID)
-	return &v1.Secret{
+	secret := &v1.Secret{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      escapedSecretName,
 			Namespace: cr.Namespace,
-			Labels: map[string]string{
-				"app": ApplicationName,
-			},
+			Labels:    make(map[string]string),
 		},
 		Data: map[string][]byte{
 			ClientSecretClientIDProperty:     []byte(cr.Spec.Client.ClientID),
 			ClientSecretClientSecretProperty: []byte(cr.Spec.Client.Secret),
 		},
 	}
+	if cr.Spec.Client.SecretTemplate != nil && cr.Spec.Client.SecretTemplate.Metadata != nil {
+		if cr.Spec.Client.SecretTemplate.Metadata.Labels != nil {
+			secret.Labels = cr.Spec.Client.SecretTemplate.Metadata.Labels
+		}
+		if cr.Spec.Client.SecretTemplate.Metadata.Annotations != nil {
+			secret.Annotations = cr.Spec.Client.SecretTemplate.Metadata.Annotations
+		}
+	}
+	secret.Labels["app"] = ApplicationName
+	return secret
 }
 
 func ClientSecretSelector(cr *v1alpha1.KeycloakClient) client.ObjectKey {

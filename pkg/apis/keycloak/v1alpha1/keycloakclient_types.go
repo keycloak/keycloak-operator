@@ -72,6 +72,9 @@ type KeycloakAPIClient struct {
 	// Client Secret. The Operator will automatically create a Secret based on this value.
 	// +optional
 	Secret string `json:"secret,omitempty"`
+	// Client Secret template.
+	// +optional
+	SecretTemplate *SecretTemplate `json:"secretTemplate,omitempty"`
 	// Application base URL.
 	// +optional
 	BaseURL string `json:"baseUrl,omitempty"`
@@ -167,6 +170,28 @@ type KeycloakAPIClient struct {
 	// Authentication Flow Binding Overrides.
 	// +optional
 	AuthenticationFlowBindingOverrides map[string]string `json:"authenticationFlowBindingOverrides,omitempty"`
+}
+
+type SecretTemplate struct {
+	// Metadata.
+	// +optional
+	Metadata *SecretTemplateMetadata `json:"metadata,omitempty"`
+}
+
+type SecretTemplateMetadata struct {
+	// Map of string keys and values that can be used to organize and categorize
+	// (scope and select) objects. May match selectors of replication controllers
+	// and services.
+	// More info: http://kubernetes.io/docs/user-guide/labels
+	// +optional
+	Labels map[string]string `json:"labels,omitempty"`
+
+	// Annotations is an unstructured key value map stored with a resource that may be
+	// set by external tools to store and retrieve arbitrary metadata. They are not
+	// queryable and should be preserved when modifying objects.
+	// More info: http://kubernetes.io/docs/user-guide/annotations
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 type KeycloakProtocolMapper struct {

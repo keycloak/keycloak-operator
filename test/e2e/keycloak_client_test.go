@@ -1,6 +1,7 @@
 package e2e
 
 import (
+	"context"
 	"testing"
 
 	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -57,6 +58,9 @@ func NewKeycloakClientsCRDTestStruct() *CRDTestStruct {
 					prepareKeycloakClientWithRolesCR,
 				},
 				testFunction: keycloakClientScopeMappingsTest,
+			},
+			"keycloakClientSecretTemplateTest": {
+				testFunction: keycloakClientSecretTemplateTest,
 			},
 		},
 	}
@@ -589,6 +593,43 @@ func keycloakClientScopeMappingsTest(t *testing.T, framework *test.Framework, ct
 		expected.ClientMappings[secondClientName].Mappings)
 	assert.Equal(t, 0, len(difference))
 	assert.Equal(t, 2, len(intersection))
+
+	return nil
+}
+
+func keycloakClientSecretTemplateTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	// create
+	client := getKeycloakClientCR(namespace, false)
+	client.Spec.Client.SecretTemplate = &keycloakv1alpha1.SecretTemplate{
+		Metadata: &keycloakv1alpha1.SecretTemplateMetadata{
+			Labels: map[string]string{
+				"foo":  "bar",
+				"toto": "titi",
+			},
+		},
+	}
+	err := Create(framework, client, ctx)
+	if err != nil {
+		return err
+	}
+	err = WaitForClientToBeReady(t, framework, namespace, testKeycloakClientCRName)
+	if err != nil {
+		return err
+	}
+
+	secret, err := framework.KubeClient.CoreV1().Secrets(namespace).Get(context.TODO(), client.GetObjectMeta().GetName(), metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	expectedLabels := map[string]string{
+		"app":  "keycloak",
+		"foo":  "bar",
+		"toto": "titi",
+	}
+	expectedAnnotations := map[string]string(nil)
+	assert.Equal(t, expectedLabels, secret.GetLabels())
+	assert.Equal(t, expectedAnnotations, secret.GetAnnotations())
 
 	return nil
 }
