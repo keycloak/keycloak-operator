@@ -15,7 +15,7 @@ const (
 	RHMIBackupContainer   = "RELATED_IMAGE_RHMI_BACKUP_CONTAINER"
 	PostgresqlImage       = "RELATED_IMAGE_POSTGRESQL"
 
-	DefaultKeycloakImage         = "quay.io/keycloak/keycloak:latest"
+	DefaultKeycloakImage         = "quay.io/keycloak/keycloak:16.1.0"
 	DefaultRHSSOImageOpenJ9      = "registry.redhat.io/rh-sso-7/sso75-openj9-openshift-rhel8:7.5"
 	DefaultRHSSOImageOpenJDK     = "registry.redhat.io/rh-sso-7/sso75-openshift-rhel8:7.5"
 	DefaultKeycloakInitContainer = "quay.io/keycloak/keycloak-init-container:master"

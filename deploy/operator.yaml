@@ -16,7 +16,7 @@ spec:
       containers:
         - name: keycloak-operator
           # Replace this with the built image name
-          image: quay.io/keycloak/keycloak-operator:main
+          image: quay.io/keycloak/keycloak-operator:16.1.0
           command:
           - keycloak-operator
           imagePullPolicy: Always
