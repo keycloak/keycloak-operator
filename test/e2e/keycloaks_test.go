@@ -311,7 +311,7 @@ func prepareKeycloaksCR(t *testing.T, f *framework.Framework, ctx *framework.Con
 
 func prepareKeycloaksCRWithExtension(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
 	keycloakCR := getKeycloakCR(namespace)
-	keycloakCR.Spec.Extensions = []string{"https://github.com/jonathanvila/keycloak-metrics-spi/releases/download/1.0.4/keycloak-metrics-spi-1.0.4.jar"}
+	keycloakCR.Spec.Extensions = []string{"https://github.com/jonathanvila/keycloak-operator/raw/%23432-make-extension-test-not-dependent-on-external-spi/testdata/keycloak-metrics-spi-2.5.3-SNAPSHOT.jar"}
 
 	return deployKeycloaksCR(t, f, ctx, namespace, keycloakCR)
 }
