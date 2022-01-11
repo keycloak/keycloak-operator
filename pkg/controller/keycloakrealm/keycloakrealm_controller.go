@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
@@ -141,7 +139,7 @@ func (r *ReconcileKeycloakRealm) Reconcile(request reconcile.Request) (reconcile
 		keycloakFactory := common.LocalConfigKeycloakFactory{}
 
 		if keycloak.Spec.Unmanaged {
-			return r.ManageError(instance, errors.Errorf("realms cannot be created for unmanaged keycloak instances"))
+			log.Info(fmt.Sprintf("realm %v/%v is unmanaged, realm creation support my be limited", instance.Namespace, instance.Name))
 		}
 
 		authenticated, err := keycloakFactory.AuthenticatedClient(keycloak, false)
