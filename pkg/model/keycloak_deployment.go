@@ -14,12 +14,12 @@ import (
 )
 
 const (
-	LivenessProbeInitialDelay  = 30
-	ReadinessProbeInitialDelay = 40
+	LivenessProbeInitialDelay  = 60
+	ReadinessProbeInitialDelay = 90
 	//10s (curl) + 10s (curl) + 2s (just in case)
-	ProbeTimeoutSeconds         = 22
+	ProbeTimeoutSeconds         = 30
 	ProbeTimeBetweenRunsSeconds = 30
-	ProbeFailureThreshold       = 10
+	ProbeFailureThreshold       = 15
 )
 
 func GetServiceEnvVar(suffix string) string {
