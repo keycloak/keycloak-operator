@@ -28,6 +28,22 @@ func GetServiceEnvVar(suffix string) string {
 	return fmt.Sprintf("%v_%v", serviceName, suffix)
 }
 
+func getPodSecurityContext(secctx *v1.PodSecurityContext) *v1.PodSecurityContext {
+	if secctx != nil {
+		return secctx
+	}
+
+	defaultUserAndGroup := int64(1000)
+	runAsNonRoot := true
+
+	return &v1.PodSecurityContext{
+		RunAsUser:    &defaultUserAndGroup,
+		RunAsGroup:   &defaultUserAndGroup,
+		RunAsNonRoot: &runAsNonRoot,
+		FSGroup:      &defaultUserAndGroup,
+	}
+}
+
 func getResources(cr *v1alpha1.Keycloak) v1.ResourceRequirements {
 	requirements := v1.ResourceRequirements{}
 	requirements.Limits = v1.ResourceList{}
@@ -256,6 +272,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret 
 						},
 					},
 					ServiceAccountName: getServiceAccountName(cr),
+					SecurityContext:    getPodSecurityContext(cr.Spec.KeycloakDeploymentSpec.PodSecurityContext),
 				},
 			},
 		},
@@ -316,6 +333,8 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	if cr.Spec.KeycloakDeploymentSpec.Experimental.Affinity != nil {
 		reconciled.Spec.Template.Spec.Affinity = cr.Spec.KeycloakDeploymentSpec.Experimental.Affinity
 	}
+
+	reconciled.Spec.Template.Spec.SecurityContext = getPodSecurityContext(cr.Spec.KeycloakDeploymentSpec.PodSecurityContext)
 
 	return reconciled
 }

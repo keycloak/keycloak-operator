@@ -96,6 +96,10 @@ type KeycloakDeploymentSpec struct {
 	// +optional
 	PodLabels map[string]string `json:"podlabels,omitempty"`
 
+	// PodSecurityContext settings
+	// +optional
+	PodSecurityContext *corev1.PodSecurityContext `json:"podSecurityContext,omitempty"`
+
 	// Experimental section
 	// NOTE: This section might change or get removed without any notice. It may also cause
 	// the deployment to behave in an unpredictable fashion. Please use with care.

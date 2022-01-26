@@ -57,6 +57,14 @@ func TestKeycloakDeployment_testServiceAccountDefaultExperimental(t *testing.T) 
 	testServiceAccountDefault(t, KeycloakDeployment)
 }
 
+func TestKeycloakDeployment_testPodSecurityContext(t *testing.T) {
+	testPodSecurityContext(t, KeycloakDeployment)
+}
+
+func TestKeycloakDeployment_testDefaultPodSecurityContext(t *testing.T) {
+	testDefaultPodSecurityContext(t, KeycloakDeployment)
+}
+
 func testExperimentalEnvs(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
 	//given
 	dbSecret := &v1.Secret{}
@@ -470,4 +478,39 @@ func testServiceAccountDefault(t *testing.T, deploymentFunction createDeployment
 	serviceAccountName := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.ServiceAccountName
 
 	assert.Equal(t, "default", serviceAccountName)
+}
+
+func testPodSecurityContext(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			KeycloakDeploymentSpec: v1alpha1.KeycloakDeploymentSpec{
+				PodSecurityContext: &v1.PodSecurityContext{
+					RunAsNonRoot: &[]bool{false}[0],
+					RunAsUser:    &[]int64{1337}[0],
+					RunAsGroup:   &[]int64{42}[0],
+					FSGroup:      &[]int64{42}[0],
+				},
+			},
+		},
+	}
+
+	psc := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.SecurityContext
+
+	assert.Equal(t, int64(1337), *psc.RunAsUser)
+	assert.Equal(t, int64(42), *psc.RunAsGroup)
+	assert.Equal(t, int64(42), *psc.FSGroup)
+	assert.Equal(t, bool(false), *psc.RunAsNonRoot)
+}
+
+func testDefaultPodSecurityContext(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{}
+	psc := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.SecurityContext
+
+	//defaults
+	assert.Equal(t, int64(1000), *psc.RunAsUser)
+	assert.Equal(t, int64(1000), *psc.RunAsGroup)
+	assert.Equal(t, int64(1000), *psc.FSGroup)
+	assert.Equal(t, bool(true), *psc.RunAsNonRoot)
 }
