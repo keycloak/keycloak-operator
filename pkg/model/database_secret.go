@@ -10,7 +10,7 @@ import (
 func DatabaseSecret(cr *v1alpha1.Keycloak) *v1.Secret {
 	return &v1.Secret{
 		ObjectMeta: v12.ObjectMeta{
-			Name:      DatabaseSecretName,
+			Name:      getDatabaseSecretName(cr),
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
 				"app": ApplicationName,
@@ -28,9 +28,16 @@ func DatabaseSecret(cr *v1alpha1.Keycloak) *v1.Secret {
 	}
 }
 
+func getDatabaseSecretName(cr *v1alpha1.Keycloak) string {
+	if(cr.Spec.ExternalDatabase.SecretName != "") {
+		return cr.Spec.ExternalDatabase.SecretName
+	}
+	return ApplicationName + "-db-secret"
+}
+
 func DatabaseSecretSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 	return client.ObjectKey{
-		Name:      DatabaseSecretName,
+		Name:      getDatabaseSecretName(cr),
 		Namespace: cr.Namespace,
 	}
 }

@@ -83,7 +83,7 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 			ValueFrom: &v1.EnvVarSource{
 				SecretKeyRef: &v1.SecretKeySelector{
 					LocalObjectReference: v1.LocalObjectReference{
-						Name: DatabaseSecretName,
+						Name: getDatabaseSecretName(cr),
 					},
 					Key: DatabaseSecretUsernameProperty,
 				},
@@ -94,7 +94,7 @@ func getKeycloakEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
 			ValueFrom: &v1.EnvVarSource{
 				SecretKeyRef: &v1.SecretKeySelector{
 					LocalObjectReference: v1.LocalObjectReference{
-						Name: DatabaseSecretName,
+						Name: getDatabaseSecretName(cr),
 					},
 					Key: DatabaseSecretPasswordProperty,
 				},

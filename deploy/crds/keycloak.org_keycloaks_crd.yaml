@@ -99,6 +99,9 @@ spec:
                       database pointing to Keycloak. The embedded database (externalDatabase.enabled
                       = false) is deprecated.
                     type: boolean
+                  secretName:
+                    description: Name of the secret to use
+                    type: string
                 type: object
               instances:
                 description: Number of Keycloak instances in HA mode. Default is 1.

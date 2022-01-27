@@ -185,6 +185,9 @@ type KeycloakExternalAccess struct {
 type KeycloakExternalDatabase struct {
 	// If set to true, the Operator will use an external database pointing to Keycloak. The embedded database (externalDatabase.enabled = false) is deprecated.
 	Enabled bool `json:"enabled,omitempty"`
+
+	// Name of the secret to use
+	SecretName string `json:"secretName,omitempty"`
 }
 
 type PodDisruptionBudgetConfig struct {
