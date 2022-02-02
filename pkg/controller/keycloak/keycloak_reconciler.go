@@ -85,9 +85,16 @@ func (i *KeycloakReconciler) reconcileExternalAccess(desired *common.DesiredClus
 }
 
 func (i *KeycloakReconciler) GetKeycloakAdminSecretDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
-	keycloakAdminSecret := model.KeycloakAdminSecret(cr)
-
 	if clusterState.KeycloakAdminSecret == nil {
+		keycloakAdminSecret := model.KeycloakAdminSecret(cr)
+		// if there is already a deployment we take the admin password from there
+		if clusterState.KeycloakDeployment != nil {
+			for _, env := range clusterState.KeycloakDeployment.Spec.Template.Spec.Containers[0].Env {
+				if env.Name == model.AdminPasswordProperty {
+					keycloakAdminSecret.Data[model.AdminPasswordProperty] = []byte(env.Value)
+				}
+			}
+		}
 		return common.GenericCreateAction{
 			Ref: keycloakAdminSecret,
 			Msg: "Create Keycloak admin secret",
