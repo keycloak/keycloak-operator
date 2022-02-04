@@ -191,12 +191,12 @@ All images used by the Operator might be controlled using dedicated Environmenta
 
  | *Image*             | *Environment variable*          | *Default*                                                        |
  | ------------------- | ------------------------------- | ---------------------------------------------------------------- |
- | `Keycloak`          | `RELATED_IMAGE_KEYCLOAK`                | `quay.io/keycloak/keycloak:9.0.2`                                |
- | `RHSSO` for OpenJ9  | `RELATED_IMAGE_RHSSO_OPENJ9`            | `registry.redhat.io/rh-sso-7/sso74-openshift-rhel8:7.4-1`        |
- | `RHSSO` for OpenJDK | `RELATED_IMAGE_RHSSO_OPENJDK`           | `registry.redhat.io/rh-sso-7/sso74-openshift-rhel8:7.4-1`        |
- | Init container      | `RELATED_IMAGE_KEYCLOAK_INIT_CONTAINER` | `quay.io/keycloak/keycloak-init-container:master`                |
+ | `Keycloak`          | `RELATED_IMAGE_KEYCLOAK`                | `quay.io/keycloak/keycloak:latest`                               |
+ | `RHSSO` for OpenJ9  | `RELATED_IMAGE_RHSSO_OPENJ9`            | `registry.redhat.io/rh-sso-7/sso75-openj9-openshift-rhel8:7.5`   |
+ | `RHSSO` for OpenJDK | `RELATED_IMAGE_RHSSO_OPENJDK`           | `registry.redhat.io/rh-sso-7/sso75-openshift-rhel8:7.5`          |
+ | Init container      | `RELATED_IMAGE_KEYCLOAK_INIT_CONTAINER` | `quay.io/keycloak/keycloak-init-container:latest`                |
  | Backup container    | `RELATED_IMAGE_RHMI_BACKUP_CONTAINER`   | `quay.io/integreatly/backup-container:1.0.16`                    |
- | Postgresql          | `RELATED_IMAGE_POSTGRESQL`              | `registry.redhat.io/rhel8/postgresql-10:1`                       |
+ | Postgresql          | `RELATED_IMAGE_POSTGRESQL`              | `registry.access.redhat.com/rhscl/postgresql-10-rhel7:1`         |
 
 ## Contributing
 
