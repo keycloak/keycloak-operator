@@ -9,7 +9,7 @@ import (
 )
 
 func ClientSecret(cr *v1alpha1.KeycloakClient) *v1.Secret {
-	escapedSecretName := SanitizeResourceNameWithAlphaNum(ClientSecretName + "-" + cr.Spec.Client.ClientID)
+	escapedSecretName := SanitizeResourceNameWithAlphaNum(ClientSecretName + "-" + cr.Name)
 	return &v1.Secret{
 		ObjectMeta: v12.ObjectMeta{
 			Name:      escapedSecretName,
@@ -26,7 +26,7 @@ func ClientSecret(cr *v1alpha1.KeycloakClient) *v1.Secret {
 }
 
 func ClientSecretSelector(cr *v1alpha1.KeycloakClient) client.ObjectKey {
-	escapedSelectorName := SanitizeResourceNameWithAlphaNum(ClientSecretName + "-" + cr.Spec.Client.ClientID)
+	escapedSelectorName := SanitizeResourceNameWithAlphaNum(ClientSecretName + "-" + cr.Name)
 	return client.ObjectKey{
 		Name:      escapedSelectorName,
 		Namespace: cr.Namespace,
@@ -41,4 +41,29 @@ func ClientSecretReconciled(cr *v1alpha1.KeycloakClient, currentState *v1.Secret
 		ClientSecretClientSecretProperty: []byte(cr.Spec.Client.Secret),
 	}
 	return reconciled
+}
+
+func DeprecatedClientSecret(cr *v1alpha1.KeycloakClient) *v1.Secret {
+	escapedSecretName := SanitizeResourceNameWithAlphaNum(ClientSecretName + "-" + cr.Spec.Client.ClientID)
+	return &v1.Secret{
+		ObjectMeta: v12.ObjectMeta{
+			Name:      escapedSecretName,
+			Namespace: cr.Namespace,
+			Labels: map[string]string{
+				"app": ApplicationName,
+			},
+		},
+		Data: map[string][]byte{
+			ClientSecretClientIDProperty:     []byte(cr.Spec.Client.ClientID),
+			ClientSecretClientSecretProperty: []byte(cr.Spec.Client.Secret),
+		},
+	}
+}
+
+func DeprecatedClientSecretSelector(cr *v1alpha1.KeycloakClient) client.ObjectKey {
+	escapedSelectorName := SanitizeResourceNameWithAlphaNum(ClientSecretName + "-" + cr.Spec.Client.ClientID)
+	return client.ObjectKey{
+		Name:      escapedSelectorName,
+		Namespace: cr.Namespace,
+	}
 }

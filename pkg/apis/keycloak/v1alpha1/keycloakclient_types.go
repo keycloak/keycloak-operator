@@ -385,3 +385,7 @@ func init() {
 func (i *KeycloakClient) UpdateStatusSecondaryResources(kind string, resourceName string) {
 	i.Status.SecondaryResources = UpdateStatusSecondaryResources(i.Status.SecondaryResources, kind, resourceName)
 }
+
+func (i *KeycloakClient) DeleteFromStatusSecondaryResources(kind string, resourceName string) {
+	DeleteFromStatusSecondaryResources(i.Status.SecondaryResources, kind, resourceName)
+}

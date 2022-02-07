@@ -94,7 +94,7 @@ func TestKeycloakClientReconciler_Test_Creating_ClientWithNonAlfhaNumCharsInClie
 	assert.IsType(t, common.CreateClientAction{}, desiredState[1])
 	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
 	assert.IsType(t, model.ClientSecret(cr), desiredState[2].(common.GenericCreateAction).Ref)
-	assert.Equal(t, model.ClientSecretName+"--httpstest.dothello-goodbye-a", model.ClientSecret(cr).Name)
+	assert.Equal(t, model.ClientSecretName+"-test", model.ClientSecret(cr).Name)
 }
 
 func TestKeycloakClientReconciler_Test_PartialUpdate_Client(t *testing.T) {
@@ -359,4 +359,60 @@ func TestKeycloakClientReconciler_Test_ScopeMapping_Difference(t *testing.T) {
 
 	_, ok := d.ClientMappings["clientA"]
 	assert.False(t, ok)
+}
+
+func TestKeycloakClientReconciler_Test_Remove_Client_ID_Client_Secret(t *testing.T) {
+	// given
+	oldSecretName := model.ClientSecretName + "-client-id"
+	newSecretName := model.ClientSecretName + "-cr-name"
+	keycloakCr := v1alpha1.Keycloak{}
+	cr := &v1alpha1.KeycloakClient{
+		ObjectMeta: v13.ObjectMeta{
+			Name:      "cr-name",
+			Namespace: "cr-namespace",
+		},
+		Spec: v1alpha1.KeycloakClientSpec{
+			RealmSelector: &v13.LabelSelector{
+				MatchLabels: map[string]string{"application": "sso"},
+			},
+			Client: &v1alpha1.KeycloakAPIClient{
+				ClientID: "client-id",
+				Secret:   "client-secret",
+			},
+		},
+	}
+
+	currentState := &common.ClientState{
+		Realm: &v1alpha1.KeycloakRealm{
+			Spec: v1alpha1.KeycloakRealmSpec{
+				Realm: &v1alpha1.KeycloakAPIRealm{
+					Realm: "realm-name",
+				},
+			},
+		},
+		Client: &v1alpha1.KeycloakAPIClient{},
+		DeprecatedClientSecret: &v1.Secret{
+			ObjectMeta: v13.ObjectMeta{
+				Name: oldSecretName,
+			},
+		},
+	}
+
+	// when
+	reconciler := NewKeycloakClientReconciler(keycloakCr)
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	assert.IsType(t, common.PingAction{}, desiredState[0])
+	assert.IsType(t, common.UpdateClientAction{}, desiredState[1])
+
+	// create new secret using custom resource in name
+	assert.IsType(t, common.GenericCreateAction{}, desiredState[2])
+	assert.IsType(t, model.ClientSecret(cr), desiredState[2].(common.GenericCreateAction).Ref)
+	assert.Equal(t, newSecretName, model.ClientSecret(cr).Name)
+
+	// delete existing secret using client id in name
+	assert.IsType(t, common.GenericDeleteAction{}, desiredState[3])
+	assert.IsType(t, model.DeprecatedClientSecret(cr), desiredState[3].(common.GenericDeleteAction).Ref)
+	assert.Equal(t, oldSecretName, desiredState[3].(common.GenericDeleteAction).Ref.(*v1.Secret).Name)
 }

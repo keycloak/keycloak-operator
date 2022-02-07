@@ -47,6 +47,12 @@ func (i *KeycloakClientReconciler) Reconcile(state *common.ClientState, cr *kc.K
 		desired.AddAction(i.getUpdatedClientSecretState(state, cr))
 	}
 
+	if state.DeprecatedClientSecret != nil {
+		// Delete client secret created using the previous naming scheme, i.e., keycloak-client-secret-<CLIENT_ID>.
+		// See GH issue #473 and KEYCLOAK-18346.
+		desired.AddAction(i.getDeletedDeprecatedClientSecretState(state, cr))
+	}
+
 	i.ReconcileRoles(state, cr, &desired)
 
 	i.ReconcileScopeMappings(state, cr, &desired)
@@ -289,10 +295,17 @@ func (i *KeycloakClientReconciler) getCreatedClientState(state *common.ClientSta
 	}
 }
 
+func (i *KeycloakClientReconciler) getDeletedDeprecatedClientSecretState(state *common.ClientState, cr *kc.KeycloakClient) common.ClusterAction {
+	return common.GenericDeleteAction{
+		Ref: state.DeprecatedClientSecret,
+		Msg: fmt.Sprintf("delete deprecated client secret %v/%v", cr.Namespace, cr.Spec.Client.ClientID),
+	}
+}
+
 func (i *KeycloakClientReconciler) getUpdatedClientSecretState(state *common.ClientState, cr *kc.KeycloakClient) common.ClusterAction {
 	return common.GenericUpdateAction{
 		Ref: model.ClientSecretReconciled(cr, state.ClientSecret),
-		Msg: fmt.Sprintf("update client secret %v/%v", cr.Namespace, cr.Spec.Client.ClientID),
+		Msg: fmt.Sprintf("update client secret %v/%v", cr.Namespace, cr.Name),
 	}
 }
 
@@ -307,7 +320,7 @@ func (i *KeycloakClientReconciler) getUpdatedClientState(state *common.ClientSta
 func (i *KeycloakClientReconciler) getCreatedClientSecretState(state *common.ClientState, cr *kc.KeycloakClient) common.ClusterAction {
 	return common.GenericCreateAction{
 		Ref: model.ClientSecret(cr),
-		Msg: fmt.Sprintf("create client secret %v/%v", cr.Namespace, cr.Spec.Client.ClientID),
+		Msg: fmt.Sprintf("create client secret %v/%v", cr.Namespace, cr.Name),
 	}
 }
 

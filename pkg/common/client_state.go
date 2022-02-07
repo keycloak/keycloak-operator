@@ -11,17 +11,18 @@ import (
 )
 
 type ClientState struct {
-	Client                *kc.KeycloakAPIClient
-	ClientSecret          *v1.Secret
-	Context               context.Context
-	Realm                 *kc.KeycloakRealm
-	Roles                 []kc.RoleRepresentation
-	DefaultRoleID         string
-	DefaultRoles          []kc.RoleRepresentation
-	ScopeMappings         *kc.MappingsRepresentation
-	AvailableClientScopes []kc.KeycloakClientScope
-	DefaultClientScopes   []kc.KeycloakClientScope
-	OptionalClientScopes  []kc.KeycloakClientScope
+	Client                 *kc.KeycloakAPIClient
+	ClientSecret           *v1.Secret // keycloak-client-secret-<custom resource name>
+	Context                context.Context
+	Realm                  *kc.KeycloakRealm
+	Roles                  []kc.RoleRepresentation
+	DefaultRoleID          string
+	DefaultRoles           []kc.RoleRepresentation
+	ScopeMappings          *kc.MappingsRepresentation
+	AvailableClientScopes  []kc.KeycloakClientScope
+	DefaultClientScopes    []kc.KeycloakClientScope
+	OptionalClientScopes   []kc.KeycloakClientScope
+	DeprecatedClientSecret *v1.Secret // keycloak-client-secret-<clientID>
 }
 
 func NewClientState(context context.Context, realm *kc.KeycloakRealm) *ClientState {
@@ -58,6 +59,14 @@ func (i *ClientState) Read(context context.Context, cr *kc.KeycloakClient, realm
 	err = i.readClientSecret(context, cr, i.Client, controllerClient)
 	if err != nil {
 		return err
+	}
+
+	if cr.Name != cr.Spec.Client.ClientID {
+		// only read when these fields aren't equal to avoid unwanted cyclical create / delete of client secret
+		err = i.readDepcreatedClientSecret(context, cr, i.Client, controllerClient)
+		if err != nil {
+			return err
+		}
 	}
 
 	if i.Client != nil {
@@ -132,4 +141,25 @@ func (i *ClientState) readDefaultRoles(cr *kc.KeycloakClient, realmClient Keyclo
 	i.DefaultRoleID = realm.Spec.Realm.DefaultRole.ID
 	i.DefaultRoles, err = realmClient.ListRealmRoleClientRoleComposites(i.Realm.Spec.Realm.Realm, i.DefaultRoleID, cr.Spec.Client.ID)
 	return err
+}
+
+// Read client secret created using the previous naming scheme, i.e., keycloak-client-secret-<CLIENT_ID>.
+// See GH issue #473 and KEYCLOAK-18346.
+func (i *ClientState) readDepcreatedClientSecret(context context.Context, cr *kc.KeycloakClient, clientSpec *kc.KeycloakAPIClient, controllerClient client.Client) error {
+	key := model.DeprecatedClientSecretSelector(cr)
+	secret := model.DeprecatedClientSecret(cr)
+
+	err := controllerClient.Get(context, key, secret)
+	if err != nil {
+		if !apiErrors.IsNotFound(err) {
+			return err
+		}
+	} else {
+		i.DeprecatedClientSecret = secret.DeepCopy()
+	}
+
+	// delete reference to keycloak-client-secret-<CLIENT_ID> in secondary resources
+	cr.DeleteFromStatusSecondaryResources(secret.Kind, secret.Name)
+
+	return nil
 }
