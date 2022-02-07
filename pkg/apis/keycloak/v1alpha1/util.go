@@ -18,3 +18,14 @@ func UpdateStatusSecondaryResources(secondaryResources map[string][]string, kind
 	// return new map
 	return secondaryResources
 }
+
+func DeleteFromStatusSecondaryResources(secondaryResources map[string][]string, kind string, resourceName string) {
+	resources := secondaryResources[kind]
+	for i, v := range resources {
+		if resourceName == v {
+			resources[i] = resources[len(resources)-1]
+			secondaryResources[kind] = resources[:len(resources)-1]
+			break
+		}
+	}
+}

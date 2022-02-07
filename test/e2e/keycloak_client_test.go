@@ -9,7 +9,9 @@ import (
 	"github.com/operator-framework/operator-sdk/pkg/test"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/api/core/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -19,6 +21,8 @@ const (
 	externalClientName = "test-client-external"
 	authZClientName    = "test-client-authz"
 )
+
+var ErrDeprecatedClientSecretFound = errors.New("deprecated client secret found")
 
 func NewKeycloakClientsCRDTestStruct() *CRDTestStruct {
 	return &CRDTestStruct{
@@ -57,6 +61,9 @@ func NewKeycloakClientsCRDTestStruct() *CRDTestStruct {
 					prepareKeycloakClientWithRolesCR,
 				},
 				testFunction: keycloakClientScopeMappingsTest,
+			},
+			"keycloakClientDeprecatedClientSecretTest": {
+				testFunction: keycloakClientDeprecatedClientSecretTest,
 			},
 		},
 	}
@@ -269,6 +276,42 @@ func externalKeycloakClientBasicTest(t *testing.T, framework *test.Framework, ct
 
 func keycloakClientAuthZTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	return WaitForClientToBeReady(t, framework, namespace, testAuthZKeycloakClientCRName)
+}
+
+func keycloakClientDeprecatedClientSecretTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	client := getKeycloakClientCR(namespace, false)
+	secret := model.DeprecatedClientSecret(client)
+
+	// create client secret using client ID, i.e., keycloak-client-secret-<CLIENT_ID>
+	err := Create(framework, secret, ctx)
+	if err != nil {
+		return err
+	}
+
+	// create client
+	err = Create(framework, client, ctx)
+	if err != nil {
+		return err
+	}
+	err = WaitForClientToBeReady(t, framework, namespace, testKeycloakClientCRName)
+	if err != nil {
+		return err
+	}
+
+	// verify client secret removal in secondary resources
+	_, exists := client.Status.SecondaryResources[secret.Name]
+	if exists {
+		return errors.Wrap(ErrDeprecatedClientSecretFound, secret.Name)
+	}
+
+	// verify client secret removal
+	var retrievedSecret v1.Secret
+	err = GetNamespacedObject(framework, namespace, secret.Name, &retrievedSecret)
+	if !apierrors.IsNotFound(err) {
+		return err
+	}
+
+	return nil
 }
 
 func keycloakClientRolesTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {

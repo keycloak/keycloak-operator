@@ -24,6 +24,7 @@ type ActionRunner interface {
 	RunAll(desiredState DesiredClusterState) error
 	Create(obj runtime.Object) error
 	Update(obj runtime.Object) error
+	Delete(obj runtime.Object) error
 	CreateRealm(obj *v1alpha1.KeycloakRealm) error
 	DeleteRealm(obj *v1alpha1.KeycloakRealm) error
 	CreateClient(keycloakClient *v1alpha1.KeycloakClient, Realm string) error
@@ -120,6 +121,10 @@ func (i *ClusterActionRunner) Update(obj runtime.Object) error {
 	}
 
 	return i.client.Update(i.context, obj)
+}
+
+func (i *ClusterActionRunner) Delete(obj runtime.Object) error {
+	return i.client.Delete(i.context, obj)
 }
 
 // Create a new realm using the keycloak api
@@ -410,6 +415,13 @@ type GenericUpdateAction struct {
 	Msg string
 }
 
+// An action to delete generic kubernetes resources
+// (resources that don't require special treatment)
+type GenericDeleteAction struct {
+	Ref runtime.Object
+	Msg string
+}
+
 type CreateRealmAction struct {
 	Ref *v1alpha1.KeycloakRealm
 	Msg string
@@ -595,6 +607,10 @@ func (i GenericCreateAction) Run(runner ActionRunner) (string, error) {
 
 func (i GenericUpdateAction) Run(runner ActionRunner) (string, error) {
 	return i.Msg, runner.Update(i.Ref)
+}
+
+func (i GenericDeleteAction) Run(runner ActionRunner) (string, error) {
+	return i.Msg, runner.Delete(i.Ref)
 }
 
 func (i CreateRealmAction) Run(runner ActionRunner) (string, error) {
