@@ -13,5 +13,5 @@ function replace_value_in_file() {
 }
 
 replace_value_in_file ".*Version = " "$1" "version/version.go" "\""
-replace_value_in_file ".*DefaultKeycloakImage.*= " "quay.io\/keycloak\/keycloak:$1" "pkg/model/image_manager.go" "\""
+replace_value_in_file ".*DefaultKeycloakImage.*= " "quay.io\/keycloak\/keycloak:$1-legacy" "pkg/model/image_manager.go" "\""
 replace_value_in_file ".*image: " "quay.io\/keycloak\/keycloak-operator:$1" "deploy/operator.yaml"
