@@ -115,9 +115,6 @@ func (i *KeycloakClientReconciler) ReconcileScopeMappings(state *common.ClientSt
 	if cr.Spec.ScopeMappings == nil {
 		cr.Spec.ScopeMappings = &kc.MappingsRepresentation{}
 	}
-	for clientID, clientMappings := range cr.Spec.ScopeMappings.ClientMappings {
-		clientMappings.Client = clientID
-	}
 
 	mappingsNew := scopeMappingDifference(cr.Spec.ScopeMappings, state.ScopeMappings)
 	if mappingsNew.RealmMappings != nil {
