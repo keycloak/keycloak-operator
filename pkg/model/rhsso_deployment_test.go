@@ -24,6 +24,14 @@ func TestRHSSODeployment_testAffinityDefaultMultiAZ(t *testing.T) {
 	testAffinityDefaultMultiAZ(t, RHSSODeployment)
 }
 
+func TestRHSSODeployment_testTolerationsExperimental(t *testing.T) {
+	testTolerationsExperimentalTolerationsSet(t, RHSSODeployment)
+}
+
+func TestRHSSODeployment_testNodeSelectorExperimental(t *testing.T) {
+	testNodeSelectorExperimentalNodeSelectorSet(t, RHSSODeployment)
+}
+
 func TestRHSSODeployment_testAffinityExperimental(t *testing.T) {
 	testAffinityExperimentalAffinitySet(t, RHSSODeployment)
 }

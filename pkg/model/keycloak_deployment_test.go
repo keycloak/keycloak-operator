@@ -46,6 +46,14 @@ func TestKeycloakDeployment_testAffinityDefaultMultiAZ(t *testing.T) {
 	testAffinityDefaultMultiAZ(t, KeycloakDeployment)
 }
 
+func TestKeycloakDeployment_testTolerationsExperimental(t *testing.T) {
+	testTolerationsExperimentalTolerationsSet(t, KeycloakDeployment)
+}
+
+func TestKeycloakDeployment_testNodeSelectorExperimental(t *testing.T) {
+	testNodeSelectorExperimentalNodeSelectorSet(t, KeycloakDeployment)
+}
+
 func TestKeycloakDeployment_testAffinityExperimental(t *testing.T) {
 	testAffinityExperimentalAffinitySet(t, KeycloakDeployment)
 }
@@ -394,6 +402,48 @@ func testAffinityDefaultMultiAZ(t *testing.T, deploymentFunction createDeploymen
 	assert.Equal(t, "In", string(matchExprOperator1))
 	assert.Equal(t, ApplicationName, matchExpVal1)
 	assert.Equal(t, "kubernetes.io/hostname", topologyKey1)
+}
+
+func testTolerationsExperimentalTolerationsSet(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
+	//given
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{}
+
+	cr.Spec.KeycloakDeploymentSpec.Experimental.Tolerations = []v1.Toleration{
+		{
+			Key:      "WorkloadOnly",
+			Operator: v1.TolerationOpEqual,
+			Effect:   v1.TaintEffectNoExecute,
+			Value:    "true",
+		},
+	}
+
+	//when
+	tolerations := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.Tolerations
+
+	//then - Expect 1 toleration in the deployment
+	assert.Equal(t, 1, len(tolerations))
+	assert.Equal(t, "WorkloadOnly", tolerations[0].Key)
+	assert.Equal(t, v1.TolerationOpEqual, tolerations[0].Operator)
+	assert.Equal(t, v1.TaintEffectNoExecute, tolerations[0].Effect)
+	assert.Equal(t, "true", tolerations[0].Value)
+}
+
+func testNodeSelectorExperimentalNodeSelectorSet(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
+	//given
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{}
+
+	cr.Spec.KeycloakDeploymentSpec.Experimental.NodeSelector = map[string]string{
+		"disktype": "ssd",
+	}
+
+	//when
+	nodeSelector := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.NodeSelector
+
+	//then - Expect 1 toleration in the deployment
+	assert.Equal(t, 1, len(nodeSelector))
+	assert.Equal(t, "ssd", nodeSelector["disktype"])
 }
 
 func testAffinityExperimentalAffinitySet(t *testing.T, deploymentFunction createDeploymentStatefulSet) {

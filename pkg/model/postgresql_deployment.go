@@ -143,6 +143,8 @@ func PostgresqlDeployment(cr *v1alpha1.Keycloak, isOpenshift bool) *v13.Deployme
 							},
 						},
 					},
+					Tolerations:  cr.Spec.KeycloakDeploymentSpec.Tolerations,
+					NodeSelector: cr.Spec.KeycloakDeploymentSpec.NodeSelector,
 				},
 			},
 			Strategy: v13.DeploymentStrategy{

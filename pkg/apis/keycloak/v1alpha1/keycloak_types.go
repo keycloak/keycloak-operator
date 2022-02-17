@@ -119,6 +119,12 @@ type KeycloakDeploymentSpec struct {
 	// the deployment to behave in an unpredictable fashion. Please use with care.
 	// +optional
 	Experimental ExperimentalSpec `json:"experimental,omitempty"`
+	// Toleration for the Pods when using taints and toleration on nodes
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+	// NodeSelector to constrain pods to run on particular set of Node(s)
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
 type PostgresqlDeploymentSpec struct {
@@ -146,6 +152,12 @@ type ExperimentalSpec struct {
 	// ServiceAccountName settings
 	// +optional
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
+	// Toleration for the Pods when using taints and toleration on nodes
+	// +optional
+	Tolerations []corev1.Toleration `json:"tolerations,omitempty"`
+	// NodeSelector to constrain pods to run on particular set of Node(s)
+	// +optional
+	NodeSelector map[string]string `json:"nodeSelector,omitempty"`
 }
 
 type VolumesSpec struct {

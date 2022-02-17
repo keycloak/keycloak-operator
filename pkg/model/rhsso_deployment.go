@@ -209,6 +209,8 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret *v1
 							ImagePullPolicy: cr.Spec.KeycloakDeploymentSpec.ImagePullPolicy,
 						},
 					},
+					Tolerations:  cr.Spec.KeycloakDeploymentSpec.Experimental.Tolerations,
+					NodeSelector: cr.Spec.KeycloakDeploymentSpec.Experimental.NodeSelector,
 				},
 			},
 		},
@@ -243,6 +245,8 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 		reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
 	}
 	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr, dbSSLSecret)
+	reconciled.Spec.Template.Spec.Tolerations = cr.Spec.KeycloakDeploymentSpec.Experimental.Tolerations
+	reconciled.Spec.Template.Spec.NodeSelector = cr.Spec.KeycloakDeploymentSpec.Experimental.NodeSelector
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:    KeycloakDeploymentName,

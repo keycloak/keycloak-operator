@@ -261,6 +261,8 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret 
 						},
 					},
 					ServiceAccountName: getServiceAccountName(cr),
+					Tolerations:        cr.Spec.KeycloakDeploymentSpec.Experimental.Tolerations,
+					NodeSelector:       cr.Spec.KeycloakDeploymentSpec.Experimental.NodeSelector,
 				},
 			},
 		},
@@ -294,6 +296,8 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 		reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
 	}
 	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr, dbSSLSecret)
+	reconciled.Spec.Template.Spec.Tolerations = cr.Spec.KeycloakDeploymentSpec.Experimental.Tolerations
+	reconciled.Spec.Template.Spec.NodeSelector = cr.Spec.KeycloakDeploymentSpec.Experimental.NodeSelector
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
 			Name:    KeycloakDeploymentName,
