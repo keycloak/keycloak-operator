@@ -64,3 +64,4 @@ const (
 )
 
 var PodLabels = map[string]string{}
+var PodAnnotations = map[string]string{}

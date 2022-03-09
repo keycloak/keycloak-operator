@@ -95,6 +95,9 @@ type KeycloakDeploymentSpec struct {
 	// List of labels to set in the keycloak pods
 	// +optional
 	PodLabels map[string]string `json:"podlabels,omitempty"`
+    // List of annotations to set in the keycloak pods	
+    // +optional
+	PodAnnotations map[string]string `json:"podannotations,omitempty"`
 
 	// Experimental section
 	// NOTE: This section might change or get removed without any notice. It may also cause
