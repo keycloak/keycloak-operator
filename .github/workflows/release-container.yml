@@ -1,0 +1,48 @@
+  name: Release Keycloak Operator container
+
+  on:
+    workflow_dispatch:
+    push:
+      tags:
+        - '[0-9]+.[0-9]+.[0-9]+'
+  concurrency: keycloak-operator-container-release
+
+  jobs:
+    publish:
+      if: github.repository == 'keycloak/keycloak-operator'
+      runs-on: ubuntu-latest
+      steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+        
+      - name: Container metadata
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: quay.io/keycloak/keycloak-operator
+          flavor: |
+            latest=false
+          tags: |
+            type=ref,event=branch
+            type=raw,value=legacy
+            type=semver,pattern={{version}}-legacy
+            type=semver,pattern={{major}}.{{minor}}-legacy
+
+      - name: Login to Quay
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
