@@ -129,7 +129,8 @@ func PostgresqlDeployment(cr *v1alpha1.Keycloak, isOpenshift bool) *v13.Deployme
 									MountPath: PostgresqlPersistentVolumeMountPath,
 								},
 							},
-							Resources: getPostgresResources(cr),
+							Resources:       getPostgresResources(cr),
+							ImagePullPolicy: cr.Spec.PostgresDeploymentSpec.ImagePullPolicy,
 						},
 					},
 					Volumes: []v1.Volume{
@@ -175,6 +176,7 @@ func getPostgresqlDeploymentInitContainer(cr *v1alpha1.Keycloak) []v1.Container 
 					MountPath: PostgresqlPersistentVolumeMountPath,
 				},
 			},
+			ImagePullPolicy: cr.Spec.PostgresDeploymentSpec.ImagePullPolicy,
 		},
 	}
 }
@@ -259,6 +261,8 @@ func PostgresqlDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Dep
 				},
 			},
 			Resources: getPostgresResources(cr),
+			ImagePullPolicy: cr.Spec.PostgresDeploymentSpec.ImagePullPolicy,
+
 		},
 	}
 	reconciled.Spec.Template.Spec.Volumes = []v1.Volume{

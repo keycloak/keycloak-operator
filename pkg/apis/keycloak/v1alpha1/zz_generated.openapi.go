@@ -674,14 +674,14 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakSpec(ref common.ReferenceCallback
 					},
 					"keycloakDeploymentSpec": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Resources (Requests and Limits) for KeycloakDeployment.",
+							Description: "Resources (Requests and Limits) and ImagePullPolicy for KeycloakDeployment.",
 							Default:     map[string]interface{}{},
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.KeycloakDeploymentSpec"),
 						},
 					},
 					"postgresDeploymentSpec": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Resources (Requests and Limits) for PostgresDeployment.",
+							Description: "Resources (Requests and Limits) and ImagePullPolicy for PostgresDeployment.",
 							Default:     map[string]interface{}{},
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.PostgresqlDeploymentSpec"),
 						},

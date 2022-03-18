@@ -27,7 +27,7 @@ func KeycloakExtensionsInitContainers(cr *v1alpha1.Keycloak) []v1.Container {
 			},
 			TerminationMessagePath:   "/dev/termination-log",
 			TerminationMessagePolicy: "File",
-			ImagePullPolicy:          "Always",
+			ImagePullPolicy:          cr.Spec.KeycloakDeploymentSpec.ImagePullPolicy,
 		},
 	}
 }
