@@ -260,9 +260,8 @@ func PostgresqlDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Dep
 					MountPath: PostgresqlPersistentVolumeMountPath,
 				},
 			},
-			Resources: getPostgresResources(cr),
+			Resources:       getPostgresResources(cr),
 			ImagePullPolicy: cr.Spec.PostgresDeploymentSpec.ImagePullPolicy,
-
 		},
 	}
 	reconciled.Spec.Template.Spec.Volumes = []v1.Volume{
