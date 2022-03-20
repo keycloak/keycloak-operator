@@ -50,6 +50,9 @@ type KeycloakAPIRealm struct {
 	// A set of Identity Providers.
 	// +optional
 	IdentityProviders []*KeycloakIdentityProvider `json:"identityProviders,omitempty"`
+	// A set of Identity Provider Mappers.
+	// +optional
+	IdentityProviderMappers []*KeycloakIdentityProviderMapper `json:"identityProviderMappers,omitempty"`
 	// A set of Event Listeners.
 	// +optional
 	EventsListeners []string `json:"eventsListeners,omitempty"`
@@ -488,6 +491,20 @@ type KeycloakIdentityProvider struct {
 	// +optional
 	LinkOnly bool `json:"linkOnly,omitempty"`
 	// Identity Provider config.
+	// +optional
+	Config map[string]string `json:"config,omitempty"`
+}
+
+type KeycloakIdentityProviderMapper struct {
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name,omitempty"`
+	// Identity Provider Alias.
+	// +optional
+	IdentityProviderAlias string `json:"identityProviderAlias,omitempty"`
+	// Identity Provider Mapper.
+	// +optional
+	IdentityProviderMapper string `json:"identityProviderMapper,omitempty"`
+	// Identity Provider Mapper config.
 	// +optional
 	Config map[string]string `json:"config,omitempty"`
 }

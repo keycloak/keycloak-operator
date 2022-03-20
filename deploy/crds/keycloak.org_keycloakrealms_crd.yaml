@@ -924,6 +924,27 @@ spec:
                     type: integer
                   id:
                     type: string
+                  identityProviderMappers:
+                    description: A set of Identity Provider Mappers.
+                    items:
+                      properties:
+                        config:
+                          additionalProperties:
+                            type: string
+                          description: Identity Provider Mapper config.
+                          type: object
+                        id:
+                          type: string
+                        identityProviderAlias:
+                          description: Identity Provider Alias.
+                          type: string
+                        identityProviderMapper:
+                          description: Identity Provider Mapper.
+                          type: string
+                        name:
+                          type: string
+                      type: object
+                    type: array
                   identityProviders:
                     description: A set of Identity Providers.
                     items:
