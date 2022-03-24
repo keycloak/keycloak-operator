@@ -177,6 +177,7 @@ func TestPodLabels_When_EnvVars_Then_FullListOfLabels(t *testing.T) {
 	}
 	totalLabels := AddPodLabels(&cr, labels)
 	assert.Equal(t, 6, len(totalLabels))
+	assert.Equal(t, 2, len(labels))
 	assert.Contains(t, totalLabels, "LabelToTest")
 	assert.Contains(t, totalLabels, "SecondLabelToTest")
 	assert.Contains(t, totalLabels, "FirstLabel")
