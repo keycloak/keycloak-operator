@@ -238,6 +238,11 @@ func SanitizeResourceNameWithAlphaNum(text string) string {
 func AddPodLabels(cr *v1alpha1.Keycloak, labels map[string]string) map[string]string {
 	mergedPodLabels := map[string]string{}
 
+	// We add the labels
+	for key, value := range labels {
+		mergedPodLabels[key] = value
+	}
+
 	// We add the Pod Labels defined in the constants
 	for key, value := range PodLabels {
 		mergedPodLabels[key] = value
