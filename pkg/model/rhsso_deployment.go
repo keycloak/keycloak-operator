@@ -1,10 +1,11 @@
 package model
 
 import (
+	"context"
 	"fmt"
-
 	"github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	v13 "k8s.io/api/apps/v1"
+	"k8s.io/api/autoscaling/v2beta2"
 	v1 "k8s.io/api/core/v1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -227,14 +228,25 @@ func RHSSODeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 	}
 }
 
-func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet, dbSecret *v1.Secret, dbSSLSecret *v1.Secret) *v13.StatefulSet {
+func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet, dbSecret *v1.Secret, dbSSLSecret *v1.Secret, clnt client.Client) *v13.StatefulSet {
 	reconciled := currentState.DeepCopy()
 
 	reconciled.ObjectMeta.Labels = AddPodLabels(cr, reconciled.ObjectMeta.Labels)
 	reconciled.Spec.Template.ObjectMeta.Labels = AddPodLabels(cr, reconciled.Spec.Template.ObjectMeta.Labels)
 
 	reconciled.ResourceVersion = currentState.ResourceVersion
-	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
+
+	keycloakHPA := &v2beta2.HorizontalPodAutoscaler{
+		ObjectMeta: v12.ObjectMeta{
+			Name:      "keycloak",
+			Namespace: "redhat-rhoam-user-sso",
+		},
+	}
+	if err := clnt.Get(context.TODO(), client.ObjectKey{Name: keycloakHPA.ObjectMeta.Name}, keycloakHPA); err == nil {
+		reconciled.Spec.Replicas = &keycloakHPA.Status.DesiredReplicas
+	} else {
+		reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
+	}
 	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr, dbSSLSecret)
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{

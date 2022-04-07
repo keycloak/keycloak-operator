@@ -8,6 +8,10 @@ import (
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"github.com/keycloak/keycloak-operator/pkg/model"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/rest"
+	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/config"
 )
 
 type Reconciler interface {
@@ -15,6 +19,9 @@ type Reconciler interface {
 }
 
 type KeycloakReconciler struct { // nolint
+	restConfig *rest.Config
+	scheme     *runtime.Scheme
+	newClient  client.Client
 }
 
 func NewKeycloakReconciler() *KeycloakReconciler {
@@ -296,6 +303,8 @@ func (i *KeycloakReconciler) getDatabaseSecretDesiredState(clusterState *common.
 }
 
 func (i *KeycloakReconciler) getKeycloakDeploymentOrRHSSODesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
+	cfg, _ := config.GetConfig()
+	newClient, _ := client.New(cfg, client.Options{})
 	isRHSSO := model.Profiles.IsRHSSO(cr)
 
 	deployment := model.KeycloakDeployment(cr, clusterState.DatabaseSecret, clusterState.DatabaseSSLCert)
@@ -315,7 +324,7 @@ func (i *KeycloakReconciler) getKeycloakDeploymentOrRHSSODesiredState(clusterSta
 
 	deploymentReconciled := model.KeycloakDeploymentReconciled(cr, clusterState.KeycloakDeployment, clusterState.DatabaseSecret, clusterState.DatabaseSSLCert)
 	if isRHSSO {
-		deploymentReconciled = model.RHSSODeploymentReconciled(cr, clusterState.KeycloakDeployment, clusterState.DatabaseSecret, clusterState.DatabaseSSLCert)
+		deploymentReconciled = model.RHSSODeploymentReconciled(cr, clusterState.KeycloakDeployment, clusterState.DatabaseSecret, clusterState.DatabaseSSLCert, newClient)
 	}
 
 	return common.GenericUpdateAction{
