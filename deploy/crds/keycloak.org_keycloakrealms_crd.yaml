@@ -1180,6 +1180,9 @@ spec:
                     items:
                       description: https://www.keycloak.org/docs-api/10.0/rest-api/index.html#_userfederationproviderrepresentation
                       properties:
+                        changedSyncPeriod:
+                          format: int32
+                          type: integer
                         config:
                           additionalProperties:
                             type: string
