@@ -447,8 +447,9 @@ func keycloakRealmWithUserFederationTest(t *testing.T, framework *test.Framework
 			"useTruststoreSpi": "ldapsOnly",
 			"editMode":         "READ_ONLY",
 		},
-		DisplayName:  "ldap-provider",
-		ProviderName: "ldap",
+		DisplayName:       "ldap-provider",
+		ProviderName:      "ldap",
+		ChangedSyncPeriod: &[]int32{60}[0],
 	}
 
 	keycloakRealmCR.Spec.Realm.UserFederationMappers = []keycloakv1alpha1.KeycloakAPIUserFederationMapper{userFederationMapper}

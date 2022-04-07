@@ -278,8 +278,10 @@ type RoleRepresentationComposites struct {
 
 // https://www.keycloak.org/docs-api/10.0/rest-api/index.html#_userfederationproviderrepresentation
 type KeycloakAPIUserFederationProvider struct {
-	// changedSyncPeriod optional integer(int32)
 	// lastSync int32
+
+	// +optional
+	ChangedSyncPeriod *int32 `json:"changedSyncPeriod,omitempty"`
 
 	// User federation provider config.
 	// +optional
