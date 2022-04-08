@@ -82,6 +82,11 @@ type KeycloakSpec struct {
 	// Specify PodAntiAffinity settings for Keycloak deployment in Multi AZ
 	// +optional
 	MultiAvailablityZones MultiAvailablityZonesConfig `json:"multiAvailablityZones,omitempty"`
+	// Disables the integration with Application Monitoring Operator. When set to true,
+	// the operator doesn't create default PrometheusRule, ServiceMonitor and GrafanaDashboard
+	// objects and users will have to create them manually, if needed.
+	// +optional
+	DisableMonitoringServices bool `json:"DisableDefaultServiceMonitor,omitempty"`
 }
 
 type DeploymentSpec struct {

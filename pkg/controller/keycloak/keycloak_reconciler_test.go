@@ -283,6 +283,33 @@ func TestKeycloakReconciler_Test_No_Action_When_Monitoring_Resources_Dont_Exist(
 	}
 }
 
+func TestKeycloakReconciler_Test_No_Action_When_Monitoring_Resources_Disabled(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.DisableMonitoringServices = true
+
+	currentState := common.NewClusterState()
+
+	//Set monitoring resources exist to true
+	stateManager := common.GetStateManager()
+	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.PrometheusRuleKind), true)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, monitoringv1.ServiceMonitorsKind), true)
+	stateManager.SetState(common.GetStateFieldName(ControllerName, grafanav1alpha1.GrafanaDashboardKind), true)
+	defer stateManager.Clear()
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	for _, element := range desiredState {
+		assert.IsType(t, common.GenericCreateAction{}, element)
+		assert.NotEqual(t, reflect.TypeOf(model.PrometheusRule(cr)), reflect.TypeOf(element.(common.GenericCreateAction).Ref))
+		assert.NotEqual(t, reflect.TypeOf(model.GrafanaDashboard(cr)), reflect.TypeOf(element.(common.GenericCreateAction).Ref))
+		assert.NotEqual(t, reflect.TypeOf(model.ServiceMonitor(cr)), reflect.TypeOf(element.(common.GenericCreateAction).Ref))
+	}
+}
+
 func TestKeycloakReconciler_Test_Creating_All_With_External_Database(t *testing.T) {
 	// given
 	cr := &v1alpha1.Keycloak{}

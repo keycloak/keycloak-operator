@@ -31,6 +31,12 @@ spec:
           spec:
             description: KeycloakSpec defines the desired state of Keycloak.
             properties:
+              DisableDefaultServiceMonitor:
+                description: Disables the integration with Application Monitoring
+                  Operator. When set to true, the operator doesn't create default
+                  PrometheusRule, ServiceMonitor and GrafanaDashboard objects and
+                  users will have to create them manually, if needed.
+                type: boolean
               extensions:
                 description: A list of extensions, where each one is a URL to a JAR
                   files that will be deployed in Keycloak.
