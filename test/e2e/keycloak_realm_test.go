@@ -101,6 +101,11 @@ func getKeycloakRealmCR(namespace string) *keycloakv1alpha1.KeycloakRealm {
 				OtpPolicyPeriod:             &[]int32{1}[0],
 				OtpPolicyType:               "policy type",
 				OtpSupportedApplications:    []string{"app1", "app2"},
+				BrowserFlow:                 "browser",
+				RegistrationFlow:            "registration",
+				DirectGrantFlow:             "direct grant",
+				ResetCredentialsFlow:        "reset credentials",
+				ClientAuthenticationFlow:    "clients",
 			},
 		},
 	}

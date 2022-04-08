@@ -175,9 +175,15 @@ spec:
                       - alias
                       type: object
                     type: array
+                  browserFlow:
+                    description: Browser authentication flow
+                    type: string
                   bruteForceProtected:
                     description: Brute Force Detection
                     type: boolean
+                  clientAuthenticationFlow:
+                    description: Client authentication flow
+                    type: string
                   clientScopeMappings:
                     additionalProperties:
                       items:
@@ -886,6 +892,9 @@ spec:
                     required:
                     - name
                     type: object
+                  directGrantFlow:
+                    description: Direct Grant authentication flow
+                    type: string
                   displayName:
                     description: Realm display name.
                     type: string
@@ -1057,9 +1066,15 @@ spec:
                   registrationEmailAsUsername:
                     description: Email as username
                     type: boolean
+                  registrationFlow:
+                    description: Registration flow
+                    type: string
                   rememberMe:
                     description: Remember me
                     type: boolean
+                  resetCredentialsFlow:
+                    description: Reset Credentials authentication flow
+                    type: string
                   resetPasswordAllowed:
                     description: Forgot password
                     type: boolean
