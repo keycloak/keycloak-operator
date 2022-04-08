@@ -227,6 +227,26 @@ type KeycloakAPIRealm struct {
 	// OTP Supported Applications
 	// +optional
 	OtpSupportedApplications []string `json:"otpSupportedApplications,omitempty"`
+
+	// Browser authentication flow
+	// +optional
+	BrowserFlow string `json:"browserFlow,omitempty"`
+
+	// Direct Grant authentication flow
+	// +optional
+	DirectGrantFlow string `json:"directGrantFlow,omitempty"`
+
+	// Client authentication flow
+	// +optional
+	ClientAuthenticationFlow string `json:"clientAuthenticationFlow,omitempty"`
+
+	// Reset Credentials authentication flow
+	// +optional
+	ResetCredentialsFlow string `json:"resetCredentialsFlow,omitempty"`
+
+	// Registration flow
+	// +optional
+	RegistrationFlow string `json:"registrationFlow,omitempty"`
 }
 
 type RoleRepresentationArray []RoleRepresentation
