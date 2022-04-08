@@ -9,6 +9,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 func getRHSSOEnv(cr *v1alpha1.Keycloak, dbSecret *v1.Secret) []v1.EnvVar {
@@ -228,6 +229,8 @@ func RHSSODeploymentSelector(cr *v1alpha1.Keycloak) client.ObjectKey {
 	}
 }
 
+var log = logf.Log.WithName("cmd")
+
 func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.StatefulSet, dbSecret *v1.Secret, dbSSLSecret *v1.Secret, clnt client.Client) *v13.StatefulSet {
 	reconciled := currentState.DeepCopy()
 
@@ -237,16 +240,23 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 	reconciled.ResourceVersion = currentState.ResourceVersion
 
 	keycloakHPA := &v2beta2.HorizontalPodAutoscaler{
+		TypeMeta: v12.TypeMeta{
+			Kind:       "HorizontalPodAutoscaler",
+			APIVersion: "autoscaling/v2beta2",
+		},
 		ObjectMeta: v12.ObjectMeta{
 			Name:      "keycloak",
 			Namespace: "redhat-rhoam-user-sso",
 		},
 	}
-	if err := clnt.Get(context.TODO(), client.ObjectKey{Name: keycloakHPA.ObjectMeta.Name}, keycloakHPA); err == nil {
+	if err := clnt.Get(context.TODO(), client.ObjectKey{Namespace: "redhat-rhoam-user-sso", Name: "keycloak"}, keycloakHPA); err == nil {
 		reconciled.Spec.Replicas = &keycloakHPA.Status.DesiredReplicas
+		log.Info("***HERE*** Set replica count to HPA desired replica count")
 	} else {
 		reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
+		log.Error(err, "***HERE*** Error finding the HPA")
 	}
+	log.Info("***HERE*** Continuing with reconcile of RHSSO deployment")
 	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr, dbSSLSecret)
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
