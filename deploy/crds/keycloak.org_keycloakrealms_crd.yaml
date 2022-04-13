@@ -985,6 +985,33 @@ spec:
                     description: Minimum Quick Login Wait
                     format: int32
                     type: integer
+                  otpPolicyAlgorithm:
+                    description: OTP Policy Algorithm
+                    type: string
+                  otpPolicyDigits:
+                    description: OTP Policy Digits
+                    format: int32
+                    type: integer
+                  otpPolicyInitialCounter:
+                    description: OTP Policy Initial Counter
+                    format: int32
+                    type: integer
+                  otpPolicyLookAheadWindow:
+                    description: OTP Policy Look Ahead Window
+                    format: int32
+                    type: integer
+                  otpPolicyPeriod:
+                    description: OTP Policy Period
+                    format: int32
+                    type: integer
+                  otpPolicyType:
+                    description: OTP Policy Type
+                    type: string
+                  otpSupportedApplications:
+                    description: OTP Supported Applications
+                    items:
+                      type: string
+                    type: array
                   passwordPolicy:
                     description: Realm Password Policy
                     type: string
