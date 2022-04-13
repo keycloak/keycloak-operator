@@ -94,6 +94,13 @@ func getKeycloakRealmCR(namespace string) *keycloakv1alpha1.KeycloakRealm {
 				AccountTheme:                "keycloak",
 				AdminTheme:                  "keycloak",
 				EmailTheme:                  "keycloak",
+				OtpPolicyAlgorithm:          "policy alg",
+				OtpPolicyDigits:             &[]int32{6}[0],
+				OtpPolicyInitialCounter:     &[]int32{1}[0],
+				OtpPolicyLookAheadWindow:    &[]int32{1}[0],
+				OtpPolicyPeriod:             &[]int32{1}[0],
+				OtpPolicyType:               "policy type",
+				OtpSupportedApplications:    []string{"app1", "app2"},
 			},
 		},
 	}

@@ -591,6 +591,31 @@ func (in *KeycloakAPIRealm) DeepCopyInto(out *KeycloakAPIRealm) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.OtpPolicyDigits != nil {
+		in, out := &in.OtpPolicyDigits, &out.OtpPolicyDigits
+		*out = new(int32)
+		**out = **in
+	}
+	if in.OtpPolicyInitialCounter != nil {
+		in, out := &in.OtpPolicyInitialCounter, &out.OtpPolicyInitialCounter
+		*out = new(int32)
+		**out = **in
+	}
+	if in.OtpPolicyLookAheadWindow != nil {
+		in, out := &in.OtpPolicyLookAheadWindow, &out.OtpPolicyLookAheadWindow
+		*out = new(int32)
+		**out = **in
+	}
+	if in.OtpPolicyPeriod != nil {
+		in, out := &in.OtpPolicyPeriod, &out.OtpPolicyPeriod
+		*out = new(int32)
+		**out = **in
+	}
+	if in.OtpSupportedApplications != nil {
+		in, out := &in.OtpSupportedApplications, &out.OtpSupportedApplications
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

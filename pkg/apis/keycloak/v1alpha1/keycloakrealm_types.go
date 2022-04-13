@@ -195,6 +195,34 @@ type KeycloakAPIRealm struct {
 	// User Managed Access Allowed
 	// +optional
 	UserManagedAccessAllowed *bool `json:"userManagedAccessAllowed,omitempty"`
+
+	// OTP Policy Algorithm
+	// +optional
+	OtpPolicyAlgorithm string `json:"otpPolicyAlgorithm,omitempty"`
+
+	// OTP Policy Digits
+	// +optional
+	OtpPolicyDigits *int32 `json:"otpPolicyDigits,omitempty"`
+
+	// OTP Policy Initial Counter
+	// +optional
+	OtpPolicyInitialCounter *int32 `json:"otpPolicyInitialCounter,omitempty"`
+
+	// OTP Policy Look Ahead Window
+	// +optional
+	OtpPolicyLookAheadWindow *int32 `json:"otpPolicyLookAheadWindow,omitempty"`
+
+	// OTP Policy Period
+	// +optional
+	OtpPolicyPeriod *int32 `json:"otpPolicyPeriod,omitempty"`
+
+	// OTP Policy Type
+	// +optional
+	OtpPolicyType string `json:"otpPolicyType,omitempty"`
+
+	// OTP Supported Applications
+	// +optional
+	OtpSupportedApplications []string `json:"otpSupportedApplications,omitempty"`
 }
 
 type RoleRepresentationArray []RoleRepresentation
