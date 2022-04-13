@@ -67,6 +67,17 @@ func NewKeycloaksSSLTestStruct() *CRDTestStruct {
 	}
 }
 
+func NewKeycloaksWithDefaultImagePullPolicyTestStruct() *CRDTestStruct {
+	return &CRDTestStruct{
+		prepareEnvironmentSteps: []environmentInitializationStep{
+			prepareKeycloaksCR,
+		},
+		testSteps: map[string]deployedOperatorTestStep{
+			"keycloakWithPodLabelsDeploymentTest": {testFunction: keycloakDeploymentDefaultImagePullPolicyTest},
+		},
+	}
+}
+
 func keycloakSSLDBTest(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
 	// get the Keycloak Statefulset
 	keycloakStatefulset := v1apps.StatefulSet{}
@@ -488,5 +499,14 @@ func keycloakUnmanagedDeploymentTest(t *testing.T, f *framework.Framework, ctx *
 		}
 		return errors.Errorf("found Statefulsets, this shouldn't be the case")
 	})
+	return err
+}
+
+func keycloakDeploymentDefaultImagePullPolicyTest(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
+	// check that the default imagePolicy is set to Always, even though not defined by the user
+	keycloakPod := v1.Pod{}
+	podName := "keycloak-0"
+	err := GetNamespacedObject(f, namespace, podName, &keycloakPod)
+	assert.Contains(t, keycloakPod.Spec.Containers[0].ImagePullPolicy, v1.PullAlways)
 	return err
 }
