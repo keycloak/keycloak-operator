@@ -97,6 +97,9 @@ type DeploymentSpec struct {
 
 type KeycloakDeploymentSpec struct {
 	DeploymentSpec `json:",inline"`
+	// List of annotations to set in the keycloak pods
+	// +optional
+	PodAnnotations map[string]string `json:"podannotations,omitempty"`
 	// List of labels to set in the keycloak pods
 	// +optional
 	PodLabels map[string]string `json:"podlabels,omitempty"`

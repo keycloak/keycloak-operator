@@ -1053,6 +1053,13 @@ func (in *KeycloakDeploymentSpec) DeepCopyInto(out *KeycloakDeploymentSpec) {
 			(*out)[key] = val
 		}
 	}
+	if in.PodAnnotations != nil {
+		in, out := &in.PodAnnotations, &out.PodAnnotations
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	in.Experimental.DeepCopyInto(&out.Experimental)
 	return
 }

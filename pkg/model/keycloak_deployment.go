@@ -280,7 +280,9 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	reconciled := currentState.DeepCopy()
 
 	reconciled.ObjectMeta.Labels = AddPodLabels(cr, reconciled.ObjectMeta.Labels)
+	reconciled.ObjectMeta.Annotations = AddPodAnnotations(cr, reconciled.ObjectMeta.Annotations)
 	reconciled.Spec.Template.ObjectMeta.Labels = AddPodLabels(cr, reconciled.Spec.Template.ObjectMeta.Labels)
+	reconciled.Spec.Template.ObjectMeta.Annotations = AddPodAnnotations(cr, reconciled.Spec.Template.ObjectMeta.Annotations)
 
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
