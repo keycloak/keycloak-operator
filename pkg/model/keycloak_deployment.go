@@ -307,11 +307,12 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 					Protocol:      "TCP",
 				},
 			},
-			VolumeMounts:   KeycloakVolumeMounts(cr, KeycloakExtensionPath, dbSSLSecret, KeycloakCertificatePath),
-			LivenessProbe:  livenessProbe(),
-			ReadinessProbe: readinessProbe(),
-			Env:            getKeycloakEnv(cr, dbSecret),
-			Resources:      getResources(cr),
+			ImagePullPolicy: cr.Spec.KeycloakDeploymentSpec.ImagePullPolicy,
+			VolumeMounts:    KeycloakVolumeMounts(cr, KeycloakExtensionPath, dbSSLSecret, KeycloakCertificatePath),
+			LivenessProbe:   livenessProbe(),
+			ReadinessProbe:  readinessProbe(),
+			Env:             getKeycloakEnv(cr, dbSecret),
+			Resources:       getResources(cr),
 		},
 	}
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)
