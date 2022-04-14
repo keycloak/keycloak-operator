@@ -196,11 +196,6 @@ func TestPodAnnotations_When_EnvVars_Then_FullListOfAnnotations(t *testing.T) {
 			},
 		}}
 
-	PodAnnotations = map[string]string{
-		"FirstAnnotation":  "firstAnnotationValue",
-		"SecondAnnotation": "secondAnnotationValue",
-	}
-
 	annotations := map[string]string{
 		"app":       ApplicationName,
 		"component": KeycloakDeploymentComponent,
