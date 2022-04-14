@@ -201,11 +201,9 @@ func TestPodAnnotations_When_EnvVars_Then_FullListOfAnnotations(t *testing.T) {
 		"component": KeycloakDeploymentComponent,
 	}
 	totalAnnotations := AddPodAnnotations(&cr, annotations)
-	assert.Equal(t, 6, len(totalAnnotations))
+	assert.Equal(t, 4, len(totalAnnotations))
 	assert.Contains(t, totalAnnotations, "AnnotationToTest")
 	assert.Contains(t, totalAnnotations, "SecondAnnotationToTest")
-	assert.Contains(t, totalAnnotations, "FirstAnnotation")
-	assert.Contains(t, totalAnnotations, "SecondAnnotation")
 	assert.Contains(t, totalAnnotations, "app")
 	assert.Contains(t, totalAnnotations, "component")
 }
