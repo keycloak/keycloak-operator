@@ -73,6 +73,10 @@ type KeycloakAPIRealm struct {
 	// +optional
 	ClientScopes []KeycloakClientScope `json:"clientScopes,omitempty"`
 
+	// Default client scopes to add to all new clients
+	// +optional
+	DefaultDefaultClientScopes []string `json:"defaultDefaultClientScopes,omitempty"`
+
 	// Authentication flows
 	// +optional
 	AuthenticationFlows []KeycloakAPIAuthenticationFlow `json:"authenticationFlows,omitempty"`

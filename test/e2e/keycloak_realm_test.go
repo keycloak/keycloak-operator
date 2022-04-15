@@ -267,6 +267,7 @@ func keycloakRealmWithClientScopesTest(t *testing.T, framework *test.Framework, 
 			},
 		},
 	}
+	keycloakRealmCR.Spec.Realm.DefaultDefaultClientScopes = []string{"profile"}
 
 	err := Create(framework, keycloakRealmCR, ctx)
 	if err != nil {

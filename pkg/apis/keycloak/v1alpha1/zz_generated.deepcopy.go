@@ -418,6 +418,11 @@ func (in *KeycloakAPIRealm) DeepCopyInto(out *KeycloakAPIRealm) {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
 	}
+	if in.DefaultDefaultClientScopes != nil {
+		in, out := &in.DefaultDefaultClientScopes, &out.DefaultDefaultClientScopes
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.AuthenticationFlows != nil {
 		in, out := &in.AuthenticationFlows, &out.AuthenticationFlows
 		*out = make([]KeycloakAPIAuthenticationFlow, len(*in))
