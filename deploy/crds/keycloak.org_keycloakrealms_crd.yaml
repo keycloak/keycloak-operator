@@ -831,6 +831,11 @@ spec:
                       - clientId
                       type: object
                     type: array
+                  defaultDefaultClientScopes:
+                    description: Default client scopes to add to all new clients
+                    items:
+                      type: string
+                    type: array
                   defaultLocale:
                     description: Default Locale
                     type: string
