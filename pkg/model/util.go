@@ -256,6 +256,10 @@ func AddPodLabels(cr *v1alpha1.Keycloak, labels map[string]string) map[string]st
 }
 
 func AddPodAnnotations(cr *v1alpha1.Keycloak, annotations map[string]string) map[string]string {
+	if len(annotations) == 0 {
+		return nil
+	}
+
 	mergedAnnotations := map[string]string{}
 
 	// We add the labels
