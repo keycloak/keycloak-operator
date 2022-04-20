@@ -254,3 +254,23 @@ func AddPodLabels(cr *v1alpha1.Keycloak, labels map[string]string) map[string]st
 
 	return mergedPodLabels
 }
+
+func AddPodAnnotations(cr *v1alpha1.Keycloak, annotations map[string]string) map[string]string {
+	if len(annotations) == 0 {
+		return nil
+	}
+
+	mergedAnnotations := map[string]string{}
+
+	// We add the labels
+	for key, value := range annotations {
+		mergedAnnotations[key] = value
+	}
+
+	// We add the PodLabel labels coming from CR Env Vars
+	for key, value := range cr.Spec.KeycloakDeploymentSpec.PodAnnotations {
+		mergedAnnotations[key] = value
+	}
+
+	return mergedAnnotations
+}
