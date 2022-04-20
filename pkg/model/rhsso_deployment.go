@@ -153,11 +153,13 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret *v1
 		"component": KeycloakDeploymentComponent,
 	}
 	podLabels := AddPodLabels(cr, labels)
+	podAnnotations := AddPodAnnotations(cr, cr.Annotations)
 	rhssoStatefulSet := &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
-			Name:      KeycloakDeploymentName,
-			Namespace: cr.Namespace,
-			Labels:    podLabels,
+			Name:        KeycloakDeploymentName,
+			Namespace:   cr.Namespace,
+			Labels:      podLabels,
+			Annotations: podAnnotations,
 		},
 		Spec: v13.StatefulSetSpec{
 			Replicas: SanitizeNumberOfReplicas(cr.Spec.Instances, true),
@@ -166,9 +168,10 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret *v1
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: v12.ObjectMeta{
-					Name:      KeycloakDeploymentName,
-					Namespace: cr.Namespace,
-					Labels:    podLabels,
+					Name:        KeycloakDeploymentName,
+					Namespace:   cr.Namespace,
+					Labels:      podLabels,
+					Annotations: podAnnotations,
 				},
 				Spec: v1.PodSpec{
 					Volumes:        KeycloakVolumes(cr, dbSSLSecret),
