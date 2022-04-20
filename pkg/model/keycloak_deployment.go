@@ -208,7 +208,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret 
 		"component": KeycloakDeploymentComponent,
 	}
 	podLabels := AddPodLabels(cr, labels)
-	podAnnotations := AddPodAnnotations(cr, cr.Annotations)
+	podAnnotations := cr.Spec.KeycloakDeploymentSpec.PodAnnotations
 	keycloakStatefulset := &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
 			Name:        KeycloakDeploymentName,
