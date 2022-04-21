@@ -621,6 +621,41 @@ func (in *KeycloakAPIRealm) DeepCopyInto(out *KeycloakAPIRealm) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.WebAuthnPolicyAcceptableAaguids != nil {
+		in, out := &in.WebAuthnPolicyAcceptableAaguids, &out.WebAuthnPolicyAcceptableAaguids
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.WebAuthnPolicyCreateTimeout != nil {
+		in, out := &in.WebAuthnPolicyCreateTimeout, &out.WebAuthnPolicyCreateTimeout
+		*out = new(int32)
+		**out = **in
+	}
+	if in.WebAuthnPolicyPasswordlessAcceptableAaguids != nil {
+		in, out := &in.WebAuthnPolicyPasswordlessAcceptableAaguids, &out.WebAuthnPolicyPasswordlessAcceptableAaguids
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.WebAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister != nil {
+		in, out := &in.WebAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister, &out.WebAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister
+		*out = new(bool)
+		**out = **in
+	}
+	if in.WebAuthnPolicyPasswordlessCreateTimeout != nil {
+		in, out := &in.WebAuthnPolicyPasswordlessCreateTimeout, &out.WebAuthnPolicyPasswordlessCreateTimeout
+		*out = new(int32)
+		**out = **in
+	}
+	if in.WebAuthnPolicyPasswordlessSignatureAlgorithms != nil {
+		in, out := &in.WebAuthnPolicyPasswordlessSignatureAlgorithms, &out.WebAuthnPolicyPasswordlessSignatureAlgorithms
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.WebAuthnPolicySignatureAlgorithms != nil {
+		in, out := &in.WebAuthnPolicySignatureAlgorithms, &out.WebAuthnPolicySignatureAlgorithms
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

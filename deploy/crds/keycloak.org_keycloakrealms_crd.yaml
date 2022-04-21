@@ -1336,6 +1336,78 @@ spec:
                     description: Wait Increment
                     format: int32
                     type: integer
+                  webAuthnPolicyAcceptableAaguids:
+                    description: WebAuthn Policy Acceptable Aaguids
+                    items:
+                      type: string
+                    type: array
+                  webAuthnPolicyAttestationConveyancePreference:
+                    description: WebAuthn Policy Attestation Conveyance Preference
+                    type: string
+                  webAuthnPolicyAuthenticatorAttachment:
+                    description: WebAuthn Policy Authenticator Attachment
+                    type: string
+                  webAuthnPolicyAvoidSameAuthenticatorRegister:
+                    description: WebAuthn Policy Avoid Same Authenticator Register
+                    type: boolean
+                  webAuthnPolicyCreateTimeout:
+                    description: WebAuthn Policy Create Timeout
+                    format: int32
+                    type: integer
+                  webAuthnPolicyPasswordlessAcceptableAaguids:
+                    description: WebAuthn Policy Passwordless Acceptable Aaguids
+                    items:
+                      type: string
+                    type: array
+                  webAuthnPolicyPasswordlessAttestationConveyancePreference:
+                    description: WebAuthn Policy Passwordless Attestation Conveyance
+                      Preference
+                    type: string
+                  webAuthnPolicyPasswordlessAuthenticatorAttachment:
+                    description: WebAuthn Policy Passwordless Authenticator Attachment
+                    type: string
+                  webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister:
+                    description: WebAuthn Policy Passwordless Avoid Same Authenticator
+                      Register
+                    type: boolean
+                  webAuthnPolicyPasswordlessCreateTimeout:
+                    description: WebAuthn Policy Passwordless Create Timeout
+                    format: int32
+                    type: integer
+                  webAuthnPolicyPasswordlessRequireResidentKey:
+                    description: WebAuthn Policy Passwordless Require Resident Key
+                    type: string
+                  webAuthnPolicyPasswordlessRpEntityName:
+                    description: WebAuthn Policy Passwordless RP Entity Name
+                    type: string
+                  webAuthnPolicyPasswordlessRpId:
+                    description: WebAuthn Policy Passwordless RP ID
+                    type: string
+                  webAuthnPolicyPasswordlessSignatureAlgorithms:
+                    description: WebAuthn Policy Passwordless Signature Algorithms
+                    items:
+                      type: string
+                    type: array
+                  webAuthnPolicyPasswordlessUserVerificationRequirement:
+                    description: WebAuthn Policy Passwordless User Verification Requirement
+                    type: string
+                  webAuthnPolicyRequireResidentKey:
+                    description: WebAuthn Policy Require Resident Key
+                    type: string
+                  webAuthnPolicyRpEntityName:
+                    description: WebAuthn Policy RP Entity Name
+                    type: string
+                  webAuthnPolicyRpId:
+                    description: WebAuthn Policy RP ID
+                    type: string
+                  webAuthnPolicySignatureAlgorithms:
+                    description: WebAuthn Policy Signature Algorithms
+                    items:
+                      type: string
+                    type: array
+                  webAuthnPolicyUserVerificationRequirement:
+                    description: WebAuthn Policy User Verification Requirement
+                    type: string
                 required:
                 - realm
                 type: object

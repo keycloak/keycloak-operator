@@ -227,6 +227,86 @@ type KeycloakAPIRealm struct {
 	// OTP Supported Applications
 	// +optional
 	OtpSupportedApplications []string `json:"otpSupportedApplications,omitempty"`
+
+	// WebAuthn Policy Acceptable Aaguids
+	// +optional
+	WebAuthnPolicyAcceptableAaguids []string `json:"webAuthnPolicyAcceptableAaguids,omitempty"`
+
+	// WebAuthn Policy Attestation Conveyance Preference
+	// +optional
+	WebAuthnPolicyAttestationConveyancePreference string `json:"webAuthnPolicyAttestationConveyancePreference,omitempty"`
+
+	// WebAuthn Policy Authenticator Attachment
+	// +optional
+	WebAuthnPolicyAuthenticatorAttachment string `json:"webAuthnPolicyAuthenticatorAttachment,omitempty"`
+
+	// WebAuthn Policy Avoid Same Authenticator Register
+	// +optional
+	WebAuthnPolicyAvoidSameAuthenticatorRegister *bool `json:"webAuthnPolicyAvoidSameAuthenticatorRegister,omitempty"`
+
+	// WebAuthn Policy Create Timeout
+	// +optional
+	WebAuthnPolicyCreateTimeout *int32 `json:"webAuthnPolicyCreateTimeout,omitempty"`
+
+	// WebAuthn Policy Passwordless Acceptable Aaguids
+	// +optional
+	WebAuthnPolicyPasswordlessAcceptableAaguids []string `json:"webAuthnPolicyPasswordlessAcceptableAaguids,omitempty"`
+
+	// WebAuthn Policy Passwordless Attestation Conveyance Preference
+	// +optional
+	WebAuthnPolicyPasswordlessAttestationConveyancePreference string `json:"webAuthnPolicyPasswordlessAttestationConveyancePreference,omitempty"`
+
+	// WebAuthn Policy Passwordless Authenticator Attachment
+	// +optional
+	WebAuthnPolicyPasswordlessAuthenticatorAttachment string `json:"webAuthnPolicyPasswordlessAuthenticatorAttachment,omitempty"`
+
+	// WebAuthn Policy Passwordless Avoid Same Authenticator Register
+	// +optional
+	WebAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister *bool `json:"webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister,omitempty"`
+
+	// WebAuthn Policy Passwordless Create Timeout
+	// +optional
+	WebAuthnPolicyPasswordlessCreateTimeout *int32 `json:"webAuthnPolicyPasswordlessCreateTimeout,omitempty"`
+
+	// WebAuthn Policy Passwordless Require Resident Key
+	// +optional
+	WebAuthnPolicyPasswordlessRequireResidentKey string `json:"webAuthnPolicyPasswordlessRequireResidentKey,omitempty"`
+
+	// WebAuthn Policy Passwordless RP Entity Name
+	// +optional
+	WebAuthnPolicyPasswordlessRpEntityName string `json:"webAuthnPolicyPasswordlessRpEntityName,omitempty"`
+
+	// WebAuthn Policy Passwordless RP ID
+	// +optional
+	WebAuthnPolicyPasswordlessRpID string `json:"webAuthnPolicyPasswordlessRpId,omitempty"`
+
+	// WebAuthn Policy Passwordless Signature Algorithms
+	// +optional
+	WebAuthnPolicyPasswordlessSignatureAlgorithms []string `json:"webAuthnPolicyPasswordlessSignatureAlgorithms,omitempty"`
+
+	// WebAuthn Policy Passwordless User Verification Requirement
+	// +optional
+	WebAuthnPolicyPasswordlessUserVerificationRequirement string `json:"webAuthnPolicyPasswordlessUserVerificationRequirement,omitempty"`
+
+	// WebAuthn Policy Require Resident Key
+	// +optional
+	WebAuthnPolicyRequireResidentKey string `json:"webAuthnPolicyRequireResidentKey,omitempty"`
+
+	// WebAuthn Policy RP Entity Name
+	// +optional
+	WebAuthnPolicyRpEntityName string `json:"webAuthnPolicyRpEntityName,omitempty"`
+
+	// WebAuthn Policy RP ID
+	// +optional
+	WebAuthnPolicyRpID string `json:"webAuthnPolicyRpId,omitempty"`
+
+	// WebAuthn Policy Signature Algorithms
+	// +optional
+	WebAuthnPolicySignatureAlgorithms []string `json:"webAuthnPolicySignatureAlgorithms,omitempty"`
+
+	// WebAuthn Policy User Verification Requirement
+	// +optional
+	WebAuthnPolicyUserVerificationRequirement string `json:"webAuthnPolicyUserVerificationRequirement,omitempty"`
 }
 
 type RoleRepresentationArray []RoleRepresentation
