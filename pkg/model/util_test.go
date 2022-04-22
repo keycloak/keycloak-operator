@@ -177,10 +177,33 @@ func TestPodLabels_When_EnvVars_Then_FullListOfLabels(t *testing.T) {
 	}
 	totalLabels := AddPodLabels(&cr, labels)
 	assert.Equal(t, 6, len(totalLabels))
+	assert.Equal(t, 2, len(labels))
 	assert.Contains(t, totalLabels, "LabelToTest")
 	assert.Contains(t, totalLabels, "SecondLabelToTest")
 	assert.Contains(t, totalLabels, "FirstLabel")
 	assert.Contains(t, totalLabels, "SecondLabel")
 	assert.Contains(t, totalLabels, "app")
 	assert.Contains(t, totalLabels, "component")
+}
+func TestPodAnnotations_When_EnvVars_Then_FullListOfAnnotations(t *testing.T) {
+	cr := v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			KeycloakDeploymentSpec: v1alpha1.KeycloakDeploymentSpec{
+				PodAnnotations: map[string]string{
+					"AnnotationToTest":       "thisistheannotationvalue",
+					"SecondAnnotationToTest": "anotherthisistheannotationvalue",
+				},
+			},
+		}}
+
+	annotations := map[string]string{
+		"app":       ApplicationName,
+		"component": KeycloakDeploymentComponent,
+	}
+	totalAnnotations := AddPodAnnotations(&cr, annotations)
+	assert.Equal(t, 4, len(totalAnnotations))
+	assert.Contains(t, totalAnnotations, "AnnotationToTest")
+	assert.Contains(t, totalAnnotations, "SecondAnnotationToTest")
+	assert.Contains(t, totalAnnotations, "app")
+	assert.Contains(t, totalAnnotations, "component")
 }

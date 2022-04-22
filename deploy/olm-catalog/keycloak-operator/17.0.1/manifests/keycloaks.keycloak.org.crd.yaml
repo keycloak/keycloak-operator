@@ -31,12 +31,6 @@ spec:
           spec:
             description: KeycloakSpec defines the desired state of Keycloak.
             properties:
-              DisableDefaultServiceMonitor:
-                description: Disables the integration with Application Monitoring
-                  Operator. When set to true, the operator doesn't create default
-                  PrometheusRule, ServiceMonitor and GrafanaDashboard objects and
-                  users will have to create them manually, if needed.
-                type: boolean
               extensions:
                 description: A list of extensions, where each one is a URL to a JAR
                   files that will be deployed in Keycloak.
@@ -110,8 +104,7 @@ spec:
                 description: Number of Keycloak instances in HA mode. Default is 1.
                 type: integer
               keycloakDeploymentSpec:
-                description: Resources (Requests and Limits) and ImagePullPolicy for
-                  KeycloakDeployment.
+                description: Resources (Requests and Limits) for KeycloakDeployment.
                 properties:
                   experimental:
                     description: 'Experimental section NOTE: This section might change
@@ -953,19 +946,6 @@ spec:
                             type: array
                         type: object
                     type: object
-                  imagePullPolicy:
-                    default: Always
-                    description: ImagePullPolicy for the Containers.
-                    enum:
-                    - Always
-                    - Never
-                    - IfNotPresent
-                    type: string
-                  podannotations:
-                    additionalProperties:
-                      type: string
-                    description: List of annotations to set in the keycloak pods
-                    type: object
                   podlabels:
                     additionalProperties:
                       type: string
@@ -1032,17 +1012,8 @@ spec:
                     type: boolean
                 type: object
               postgresDeploymentSpec:
-                description: Resources (Requests and Limits) and ImagePullPolicy for
-                  PostgresDeployment.
+                description: Resources (Requests and Limits) for PostgresDeployment.
                 properties:
-                  imagePullPolicy:
-                    default: Always
-                    description: ImagePullPolicy for the Containers.
-                    enum:
-                    - Always
-                    - Never
-                    - IfNotPresent
-                    type: string
                   resources:
                     description: Resources (Requests and Limits) for the Pods.
                     properties:

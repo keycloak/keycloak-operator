@@ -235,15 +235,42 @@ func SanitizeResourceNameWithAlphaNum(text string) string {
 }
 
 func AddPodLabels(cr *v1alpha1.Keycloak, labels map[string]string) map[string]string {
+	mergedPodLabels := map[string]string{}
+
+	// We add the labels
+	for key, value := range labels {
+		mergedPodLabels[key] = value
+	}
+
 	// We add the Pod Labels defined in the constants
 	for key, value := range PodLabels {
-		labels[key] = value
+		mergedPodLabels[key] = value
 	}
 
 	// We add the PodLabel labels coming from CR Env Vars
 	for key, value := range cr.Spec.KeycloakDeploymentSpec.PodLabels {
-		labels[key] = value
+		mergedPodLabels[key] = value
 	}
 
-	return labels
+	return mergedPodLabels
+}
+
+func AddPodAnnotations(cr *v1alpha1.Keycloak, annotations map[string]string) map[string]string {
+	if len(annotations) == 0 {
+		return nil
+	}
+
+	mergedAnnotations := map[string]string{}
+
+	// We add the labels
+	for key, value := range annotations {
+		mergedAnnotations[key] = value
+	}
+
+	// We add the PodLabel labels coming from CR Env Vars
+	for key, value := range cr.Spec.KeycloakDeploymentSpec.PodAnnotations {
+		mergedAnnotations[key] = value
+	}
+
+	return mergedAnnotations
 }
