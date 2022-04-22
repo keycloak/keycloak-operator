@@ -23,6 +23,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const podName = "keycloak-0"
+
 func NewKeycloaksCRDTestStruct() *CRDTestStruct {
 	return &CRDTestStruct{
 		prepareEnvironmentSteps: []environmentInitializationStep{
@@ -73,7 +75,7 @@ func NewKeycloaksWithDefaultImagePullPolicyTestStruct() *CRDTestStruct {
 			prepareKeycloaksCR,
 		},
 		testSteps: map[string]deployedOperatorTestStep{
-			"keycloakWithPodLabelsDeploymentTest": {testFunction: keycloakDeploymentDefaultImagePullPolicyTest},
+			"keycloakDeploymentDefaultImagePullPolicyTest": {testFunction: keycloakDeploymentDefaultImagePullPolicyTest},
 		},
 	}
 }
@@ -440,7 +442,6 @@ func keycloakDeploymentTest(t *testing.T, f *framework.Framework, ctx *framework
 func keycloakDeploymentWithLabelsTest(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
 	// check that the creation labels are present
 	keycloakPod := v1.Pod{}
-	podName := "keycloak-0"
 	_ = GetNamespacedObject(f, namespace, podName, &keycloakPod)
 	assert.Contains(t, keycloakPod.Labels, "cr.first.label")
 	assert.Contains(t, keycloakPod.Labels, "cr.second.label")
@@ -505,7 +506,6 @@ func keycloakUnmanagedDeploymentTest(t *testing.T, f *framework.Framework, ctx *
 func keycloakDeploymentDefaultImagePullPolicyTest(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
 	// check that the default imagePolicy is set to Always, even though not defined by the user
 	keycloakPod := v1.Pod{}
-	podName := "keycloak-0"
 	err := GetNamespacedObject(f, namespace, podName, &keycloakPod)
 	assert.Contains(t, keycloakPod.Spec.Containers[0].ImagePullPolicy, v1.PullAlways)
 	return err
