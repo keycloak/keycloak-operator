@@ -106,6 +106,7 @@ func getKeycloakRealmCR(namespace string) *keycloakv1alpha1.KeycloakRealm {
 				DirectGrantFlow:             "direct grant",
 				ResetCredentialsFlow:        "reset credentials",
 				ClientAuthenticationFlow:    "clients",
+				DockerAuthenticationFlow:    "docker auth",
 			},
 		},
 	}
