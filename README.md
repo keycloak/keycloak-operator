@@ -1,9 +1,13 @@
+
 [![Go Report Card](https://goreportcard.com/badge/github.com/keycloak/keycloak-operator)](https://goreportcard.com/report/github.com/keycloak/keycloak-operator)
 [![Coverage Status](https://coveralls.io/repos/github/keycloak/keycloak-operator/badge.svg?branch=main)](https://coveralls.io/github/keycloak/keycloak-operator?branch=main)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# Keycloak Operator
-A Kubernetes Operator based on the Operator SDK for creating and syncing resources in Keycloak.
+# Legacy Keycloak Operator
+A Kubernetes Operator based on the Operator SDK for creating and syncing resources in Keycloak [WildFly distribution].
+
+**NOTE: This Operator is deprecated and will reach EOL with [Keycloak 20](https://www.keycloak.org/2022/03/releases).
+Consider migrating to the [new Keycloak Operator](https://github.com/keycloak/keycloak/tree/main/operator).**
 
 ## Help and Documentation
 
