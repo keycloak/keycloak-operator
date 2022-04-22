@@ -250,6 +250,10 @@ type KeycloakAPIRealm struct {
 	// Registration flow
 	// +optional
 	RegistrationFlow string `json:"registrationFlow,omitempty"`
+
+	// Docker Authentication flow
+	// +optional
+	DockerAuthenticationFlow string `json:"dockerAuthenticationFlow,omitempty"`
 }
 
 type RoleRepresentationArray []RoleRepresentation
