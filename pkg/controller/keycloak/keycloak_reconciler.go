@@ -25,9 +25,12 @@ func (i *KeycloakReconciler) Reconcile(clusterState *common.ClusterState, cr *kc
 	desired := common.DesiredClusterState{}
 
 	desired = desired.AddAction(i.GetKeycloakAdminSecretDesiredState(clusterState, cr))
-	desired = desired.AddAction(i.GetKeycloakPrometheusRuleDesiredState(clusterState, cr))
-	desired = desired.AddAction(i.GetKeycloakServiceMonitorDesiredState(clusterState, cr))
-	desired = desired.AddAction(i.GetKeycloakGrafanaDashboardDesiredState(clusterState, cr))
+
+	if !cr.Spec.DisableMonitoringServices {
+		desired = desired.AddAction(i.GetKeycloakPrometheusRuleDesiredState(clusterState, cr))
+		desired = desired.AddAction(i.GetKeycloakServiceMonitorDesiredState(clusterState, cr))
+		desired = desired.AddAction(i.GetKeycloakGrafanaDashboardDesiredState(clusterState, cr))
+	}
 
 	if !cr.Spec.ExternalDatabase.Enabled {
 		desired = desired.AddAction(i.getDatabaseSecretDesiredState(clusterState, cr))

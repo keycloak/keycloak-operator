@@ -1,0 +1,22 @@
+apiVersion: keycloak.org/v1alpha1
+kind: Keycloak
+metadata:
+  name: example-keycloak
+  labels:
+    app: sso
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/auth/realms/master/metrics"
+    prometheus.io/port: "8080"
+    prometheus.io/scheme: "http"
+spec:
+  instances: 1
+  extensions:
+    - https://github.com/aerogear/keycloak-metrics-spi/releases/download/2.5.3/keycloak-metrics-spi-2.5.3.jar
+  externalAccess:
+    enabled: True
+  podDisruptionBudget:
+    enabled: True
+  # User needs to provision the external database
+  externalDatabase:
+    enabled: True
