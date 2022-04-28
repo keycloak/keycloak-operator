@@ -357,6 +357,44 @@ func schema_pkg_apis_keycloak_v1alpha1_KeycloakClientSpec(ref common.ReferenceCa
 							Ref:         ref("./pkg/apis/keycloak/v1alpha1.MappingsRepresentation"),
 						},
 					},
+					"serviceAccountRealmRoles": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Service account realm roles for this client.",
+							Type:        []string{"array"},
+							Items: &spec.SchemaOrArray{
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Default: "",
+										Type:    []string{"string"},
+										Format:  "",
+									},
+								},
+							},
+						},
+					},
+					"serviceAccountClientRoles": {
+						SchemaProps: spec.SchemaProps{
+							Description: "Service account client roles for this client.",
+							Type:        []string{"object"},
+							AdditionalProperties: &spec.SchemaOrBool{
+								Allows: true,
+								Schema: &spec.Schema{
+									SchemaProps: spec.SchemaProps{
+										Type: []string{"array"},
+										Items: &spec.SchemaOrArray{
+											Schema: &spec.Schema{
+												SchemaProps: spec.SchemaProps{
+													Default: "",
+													Type:    []string{"string"},
+													Format:  "",
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
 				},
 				Required: []string{"realmSelector", "client"},
 			},

@@ -828,6 +828,22 @@ func (c *Client) Ping() error {
 	return nil
 }
 
+func (c *Client) GetServiceAccountUser(realmName, clientID string) (*v1alpha1.KeycloakAPIUser, error) {
+	result, err := c.get(fmt.Sprintf("realms/%s/clients/%s/service-account-user", realmName, clientID), "service-account-user", func(body []byte) (T, error) {
+		user := &v1alpha1.KeycloakAPIUser{}
+		err := json.Unmarshal(body, user)
+		return user, err
+	})
+	if err != nil {
+		return nil, err
+	}
+	if result == nil {
+		return nil, nil
+	}
+	ret := result.(*v1alpha1.KeycloakAPIUser)
+	return ret, err
+}
+
 // login requests a new auth token from Keycloak
 func (c *Client) login(user, pass string) error {
 	form := url.Values{}
@@ -977,7 +993,12 @@ type KeycloakInterface interface {
 	GetAuthenticatorConfig(configID, realmName string) (*v1alpha1.AuthenticatorConfig, error)
 	UpdateAuthenticatorConfig(authenticatorConfig *v1alpha1.AuthenticatorConfig, realmName string) error
 	DeleteAuthenticatorConfig(configID, realmName string) error
+
+	GetServiceAccountUser(realmName, clientID string) (*v1alpha1.KeycloakAPIUser, error)
 }
+
+// check if Client implements KeycloakInterface
+var _ KeycloakInterface = &Client{}
 
 //go:generate moq -out keycloakClientFactory_moq.go . KeycloakClientFactory
 

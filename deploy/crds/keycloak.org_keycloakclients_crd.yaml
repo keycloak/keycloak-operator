@@ -809,6 +809,18 @@ spec:
                       type: object
                     type: array
                 type: object
+              serviceAccountClientRoles:
+                additionalProperties:
+                  items:
+                    type: string
+                  type: array
+                description: Service account client roles for this client.
+                type: object
+              serviceAccountRealmRoles:
+                description: Service account realm roles for this client.
+                items:
+                  type: string
+                type: array
             required:
             - client
             - realmSelector
