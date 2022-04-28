@@ -982,6 +982,26 @@ func (in *KeycloakClientSpec) DeepCopyInto(out *KeycloakClientSpec) {
 		*out = new(MappingsRepresentation)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.ServiceAccountRealmRoles != nil {
+		in, out := &in.ServiceAccountRealmRoles, &out.ServiceAccountRealmRoles
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.ServiceAccountClientRoles != nil {
+		in, out := &in.ServiceAccountClientRoles, &out.ServiceAccountClientRoles
+		*out = make(map[string][]string, len(*in))
+		for key, val := range *in {
+			var outVal []string
+			if val == nil {
+				(*out)[key] = nil
+			} else {
+				in, out := &val, &outVal
+				*out = make([]string, len(*in))
+				copy(*out, *in)
+			}
+			(*out)[key] = outVal
+		}
+	}
 	return
 }
 
@@ -1046,15 +1066,15 @@ func (in *KeycloakCredential) DeepCopy() *KeycloakCredential {
 func (in *KeycloakDeploymentSpec) DeepCopyInto(out *KeycloakDeploymentSpec) {
 	*out = *in
 	in.DeploymentSpec.DeepCopyInto(&out.DeploymentSpec)
-	if in.PodLabels != nil {
-		in, out := &in.PodLabels, &out.PodLabels
+	if in.PodAnnotations != nil {
+		in, out := &in.PodAnnotations, &out.PodAnnotations
 		*out = make(map[string]string, len(*in))
 		for key, val := range *in {
 			(*out)[key] = val
 		}
 	}
-	if in.PodAnnotations != nil {
-		in, out := &in.PodAnnotations, &out.PodAnnotations
+	if in.PodLabels != nil {
+		in, out := &in.PodLabels, &out.PodLabels
 		*out = make(map[string]string, len(*in))
 		for key, val := range *in {
 			(*out)[key] = val

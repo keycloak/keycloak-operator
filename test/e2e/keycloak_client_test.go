@@ -1,6 +1,9 @@
 package e2e
 
 import (
+	"fmt"
+	"reflect"
+	"sort"
 	"testing"
 
 	keycloakv1alpha1 "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
@@ -64,6 +67,9 @@ func NewKeycloakClientsCRDTestStruct() *CRDTestStruct {
 			},
 			"keycloakClientDeprecatedClientSecretTest": {
 				testFunction: keycloakClientDeprecatedClientSecretTest,
+			},
+			"keycloakClientServiceAccountRealmRolesTest": {
+				testFunction: keycloakClientServiceAccountRealmRolesTest,
 			},
 		},
 	}
@@ -251,6 +257,15 @@ func getKeycloakClientAuthZCR(namespace string) *keycloakv1alpha1.KeycloakClient
 	}
 }
 
+func getKeycloakClientWithServiceAccount(namespace string) *keycloakv1alpha1.KeycloakClient {
+	keycloakClientCR := getKeycloakClientCR(namespace, false)
+	keycloakClientCR.Spec.Client.PublicClient = false
+	keycloakClientCR.Spec.Client.ServiceAccountsEnabled = true
+	keycloakClientCR.Spec.ServiceAccountRealmRoles = []string{"realmRoleA", "realmRoleB"}
+	keycloakClientCR.Spec.ServiceAccountClientRoles = map[string][]string{secondClientName: {"a", "b"}}
+	return keycloakClientCR
+}
+
 func prepareKeycloakClientCR(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	keycloakClientCR := getKeycloakClientCR(namespace, false)
 	return Create(framework, keycloakClientCR, ctx)
@@ -263,6 +278,11 @@ func prepareExternalKeycloakClientCR(t *testing.T, framework *test.Framework, ct
 
 func prepareKeycloakClientAuthZCR(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	keycloakClientCR := getKeycloakClientAuthZCR(namespace)
+	return Create(framework, keycloakClientCR, ctx)
+}
+
+func prepareKeycloakClientWithServiceAccount(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	keycloakClientCR := getKeycloakClientWithServiceAccount(namespace)
 	return Create(framework, keycloakClientCR, ctx)
 }
 
@@ -634,4 +654,106 @@ func keycloakClientScopeMappingsTest(t *testing.T, framework *test.Framework, ct
 	assert.Equal(t, 2, len(intersection))
 
 	return nil
+}
+
+func keycloakClientServiceAccountRealmRolesTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
+	// deploy secondary client with a few client roles
+	err := prepareKeycloakClientWithRolesCR(t, framework, ctx, namespace)
+	if err != nil {
+		return err
+	}
+	err = WaitForClientToBeReady(t, framework, namespace, testSecondKeycloakClientCRName)
+	if err != nil {
+		return err
+	}
+
+	// deploy primary client with service account roles
+	err = prepareKeycloakClientWithServiceAccount(t, framework, ctx, namespace)
+	if err != nil {
+		return err
+	}
+	err = WaitForClientToBeReady(t, framework, namespace, testKeycloakClientCRName)
+	if err != nil {
+		return err
+	}
+
+	keycloakCR := getDeployedKeycloakCR(framework, namespace)
+
+	// assert roles
+	assertServiceAccountRoles(t, framework, keycloakCR, clientName, []string{"realmRoleA", "realmRoleB"}, map[string][]string{secondClientName: {"a", "b"}})
+
+	// remove one of the roles
+	var retrievedClient keycloakv1alpha1.KeycloakClient
+	err = GetNamespacedObject(framework, namespace, testKeycloakClientCRName, &retrievedClient)
+	if err != nil {
+		return err
+	}
+	retrievedClient.Spec.ServiceAccountRealmRoles = []string{"realmRoleB"}
+	retrievedClient.Spec.ServiceAccountClientRoles = map[string][]string{secondClientName: {"b"}}
+	err = Update(framework, &retrievedClient)
+	if err != nil {
+		return err
+	}
+
+	// assert roles were removed
+	assertServiceAccountRoles(t, framework, keycloakCR, clientName, []string{"realmRoleB"}, map[string][]string{secondClientName: {"b"}})
+
+	return nil
+}
+
+func assertServiceAccountRoles(t *testing.T, framework *test.Framework, keycloakCR keycloakv1alpha1.Keycloak, clientID string, expectedRealmRoles []string, expectedClientRoles map[string][]string) {
+	err := WaitForConditionWithClient(t, framework, keycloakCR, func(authenticatedClient common.KeycloakInterface) error {
+		serviceAccountUser, err := authenticatedClient.GetServiceAccountUser(realmName, clientID)
+		if err != nil {
+			return err
+		}
+
+		// get realm role names
+		actualRealmRoles, err := authenticatedClient.ListUserRealmRoles(realmName, serviceAccountUser.ID)
+		if err != nil {
+			return err
+		}
+		var actualRealmRolesNames []string
+		for _, v := range actualRealmRoles {
+			actualRealmRolesNames = append(actualRealmRolesNames, v.Name)
+		}
+
+		// get role names for all specified clients
+		var actualClientRolesNames = map[string][]string{}
+		for k := range expectedClientRoles {
+			roles, err := authenticatedClient.ListUserClientRoles(realmName, k, serviceAccountUser.ID)
+			if err != nil {
+				return err
+			}
+			for _, v := range roles {
+				actualClientRolesNames[k] = append(actualClientRolesNames[k], v.Name)
+			}
+		}
+
+		// can't use standard asserts as it would fail the test; we want to fail only on timeout
+
+		// sort arrays for proper comparison
+		sort.Strings(expectedRealmRoles)
+		sort.Strings(actualRealmRolesNames)
+		for k := range expectedClientRoles {
+			sort.Strings(expectedClientRoles[k])
+		}
+		for k := range actualClientRolesNames {
+			sort.Strings(actualClientRolesNames[k])
+		}
+
+		if !reflect.DeepEqual(expectedRealmRoles, actualRealmRolesNames) {
+			return errors.Errorf("Expected realm roles: %s, Actual: %s", expectedRealmRoles, actualRealmRolesNames)
+		}
+
+		// strings are the easiest way to compare maps
+		if fmt.Sprint(expectedClientRoles) != fmt.Sprint(actualClientRolesNames) {
+			return errors.Errorf("Expected client roles: %s, Actual: %s", expectedClientRoles, actualClientRolesNames)
+		}
+
+		return nil
+	})
+	if err != nil {
+		assert.Fail(t, err.Error())
+	}
 }

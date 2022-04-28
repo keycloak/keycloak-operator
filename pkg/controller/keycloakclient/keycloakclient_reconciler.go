@@ -3,6 +3,8 @@ package keycloakclient
 import (
 	"fmt"
 
+	"github.com/keycloak/keycloak-operator/pkg/controller/keycloakuser"
+
 	kc "github.com/keycloak/keycloak-operator/pkg/apis/keycloak/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/common"
 	"github.com/keycloak/keycloak-operator/pkg/model"
@@ -60,6 +62,10 @@ func (i *KeycloakClientReconciler) Reconcile(state *common.ClientState, cr *kc.K
 	i.ReconcileClientScopes(state, cr, &desired)
 
 	i.ReconcileDefaultClientRoles(state, cr, &desired)
+
+	if cr.Spec.Client.ServiceAccountsEnabled {
+		i.ReconcileServiceAccountRoles(state, cr, &desired)
+	}
 
 	return desired
 }
@@ -162,6 +168,16 @@ func (i *KeycloakClientReconciler) ReconcileClientScopes(state *common.ClientSta
 	optionalClientScopesDeleted, _ := model.ClientScopeDifferenceIntersection(state.OptionalClientScopes, optionalClientScopes)
 	for _, clientScope := range optionalClientScopesDeleted {
 		desired.AddAction(i.getDeletedClientOptionalClientScopeState(state, cr, clientScope.DeepCopy()))
+	}
+}
+
+func (i *KeycloakClientReconciler) ReconcileServiceAccountRoles(state *common.ClientState, cr *kc.KeycloakClient, desired *common.DesiredClusterState) {
+	if state.ServiceAccountUserState != nil {
+		log.Info("Reconciling service account roles")
+		desired.AddActions(keycloakuser.GetUserRealmRolesDesiredState(state.ServiceAccountUserState, cr.Spec.ServiceAccountRealmRoles, state.Realm.Spec.Realm.Realm))
+		desired.AddActions(keycloakuser.GetUserClientRolesDesiredState(state.ServiceAccountUserState, cr.Spec.ServiceAccountClientRoles, state.Realm.Spec.Realm.Realm))
+	} else {
+		log.Info("Service account not found, skipping roles reconciliation")
 	}
 }
 

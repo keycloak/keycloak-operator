@@ -94,10 +94,14 @@ func (i *KeycloakuserReconciler) getKeycloakUserDesiredState(state *common.UserS
 }
 
 func (i *KeycloakuserReconciler) getUserRealmRolesDesiredState(state *common.UserState, cr *v1alpha1.KeycloakUser) []common.ClusterAction {
+	return GetUserRealmRolesDesiredState(state, cr.Spec.User.RealmRoles, i.Realm.Spec.Realm.Realm)
+}
+
+func GetUserRealmRolesDesiredState(state *common.UserState, realmRoles []string, realmName string) []common.ClusterAction {
 	var assignRoles []common.ClusterAction
 	var removeRoles []common.ClusterAction
 
-	for _, role := range cr.Spec.User.RealmRoles {
+	for _, role := range realmRoles {
 		// Is the role available for this user?
 		roleRef := state.GetAvailableRealmRole(role)
 		if roleRef == nil {
@@ -109,7 +113,7 @@ func (i *KeycloakuserReconciler) getUserRealmRolesDesiredState(state *common.Use
 			assignRoles = append(assignRoles, &common.AssignRealmRoleAction{
 				UserID: state.User.ID,
 				Ref:    roleRef,
-				Realm:  i.Realm.Spec.Realm.Realm,
+				Realm:  realmName,
 				Msg:    fmt.Sprintf("assign realm role %v to user %v", role, state.User.UserName),
 			})
 		}
@@ -117,11 +121,11 @@ func (i *KeycloakuserReconciler) getUserRealmRolesDesiredState(state *common.Use
 
 	for _, role := range state.RealmRoles {
 		// Role assigned but not requested?
-		if !containsRoleID(cr.Spec.User.RealmRoles, role.Name) {
+		if !containsRoleID(realmRoles, role.Name) {
 			removeRoles = append(removeRoles, &common.RemoveRealmRoleAction{
 				UserID: state.User.ID,
 				Ref:    role,
-				Realm:  i.Realm.Spec.Realm.Realm,
+				Realm:  realmName,
 				Msg:    fmt.Sprintf("remove realm role %v from user %v", role.Name, state.User.UserName),
 			})
 		}
@@ -131,10 +135,14 @@ func (i *KeycloakuserReconciler) getUserRealmRolesDesiredState(state *common.Use
 }
 
 func (i *KeycloakuserReconciler) getUserClientRolesDesiredState(state *common.UserState, cr *v1alpha1.KeycloakUser) []common.ClusterAction {
+	return GetUserClientRolesDesiredState(state, cr.Spec.User.ClientRoles, i.Realm.Spec.Realm.Realm)
+}
+
+func GetUserClientRolesDesiredState(state *common.UserState, clientRoles map[string][]string, realmName string) []common.ClusterAction {
 	actions := []common.ClusterAction{}
 
 	for _, client := range state.Clients {
-		actions = append(actions, i.syncRolesForClient(state, cr, client.ClientID)...)
+		actions = append(actions, SyncRolesForClient(state, client.ClientID, clientRoles, realmName)...)
 	}
 
 	return actions
@@ -157,11 +165,11 @@ func (i *KeycloakuserReconciler) getUserSecretDesiredState(state *common.UserSta
 	return nil
 }
 
-func (i *KeycloakuserReconciler) syncRolesForClient(state *common.UserState, cr *v1alpha1.KeycloakUser, clientID string) []common.ClusterAction {
+func SyncRolesForClient(state *common.UserState, clientID string, clientRoles map[string][]string, realmName string) []common.ClusterAction {
 	var assignRoles []common.ClusterAction
 	var removeRoles []common.ClusterAction
 
-	for _, role := range cr.Spec.User.ClientRoles[clientID] {
+	for _, role := range clientRoles[clientID] {
 		// Is the role available for this user?
 		roleRef := state.GetAvailableClientRole(role, clientID)
 		if roleRef == nil {
@@ -180,7 +188,7 @@ func (i *KeycloakuserReconciler) syncRolesForClient(state *common.UserState, cr 
 				UserID:   state.User.ID,
 				ClientID: client.ID,
 				Ref:      roleRef,
-				Realm:    i.Realm.Spec.Realm.Realm,
+				Realm:    realmName,
 				Msg:      fmt.Sprintf("assign role %v of client %v to user %v", role, clientID, state.User.UserName),
 			})
 		}
@@ -194,12 +202,12 @@ func (i *KeycloakuserReconciler) syncRolesForClient(state *common.UserState, cr 
 		}
 
 		// Role assigned but not requested?
-		if !containsRoleID(cr.Spec.User.ClientRoles[clientID], role.Name) {
+		if !containsRoleID(clientRoles[clientID], role.Name) {
 			removeRoles = append(removeRoles, &common.RemoveClientRoleAction{
 				UserID:   state.User.ID,
 				ClientID: client.ID,
 				Ref:      role,
-				Realm:    i.Realm.Spec.Realm.Realm,
+				Realm:    realmName,
 				Msg:      fmt.Sprintf("remove role %v of client %v from user %v", role.Name, clientID, state.User.UserName),
 			})
 		}

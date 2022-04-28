@@ -11,24 +11,27 @@ import (
 )
 
 type ClientState struct {
-	Client                 *kc.KeycloakAPIClient
-	ClientSecret           *v1.Secret // keycloak-client-secret-<custom resource name>
-	Context                context.Context
-	Realm                  *kc.KeycloakRealm
-	Roles                  []kc.RoleRepresentation
-	DefaultRoleID          string
-	DefaultRoles           []kc.RoleRepresentation
-	ScopeMappings          *kc.MappingsRepresentation
-	AvailableClientScopes  []kc.KeycloakClientScope
-	DefaultClientScopes    []kc.KeycloakClientScope
-	OptionalClientScopes   []kc.KeycloakClientScope
-	DeprecatedClientSecret *v1.Secret // keycloak-client-secret-<clientID>
+	Client                  *kc.KeycloakAPIClient
+	ClientSecret            *v1.Secret // keycloak-client-secret-<custom resource name>
+	Context                 context.Context
+	Realm                   *kc.KeycloakRealm
+	Roles                   []kc.RoleRepresentation
+	DefaultRoleID           string
+	DefaultRoles            []kc.RoleRepresentation
+	ScopeMappings           *kc.MappingsRepresentation
+	AvailableClientScopes   []kc.KeycloakClientScope
+	DefaultClientScopes     []kc.KeycloakClientScope
+	OptionalClientScopes    []kc.KeycloakClientScope
+	DeprecatedClientSecret  *v1.Secret // keycloak-client-secret-<clientID>
+	Keycloak                kc.Keycloak
+	ServiceAccountUserState *UserState
 }
 
-func NewClientState(context context.Context, realm *kc.KeycloakRealm) *ClientState {
+func NewClientState(context context.Context, realm *kc.KeycloakRealm, keycloak kc.Keycloak) *ClientState {
 	return &ClientState{
-		Context: context,
-		Realm:   realm,
+		Context:  context,
+		Realm:    realm,
+		Keycloak: keycloak,
 	}
 }
 
@@ -69,23 +72,38 @@ func (i *ClientState) Read(context context.Context, cr *kc.KeycloakClient, realm
 		}
 	}
 
-	if i.Client != nil {
-		i.Roles, err = realmClient.ListClientRoles(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
+	if i.Client == nil {
+		return nil
+	}
+
+	i.Roles, err = realmClient.ListClientRoles(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
+	if err != nil {
+		return err
+	}
+
+	i.ScopeMappings, err = realmClient.ListScopeMappings(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
+	if err != nil {
+		return err
+	}
+
+	err = i.readClientScopes(cr, realmClient)
+	if err != nil {
+		return err
+	}
+
+	err = i.readDefaultRoles(cr, realmClient)
+	if err != nil {
+		return err
+	}
+
+	if i.Client.ServiceAccountsEnabled {
+		user, err := realmClient.GetServiceAccountUser(i.Realm.Spec.Realm.Realm, cr.Spec.Client.ID)
 		if err != nil {
 			return err
 		}
 
-		i.ScopeMappings, err = realmClient.ListScopeMappings(cr.Spec.Client.ID, i.Realm.Spec.Realm.Realm)
-		if err != nil {
-			return err
-		}
-
-		err := i.readClientScopes(cr, realmClient)
-		if err != nil {
-			return err
-		}
-
-		err = i.readDefaultRoles(cr, realmClient)
+		i.ServiceAccountUserState = NewUserState(i.Keycloak)
+		err = i.ServiceAccountUserState.ReadWithExistingAPIUser(realmClient, controllerClient, user, *i.Realm)
 		if err != nil {
 			return err
 		}
