@@ -110,7 +110,8 @@ spec:
                 description: Number of Keycloak instances in HA mode. Default is 1.
                 type: integer
               keycloakDeploymentSpec:
-                description: Resources (Requests and Limits) for KeycloakDeployment.
+                description: Resources (Requests and Limits) and ImagePullPolicy for
+                  KeycloakDeployment.
                 properties:
                   experimental:
                     description: 'Experimental section NOTE: This section might change
@@ -952,6 +953,14 @@ spec:
                             type: array
                         type: object
                     type: object
+                  imagePullPolicy:
+                    default: Always
+                    description: ImagePullPolicy for the Containers.
+                    enum:
+                    - Always
+                    - Never
+                    - IfNotPresent
+                    type: string
                   podannotations:
                     additionalProperties:
                       type: string
@@ -1023,8 +1032,17 @@ spec:
                     type: boolean
                 type: object
               postgresDeploymentSpec:
-                description: Resources (Requests and Limits) for PostgresDeployment.
+                description: Resources (Requests and Limits) and ImagePullPolicy for
+                  PostgresDeployment.
                 properties:
+                  imagePullPolicy:
+                    default: Always
+                    description: ImagePullPolicy for the Containers.
+                    enum:
+                    - Always
+                    - Never
+                    - IfNotPresent
+                    type: string
                   resources:
                     description: Resources (Requests and Limits) for the Pods.
                     properties:

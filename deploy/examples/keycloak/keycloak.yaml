@@ -15,3 +15,5 @@ spec:
   # User needs to provision the external database
   externalDatabase:
     enabled: True
+  keycloakDeploymentSpec:
+    imagePullPolicy: IfNotPresent

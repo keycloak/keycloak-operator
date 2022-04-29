@@ -206,7 +206,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret *v1
 							Command:         cr.Spec.KeycloakDeploymentSpec.Experimental.Command,
 							VolumeMounts:    KeycloakVolumeMounts(cr, RhssoExtensionPath, dbSSLSecret, RhssoCertificatePath),
 							Resources:       getResources(cr),
-							ImagePullPolicy: "Always",
+							ImagePullPolicy: cr.Spec.KeycloakDeploymentSpec.ImagePullPolicy,
 						},
 					},
 				},
@@ -270,7 +270,7 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 			ReadinessProbe:  readinessProbe(),
 			Env:             getRHSSOEnv(cr, dbSecret),
 			Resources:       getResources(cr),
-			ImagePullPolicy: "Always",
+			ImagePullPolicy: cr.Spec.KeycloakDeploymentSpec.ImagePullPolicy,
 		},
 	}
 	reconciled.Spec.Template.Spec.InitContainers = KeycloakExtensionsInitContainers(cr)

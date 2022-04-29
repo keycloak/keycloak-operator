@@ -67,10 +67,10 @@ type KeycloakSpec struct {
 	// Specify PodDisruptionBudget configuration.
 	// +optional
 	PodDisruptionBudget PodDisruptionBudgetConfig `json:"podDisruptionBudget,omitempty"`
-	// Resources (Requests and Limits) for KeycloakDeployment.
+	// Resources (Requests and Limits) and ImagePullPolicy for KeycloakDeployment.
 	// +optional
 	KeycloakDeploymentSpec KeycloakDeploymentSpec `json:"keycloakDeploymentSpec,omitempty"`
-	// Resources (Requests and Limits) for PostgresDeployment.
+	// Resources (Requests and Limits) and ImagePullPolicy for PostgresDeployment.
 	// +optional
 	PostgresDeploymentSpec PostgresqlDeploymentSpec `json:"postgresDeploymentSpec,omitempty"`
 	// Specify Migration configuration
@@ -93,6 +93,11 @@ type DeploymentSpec struct {
 	// Resources (Requests and Limits) for the Pods.
 	// +optional
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
+	// ImagePullPolicy for the Containers.
+	// +kubebuilder:validation:Enum={Always,Never,IfNotPresent}
+	// +kubebuilder:default:=Always
+	// +optional
+	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
 }
 
 type KeycloakDeploymentSpec struct {

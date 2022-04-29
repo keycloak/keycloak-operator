@@ -57,6 +57,10 @@ func TestKeycloakDeployment_testServiceAccountDefaultExperimental(t *testing.T) 
 	testServiceAccountDefault(t, KeycloakDeployment)
 }
 
+func TestKeycloakDeployment_testDeploymentSpecImagePolicy(t *testing.T) {
+	testDeploymentSpecImagePolicy(t, KeycloakDeployment)
+}
+
 func testExperimentalEnvs(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
 	//given
 	dbSecret := &v1.Secret{}
@@ -121,6 +125,23 @@ func testExperimentalArgs(t *testing.T, deploymentFunction createDeploymentState
 
 	//then
 	assert.Equal(t, []string{"test"}, args)
+}
+
+func testDeploymentSpecImagePolicy(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
+	//given
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.KeycloakDeploymentSpec = v1alpha1.KeycloakDeploymentSpec{
+		DeploymentSpec: v1alpha1.DeploymentSpec{
+			ImagePullPolicy: v1.PullNever,
+		},
+	}
+
+	//when
+	imagePullPolicyContainer := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.Containers[0].ImagePullPolicy
+
+	//then
+	assert.Equal(t, v1.PullNever, imagePullPolicyContainer)
 }
 
 func testExperimentalCommand(t *testing.T, deploymentFunction createDeploymentStatefulSet) {

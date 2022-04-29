@@ -27,3 +27,7 @@ func TestRHSSODeployment_testAffinityDefaultMultiAZ(t *testing.T) {
 func TestRHSSODeployment_testAffinityExperimental(t *testing.T) {
 	testAffinityExperimentalAffinitySet(t, RHSSODeployment)
 }
+
+func TestRHSSODeployment_testDeploymentSpecImagePolicy(t *testing.T) {
+	testDeploymentSpecImagePolicy(t, RHSSODeployment)
+}
