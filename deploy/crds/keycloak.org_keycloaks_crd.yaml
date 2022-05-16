@@ -37,6 +37,12 @@ spec:
                   PrometheusRule, ServiceMonitor and GrafanaDashboard objects and
                   users will have to create them manually, if needed.
                 type: boolean
+              disableReplicasSyncing:
+                description: Specify whether disabling the syncing of instances from
+                  the Keycloak CR to the statefulset replicas should be enabled or
+                  disabled. This option could be used when enabling HPA(horizontal
+                  pod autoscaler). Defaults to false.
+                type: boolean
               extensions:
                 description: A list of extensions, where each one is a URL to a JAR
                   files that will be deployed in Keycloak.
