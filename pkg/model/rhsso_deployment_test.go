@@ -31,3 +31,11 @@ func TestRHSSODeployment_testAffinityExperimental(t *testing.T) {
 func TestRHSSODeployment_testDeploymentSpecImagePolicy(t *testing.T) {
 	testDeploymentSpecImagePolicy(t, RHSSODeployment)
 }
+
+func TestRHSSODeploymentReconciled_testDisableRHSSOReplicasSyncingFalse(t *testing.T) {
+	testDisableDeploymentReplicasSyncingFalse(t, RHSSODeployment, RHSSODeploymentReconciled)
+}
+
+func TestRHSSODeploymentReconciled_testDisableRHSSOReplicasSyncingTrue(t *testing.T) {
+	testDisableDeploymentReplicasSyncingTrue(t, RHSSODeployment, RHSSODeploymentReconciled)
+}

@@ -87,6 +87,11 @@ type KeycloakSpec struct {
 	// objects and users will have to create them manually, if needed.
 	// +optional
 	DisableMonitoringServices bool `json:"DisableDefaultServiceMonitor,omitempty"`
+	// Specify whether disabling the syncing of instances from the Keycloak CR to the statefulset replicas
+	// should be enabled or disabled. This option could be used when enabling HPA(horizontal pod autoscaler).
+	// Defaults to false.
+	// +optional
+	DisableReplicasSyncing bool `json:"disableReplicasSyncing,omitempty"`
 }
 
 type DeploymentSpec struct {

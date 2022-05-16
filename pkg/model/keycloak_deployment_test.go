@@ -12,6 +12,7 @@ import (
 )
 
 type createDeploymentStatefulSet func(*v1alpha1.Keycloak, *v1.Secret, *v1.Secret) *v13.StatefulSet
+type reconcileRHSSODeployment func(*v1alpha1.Keycloak, *v13.StatefulSet, *v1.Secret, *v1.Secret) *v13.StatefulSet
 
 func TestKeycloakDeployment_testExperimentalEnvs(t *testing.T) {
 	testExperimentalEnvs(t, KeycloakDeployment)
@@ -59,6 +60,14 @@ func TestKeycloakDeployment_testServiceAccountDefaultExperimental(t *testing.T) 
 
 func TestKeycloakDeployment_testDeploymentSpecImagePolicy(t *testing.T) {
 	testDeploymentSpecImagePolicy(t, KeycloakDeployment)
+}
+
+func TestKeycloakDeploymentReconciled_testDisableReplicasSyncingFalse(t *testing.T) {
+	testDisableDeploymentReplicasSyncingFalse(t, KeycloakDeployment, KeycloakDeploymentReconciled)
+}
+
+func TestKeycloakDeploymentReconciled_testDisableReplicasSyncingTrue(t *testing.T) {
+	testDisableDeploymentReplicasSyncingTrue(t, KeycloakDeployment, KeycloakDeploymentReconciled)
 }
 
 func testExperimentalEnvs(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
@@ -491,4 +500,41 @@ func testServiceAccountDefault(t *testing.T, deploymentFunction createDeployment
 	serviceAccountName := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.ServiceAccountName
 
 	assert.Equal(t, "default", serviceAccountName)
+}
+
+func testDisableDeploymentReplicasSyncingFalse(t *testing.T, deploymentFunction createDeploymentStatefulSet, deploymentFunction2 reconcileRHSSODeployment) {
+	//given
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			Instances: 2,
+		},
+	}
+	statefulSet := deploymentFunction(cr, dbSecret, nil)
+
+	// when
+	statefulSet.Spec.Replicas = &[]int32{4}[0]
+	replicasCount := deploymentFunction2(cr, statefulSet, dbSecret, nil).Spec.Replicas
+
+	//then
+	assert.Equal(t, int32(2), *replicasCount)
+}
+
+func testDisableDeploymentReplicasSyncingTrue(t *testing.T, deploymentFunction createDeploymentStatefulSet, deploymentFunction2 reconcileRHSSODeployment) {
+	//given
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{
+		Spec: v1alpha1.KeycloakSpec{
+			Instances:              2,
+			DisableReplicasSyncing: true,
+		},
+	}
+	statefulSet := deploymentFunction(cr, dbSecret, nil)
+
+	//when
+	statefulSet.Spec.Replicas = &[]int32{4}[0]
+	replicasCountAfterSyncing := deploymentFunction2(cr, statefulSet, dbSecret, nil).Spec.Replicas
+
+	//then
+	assert.Equal(t, int32(4), *replicasCountAfterSyncing)
 }

@@ -290,7 +290,9 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	reconciled.Spec.Template.ObjectMeta.Annotations = AddPodAnnotations(cr, reconciled.Spec.Template.ObjectMeta.Annotations)
 
 	reconciled.ResourceVersion = currentState.ResourceVersion
-	reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
+	if !cr.Spec.DisableReplicasSyncing {
+		reconciled.Spec.Replicas = SanitizeNumberOfReplicas(cr.Spec.Instances, false)
+	}
 	reconciled.Spec.Template.Spec.Volumes = KeycloakVolumes(cr, dbSSLSecret)
 	reconciled.Spec.Template.Spec.Containers = []v1.Container{
 		{
