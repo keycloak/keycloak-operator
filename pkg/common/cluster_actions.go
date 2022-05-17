@@ -145,7 +145,11 @@ func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm s
 	uid, err := i.keycloakClient.CreateClient(obj.Spec.Client, realm)
 
 	if err != nil {
-		return err
+		var requestError *RequestError
+
+		if errors.As(err, *requestError) || requestError.StatusCode != 409 {
+			return err
+		}
 	}
 
 	obj.Spec.Client.ID = uid

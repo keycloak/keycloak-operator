@@ -37,6 +37,16 @@ type Client struct {
 	token     string
 }
 
+type RequestError struct {
+	ResourceName string
+	StatusCode   int
+	Status       string
+}
+
+func (r *RequestError) Error() string {
+	return fmt.Sprintf("failed to create %s: (%d) %s", r.ResourceName, r.StatusCode, r.Status)
+}
+
 // T is a generic type for keycloak spec resources
 type T interface{}
 
@@ -68,10 +78,6 @@ func (c *Client) create(obj T, resourcePath, resourceName string) (string, error
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode != 201 && res.StatusCode != 204 {
-		return "", errors.Errorf("failed to create %s: (%d) %s", resourceName, res.StatusCode, res.Status)
-	}
-
 	if resourceName == "client" {
 		d, _ := ioutil.ReadAll(res.Body)
 		fmt.Println("user response ", string(d))
@@ -79,6 +85,15 @@ func (c *Client) create(obj T, resourcePath, resourceName string) (string, error
 
 	location := strings.Split(res.Header.Get("Location"), "/")
 	uid := location[len(location)-1]
+
+	if res.StatusCode != 201 && res.StatusCode != 204 {
+		return uid, &RequestError{
+			ResourceName: resourceName,
+			StatusCode:   res.StatusCode,
+			Status:       res.Status,
+		}
+	}
+
 	return uid, nil
 }
 
