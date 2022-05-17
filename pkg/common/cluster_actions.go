@@ -147,7 +147,7 @@ func (i *ClusterActionRunner) CreateClient(obj *v1alpha1.KeycloakClient, realm s
 	if err != nil {
 		var requestError *RequestError
 
-		if errors.As(err, *requestError) || requestError.StatusCode != 409 {
+		if !errors.As(err, *requestError) || requestError.StatusCode != 409 {
 			return err
 		}
 	}
