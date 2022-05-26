@@ -386,6 +386,15 @@ func (i *KeycloakReconciler) getPostgresqlServiceEndpointsDesiredState(clusterSt
 
 func (i *KeycloakReconciler) getPodDisruptionBudgetDesiredState(clusterState *common.ClusterState, cr *kc.Keycloak) common.ClusterAction {
 	if cr.Spec.PodDisruptionBudget.Enabled {
+		stateManager := common.GetStateManager()
+		podDisruptionBudgetKind, keyExists := stateManager.GetState(common.PodDisruptionBudgetKind).(bool)
+		if !keyExists || !podDisruptionBudgetKind {
+			log.Info("podDisruptionBudget is enabled in the CR but policy/v1beta1 PodDisruptionBudget API was not found; please create podDisruptionBudget manually")
+			return nil
+		}
+
+		log.Info("using deprecated podDisruptionBudget field")
+
 		if clusterState.PodDisruptionBudget == nil {
 			return common.GenericCreateAction{
 				Ref: model.PodDisruptionBudget(cr),

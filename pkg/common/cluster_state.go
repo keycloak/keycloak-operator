@@ -72,7 +72,8 @@ type ClusterState struct {
 
 func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controllerClient client.Client) error {
 	stateManager := GetStateManager()
-	routeKindExists, keyExists := stateManager.GetState(RouteKind).(bool)
+	routeKindExists, routeKeyExists := stateManager.GetState(RouteKind).(bool)
+	podDisruptionBudgetKindExists, podDisruptionBudgetKeyExists := stateManager.GetState(PodDisruptionBudgetKind).(bool)
 
 	err := i.readKeycloakAdminSecretCurrentState(context, cr, controllerClient)
 	if err != nil {
@@ -149,12 +150,14 @@ func (i *ClusterState) Read(context context.Context, cr *kc.Keycloak, controller
 		return err
 	}
 
-	err = i.readPodDisruptionCurrentState(context, cr, controllerClient)
-	if err != nil {
-		return err
+	if podDisruptionBudgetKeyExists && podDisruptionBudgetKindExists {
+		err = i.readPodDisruptionCurrentState(context, cr, controllerClient)
+		if err != nil {
+			return err
+		}
 	}
 
-	if keyExists && routeKindExists {
+	if routeKeyExists && routeKindExists {
 		err = i.readKeycloakRouteCurrentState(context, cr, controllerClient)
 		if err != nil {
 			return err

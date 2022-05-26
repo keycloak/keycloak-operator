@@ -64,7 +64,7 @@ type KeycloakSpec struct {
 	// Profile used for controlling Operator behavior. Default is empty.
 	// +optional
 	Profile string `json:"profile,omitempty"`
-	// Specify PodDisruptionBudget configuration.
+	// Specify PodDisruptionBudget configuration. This field is deprecated and will be ignored on K8s >=1.25
 	// +optional
 	PodDisruptionBudget PodDisruptionBudgetConfig `json:"podDisruptionBudget,omitempty"`
 	// Resources (Requests and Limits) and ImagePullPolicy for KeycloakDeployment.
