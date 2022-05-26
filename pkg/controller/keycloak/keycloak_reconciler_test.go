@@ -658,6 +658,10 @@ func TestKeycloakReconciler_Test_Should_Create_PDB(t *testing.T) {
 
 	currentState := common.NewClusterState()
 
+	stateManager := common.GetStateManager()
+	stateManager.SetState(common.PodDisruptionBudgetKind, true)
+	defer stateManager.Clear()
+
 	// when
 	reconciler := NewKeycloakReconciler()
 	desiredState := reconciler.Reconcile(currentState, cr)
@@ -677,6 +681,10 @@ func TestKeycloakReconciler_Test_Should_Update_PDB(t *testing.T) {
 		PodDisruptionBudget: model.PodDisruptionBudget(cr),
 	}
 
+	stateManager := common.GetStateManager()
+	stateManager.SetState(common.PodDisruptionBudgetKind, true)
+	defer stateManager.Clear()
+
 	// when
 	reconciler := NewKeycloakReconciler()
 	desiredState := reconciler.Reconcile(currentState, cr)
@@ -685,6 +693,28 @@ func TestKeycloakReconciler_Test_Should_Update_PDB(t *testing.T) {
 	assert.Equal(t, len(desiredState), 10)
 	assert.IsType(t, common.GenericUpdateAction{}, desiredState[9])
 	assert.IsType(t, model.PodDisruptionBudget(cr), desiredState[9].(common.GenericUpdateAction).Ref)
+}
+
+func TestKeycloakReconciler_Test_Should_Skip_PDB_if_missing(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.PodDisruptionBudget.Enabled = true
+
+	currentState := common.NewClusterState()
+
+	stateManager := common.GetStateManager()
+	stateManager.SetState(common.PodDisruptionBudgetKind, false)
+	defer stateManager.Clear()
+
+	// when
+	reconciler := NewKeycloakReconciler()
+	desiredState := reconciler.Reconcile(currentState, cr)
+
+	// then
+	for _, element := range desiredState {
+		assert.IsType(t, common.GenericCreateAction{}, element)
+		assert.NotEqual(t, reflect.TypeOf(model.PodDisruptionBudget(cr)), reflect.TypeOf(element.(common.GenericCreateAction).Ref))
+	}
 }
 
 func TestKeycloakReconciler_Test_Setting_Resources(t *testing.T) {

@@ -1023,7 +1023,8 @@ spec:
                     type: boolean
                 type: object
               podDisruptionBudget:
-                description: Specify PodDisruptionBudget configuration.
+                description: Specify PodDisruptionBudget configuration. This field
+                  is deprecated and will be ignored on K8s >=1.25
                 properties:
                   enabled:
                     description: If set to true, the operator will create a PodDistruptionBudget

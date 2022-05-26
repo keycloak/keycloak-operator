@@ -7,6 +7,7 @@ import (
 	grafanav1alpha1 "github.com/integr8ly/grafana-operator/v3/pkg/apis/integreatly/v1alpha1"
 	"github.com/keycloak/keycloak-operator/pkg/k8sutil"
 	routev1 "github.com/openshift/api/route/v1"
+	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	"k8s.io/client-go/discovery"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 )
@@ -49,6 +50,7 @@ func (b *Background) autoDetectCapabilities() {
 	b.detectOpenshift()
 	b.detectMonitoringResources()
 	b.detectRoute()
+	b.detectPodDisruptionBudget()
 }
 
 func (b *Background) detectRoute() {
@@ -86,4 +88,10 @@ func (b *Background) detectOpenshift() {
 	} else {
 		stateManager.SetState(OpenShiftAPIServerKind, false)
 	}
+}
+
+func (b *Background) detectPodDisruptionBudget() {
+	resourceExists, _ := k8sutil.ResourceExists(b.dc, policyv1beta1.SchemeGroupVersion.String(), PodDisruptionBudgetKind)
+	stateManager := GetStateManager()
+	stateManager.SetState(PodDisruptionBudgetKind, resourceExists)
 }
