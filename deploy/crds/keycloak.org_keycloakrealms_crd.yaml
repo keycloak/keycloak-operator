@@ -175,6 +175,11 @@ spec:
                       - alias
                       type: object
                     type: array
+                  attributes:
+                    additionalProperties:
+                      type: string
+                    description: Realm Attributes
+                    type: object
                   bruteForceProtected:
                     description: Brute Force Detection
                     type: boolean
