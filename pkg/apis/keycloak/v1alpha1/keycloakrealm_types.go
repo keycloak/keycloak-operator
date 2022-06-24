@@ -199,6 +199,12 @@ type KeycloakAPIRealm struct {
 	// User Managed Access Allowed
 	// +optional
 	UserManagedAccessAllowed *bool `json:"userManagedAccessAllowed,omitempty"`
+	
+	
+	// Realm Attributes
+	// +optional
+	
+	Attributes map[string]string  `json:"attributes,omitempty"`
 
 	// OTP Policy Algorithm
 	// +optional
