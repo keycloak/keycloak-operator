@@ -160,6 +160,9 @@ type VolumeSpec struct {
 	Name string `json:"name,omitempty"`
 	// An absolute path where to mount it
 	MountPath string `json:"mountPath"`
+	// Mount a single CSI ephemeral volume. Mutually exclusive with configMaps and secrets
+	// +optional
+	CSI *corev1.CSIVolumeSource `json:"csi,omitempty"`
 	// Allow multiple configmaps to mount to the same directory
 	// +optional
 	ConfigMaps []string `json:"configMaps,omitempty"`

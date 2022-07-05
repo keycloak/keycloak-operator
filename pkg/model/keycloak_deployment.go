@@ -422,8 +422,15 @@ func KeycloakVolumes(cr *v1alpha1.Keycloak, dbSSLSecret *v1.Secret) []v1.Volume 
 func addVolumesFromKeycloakCR(cr *v1alpha1.Keycloak, volumes []v1.Volume) []v1.Volume {
 	if cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.Items != nil {
 		for _, v := range cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.Items {
-			var sources []v1.VolumeProjection
-			if v.ConfigMaps != nil {
+			var mapVolume v1.Volume
+			if v.CSI != nil {
+				mapVolume = v1.Volume{
+					Name:         v.Name,
+					VolumeSource: v1.VolumeSource{CSI: v.CSI},
+				}
+			} else if v.ConfigMaps != nil || v.Secrets != nil {
+				var sources []v1.VolumeProjection
+
 				for _, name := range v.ConfigMaps {
 					sources = append(sources, v1.VolumeProjection{
 						ConfigMap: &v1.ConfigMapProjection{
@@ -434,8 +441,7 @@ func addVolumesFromKeycloakCR(cr *v1alpha1.Keycloak, volumes []v1.Volume) []v1.V
 						},
 					})
 				}
-			}
-			if v.Secrets != nil {
+
 				for _, name := range v.Secrets {
 					sources = append(sources, v1.VolumeProjection{
 						Secret: &v1.SecretProjection{
@@ -446,17 +452,18 @@ func addVolumesFromKeycloakCR(cr *v1alpha1.Keycloak, volumes []v1.Volume) []v1.V
 						},
 					})
 				}
+
+				mapVolume = v1.Volume{
+					Name: v.Name,
+					VolumeSource: v1.VolumeSource{
+						Projected: &v1.ProjectedVolumeSource{
+							Sources:     sources,
+							DefaultMode: cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.DefaultMode,
+						},
+					},
+				}
 			}
 
-			mapVolume := v1.Volume{
-				Name: v.Name,
-				VolumeSource: v1.VolumeSource{
-					Projected: &v1.ProjectedVolumeSource{
-						Sources:     sources,
-						DefaultMode: cr.Spec.KeycloakDeploymentSpec.Experimental.Volumes.DefaultMode,
-					},
-				},
-			}
 			volumes = append(volumes, mapVolume)
 		}
 	}
