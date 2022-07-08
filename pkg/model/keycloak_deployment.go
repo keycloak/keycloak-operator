@@ -203,11 +203,7 @@ func KeycloakSslEnvVariables(dbSecret *v1.Secret, env []v1.EnvVar) []v1.EnvVar {
 }
 
 func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret *v1.Secret) *v13.StatefulSet {
-	labels := map[string]string{
-		"app":       ApplicationName,
-		"component": KeycloakDeploymentComponent,
-	}
-	podLabels := AddPodLabels(cr, labels)
+	podLabels := AddPodLabels(cr, GetLabelsSelector())
 	podAnnotations := cr.Spec.KeycloakDeploymentSpec.PodAnnotations
 	keycloakStatefulset := &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
@@ -219,7 +215,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret 
 		Spec: v13.StatefulSetSpec{
 			Replicas: SanitizeNumberOfReplicas(cr.Spec.Instances, true),
 			Selector: &v12.LabelSelector{
-				MatchLabels: labels,
+				MatchLabels: GetLabelsSelector(),
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: v12.ObjectMeta{
@@ -288,6 +284,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	reconciled.ObjectMeta.Annotations = AddPodAnnotations(cr, reconciled.ObjectMeta.Annotations)
 	reconciled.Spec.Template.ObjectMeta.Labels = AddPodLabels(cr, reconciled.Spec.Template.ObjectMeta.Labels)
 	reconciled.Spec.Template.ObjectMeta.Annotations = AddPodAnnotations(cr, reconciled.Spec.Template.ObjectMeta.Annotations)
+	reconciled.Spec.Selector.MatchLabels = GetLabelsSelector()
 
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	if !cr.Spec.DisableReplicasSyncing {
@@ -547,4 +544,11 @@ func getServiceAccountName(cr *v1alpha1.Keycloak) string {
 		return "default"
 	}
 	return cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName
+}
+
+func GetLabelsSelector() map[string]string {
+	return map[string]string{
+		"app":       ApplicationName,
+		"component": KeycloakDeploymentComponent,
+	}
 }

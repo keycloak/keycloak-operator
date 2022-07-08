@@ -35,6 +35,7 @@ func TestKeycloakCRDS(t *testing.T) {
 		runTestsFromCRDInterface(t, NewUnmanagedKeycloaksCRDTestStruct())
 		runTestsFromCRDInterface(t, NewKeycloaksWithLabelsCRDTestStruct())
 		runTestsFromCRDInterface(t, NewKeycloaksWithDefaultImagePullPolicyTestStruct())
+		runTestsFromCRDInterface(t, NewKeycloakStatefulSetSelectorTestStruct())
 	})
 	t.Run("KeycloakBackupCRDTest", func(t *testing.T) {
 		runTestsFromCRDInterface(t, NewKeycloakBackupCRDTestStruct())
