@@ -14,6 +14,7 @@ import (
 
 var errBackup = errors.New("migrate backup fails")
 var errNoMigrator = errors.New("migrator not found")
+var errSelectorCantBeMigrated = errors.New("statefulSet Selector mismatch; please use Recreate migration strategy")
 
 type Migrator interface {
 	Migrate(cr *v1alpha1.Keycloak, currentState *common.ClusterState, desiredState common.DesiredClusterState) (common.DesiredClusterState, error)
@@ -37,10 +38,45 @@ func GetMigrator(cr *v1alpha1.Keycloak) (Migrator, error) {
 }
 
 func (i *RecreateMigrator) Migrate(cr *v1alpha1.Keycloak, currentState *common.ClusterState, desiredState common.DesiredClusterState) (common.DesiredClusterState, error) {
-	if needsMigration(cr, currentState) {
+	deployment, deploymentIndex := findDeployment(&desiredState)
+
+	// We can't modify existing selector on StatefulSet.
+	// The selector might be wrongly set by e.g. RH-SSO 7.5.2.
+	// In such case, we need to recreate the StatefulSet
+	if needsStatefulSetRecreation(currentState, deployment) {
+		log.Info("Detected StatefulSet has mismatching Selector")
+
+		// First, gracefully scale down the cluster to make sure all the pods are gone (hence not deleting the SS right away).
+		// This is to not mess with image upgrade that might be happening at the same time.
+		// We need to make sure only one KC version is accessing the DB at a time.
+		if deployment.Status.Replicas > 0 {
+			scaleDownAndDontUpgradeImage(deployment, currentState)
+			// Keep selector and labels intact for the moment
+			deployment.Spec.Selector = currentState.KeycloakDeployment.Spec.Selector
+			deployment.Spec.Template.Labels = currentState.KeycloakDeployment.Spec.Template.Labels
+			return desiredState, nil
+		}
+
+		// Now, if scaled down, let's delete and recreate the SS.
+		log.Info("Recreating the StatefulSet")
+		deployment.ObjectMeta.ResourceVersion = "" // version can't be set when creating a resource
+		deleteAction := common.GenericDeleteAction{
+			Ref: deployment,
+			Msg: "Delete server Deployment (StatefulSet)",
+		}
+		createAction := common.GenericCreateAction{
+			Ref: deployment,
+			Msg: "Recreate server Deployment (StatefulSet)",
+		}
+		newDesiredState := append(desiredState[:deploymentIndex], deleteAction, createAction)
+		newDesiredState = append(newDesiredState, desiredState[deploymentIndex+1:]...)
+		desiredState = newDesiredState // replace update with delete and create
+		// no need to return now, we can let the DB backup to proceed
+	}
+
+	if needsImageMigration(cr, currentState) {
 		desiredImage := model.Profiles.GetKeycloakOrRHSSOImage(cr)
 		log.Info(fmt.Sprintf("Performing migration from '%s' to '%s'", currentState.KeycloakDeployment.Spec.Template.Spec.Containers[0].Image, desiredImage))
-		deployment := findDeployment(&desiredState)
 
 		// The backup should be made when Keycloak container is down.
 		// This way, we minimize the chance of skipping important updated
@@ -51,9 +87,7 @@ func (i *RecreateMigrator) Migrate(cr *v1alpha1.Keycloak, currentState *common.C
 		// the desired state from current state, i.e. clones current replicas
 		// status into the desired state.
 		if deployment != nil && deployment.Status.Replicas > 0 {
-			log.Info("Number of replicas decreased to 0")
-			deployment.Spec.Replicas = &[]int32{0}[0]
-			deployment.Spec.Template.Spec.Containers[0].Image = currentState.KeycloakDeployment.Spec.Template.Spec.Containers[0].Image
+			scaleDownAndDontUpgradeImage(deployment, currentState)
 			return desiredState, nil
 		}
 
@@ -70,10 +104,14 @@ func (i *RecreateMigrator) Migrate(cr *v1alpha1.Keycloak, currentState *common.C
 }
 
 func (i *RollingMigrator) Migrate(cr *v1alpha1.Keycloak, currentState *common.ClusterState, desiredState common.DesiredClusterState) (common.DesiredClusterState, error) {
+	deployment, _ := findDeployment(&desiredState)
+	if needsStatefulSetRecreation(currentState, deployment) {
+		return nil, errSelectorCantBeMigrated
+	}
 	return desiredState, nil
 }
 
-func needsMigration(cr *v1alpha1.Keycloak, currentState *common.ClusterState) bool {
+func needsImageMigration(cr *v1alpha1.Keycloak, currentState *common.ClusterState) bool {
 	if currentState.KeycloakDeployment == nil {
 		return false
 	}
@@ -82,19 +120,33 @@ func needsMigration(cr *v1alpha1.Keycloak, currentState *common.ClusterState) bo
 	return deployedImage != currentImage
 }
 
-func findDeployment(desiredState *common.DesiredClusterState) *v13.StatefulSet {
-	for _, v := range *desiredState {
+func needsStatefulSetRecreation(currentState *common.ClusterState, desiredDeployment *v13.StatefulSet) bool {
+	if currentState.KeycloakDeployment == nil || desiredDeployment == nil {
+		return false
+	}
+	// selectors can't be modified
+	return !reflect.DeepEqual(currentState.KeycloakDeployment.Spec.Selector.MatchLabels, desiredDeployment.Spec.Selector.MatchLabels)
+}
+
+func findDeployment(desiredState *common.DesiredClusterState) (*v13.StatefulSet, int) {
+	for i, v := range *desiredState {
 		if (reflect.TypeOf(v) == reflect.TypeOf(common.GenericUpdateAction{})) {
 			updateAction := v.(common.GenericUpdateAction)
 			if (reflect.TypeOf(updateAction.Ref) == reflect.TypeOf(&v13.StatefulSet{})) {
 				statefulSet := updateAction.Ref.(*v13.StatefulSet)
 				if statefulSet.ObjectMeta.Name == model.KeycloakDeploymentName {
-					return statefulSet
+					return statefulSet, i
 				}
 			}
 		}
 	}
-	return nil
+	return nil, 0
+}
+
+func scaleDownAndDontUpgradeImage(deployment *v13.StatefulSet, currentState *common.ClusterState) {
+	log.Info("Number of replicas decreased to 0")
+	deployment.Spec.Replicas = &[]int32{0}[0]
+	deployment.Spec.Template.Spec.Containers[0].Image = currentState.KeycloakDeployment.Spec.Template.Spec.Containers[0].Image
 }
 
 func oneTimeLocalBackup(cr *v1alpha1.Keycloak, currentState *common.ClusterState, desiredState common.DesiredClusterState) (common.DesiredClusterState, error) {

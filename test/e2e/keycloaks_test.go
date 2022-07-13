@@ -24,6 +24,8 @@ import (
 )
 
 const podName = "keycloak-0"
+const extraLabelName = "extra"
+const extraLabelValue = "value"
 
 func NewKeycloaksCRDTestStruct() *CRDTestStruct {
 	return &CRDTestStruct{
@@ -76,6 +78,14 @@ func NewKeycloaksWithDefaultImagePullPolicyTestStruct() *CRDTestStruct {
 		},
 		testSteps: map[string]deployedOperatorTestStep{
 			"keycloakDeploymentDefaultImagePullPolicyTest": {testFunction: keycloakDeploymentDefaultImagePullPolicyTest},
+		},
+	}
+}
+
+func NewKeycloakStatefulSetSelectorTestStruct() *CRDTestStruct {
+	return &CRDTestStruct{
+		testSteps: map[string]deployedOperatorTestStep{
+			"keycloakStatefulSetSelectorTest": {testFunction: keycloakStatefulSetSelectorTest},
 		},
 	}
 }
@@ -508,5 +518,49 @@ func keycloakDeploymentDefaultImagePullPolicyTest(t *testing.T, f *framework.Fra
 	keycloakPod := v1.Pod{}
 	err := GetNamespacedObject(f, namespace, podName, &keycloakPod)
 	assert.Contains(t, keycloakPod.Spec.Containers[0].ImagePullPolicy, v1.PullAlways)
+	return err
+}
+
+func keycloakStatefulSetSelectorTest(t *testing.T, f *framework.Framework, ctx *framework.Context, namespace string) error {
+	// We can't modify existing selector on StatefulSet.
+	// The selector might be wrongly set by e.g. RH-SSO 7.5.2.
+	// In such case, we need to recreate the StatefulSet
+
+	keycloakCR := getKeycloakCR(namespace)
+
+	var kcDeployment *v1apps.StatefulSet
+	if currentProfile() == keycloakProfile {
+		kcDeployment = model.KeycloakDeployment(keycloakCR, nil, nil)
+	} else {
+		kcDeployment = model.RHSSODeployment(keycloakCR, nil, nil)
+	}
+
+	// Add extra selectors/labels which should be removed by the Operator
+	kcDeployment.Spec.Selector.MatchLabels[extraLabelName] = extraLabelValue
+	kcDeployment.Spec.Template.Labels[extraLabelName] = extraLabelValue
+
+	// Let's create a faulty StatefulSet before Operator does it
+	err := Create(f, kcDeployment, ctx)
+	if err != nil {
+		return err
+	}
+
+	// Operator should take over, recreate the SS and all should be fine
+	err = deployKeycloaksCR(t, f, ctx, namespace, keycloakCR)
+	if err != nil {
+		return err
+	}
+
+	err = WaitForCondition(t, f.KubeClient, func(t *testing.T, c kubernetes.Interface) error {
+		foundSS := &v1apps.StatefulSet{}
+		err = GetNamespacedObject(f, namespace, kcDeployment.Name, foundSS)
+		if err != nil {
+			return err
+		}
+		if _, ok := foundSS.Spec.Selector.MatchLabels[extraLabelName]; ok {
+			return errors.Errorf("Bad Selector not removed")
+		}
+		return nil
+	})
 	return err
 }

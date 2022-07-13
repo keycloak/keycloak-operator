@@ -11,6 +11,9 @@ import (
 	v1 "k8s.io/api/apps/v1"
 )
 
+const extraLabelName = "extra"
+const extraLabelValue = "value"
+
 func TestKeycloakMigration_Test_No_Need_For_Migration_On_Empty_Desired_State(t *testing.T) {
 	// given
 	cr := &v1alpha1.Keycloak{}
@@ -188,6 +191,113 @@ func TestKeycloakMigration_Test_No_Migration_Happens_With_Rolling_Migrator(t *te
 	assert.Nil(t, err)
 	assert.Equal(t, desiredState, migratedActions)
 	kcAssert.ReplicasCount(t, migratedActions, 5)
+}
+
+func TestKeycloakMigration_Test_Stateful_Set_Selector_Error_With_Rolling_Migrator(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.Migration.MigrationStrategy = v1alpha1.StrategyRolling
+	cr.Spec.Instances = 3
+	migrator, _ := GetMigrator(cr)
+
+	keycloakCurrentDeployment := model.KeycloakDeployment(cr, model.DatabaseSecret(cr), nil)
+	keycloakCurrentDeployment.Spec.Selector.MatchLabels[extraLabelName] = extraLabelValue
+	SetDeployment(keycloakCurrentDeployment, 3, "")
+
+	keycloakDesiredDeployment := model.KeycloakDeployment(cr, model.DatabaseSecret(cr), nil)
+	SetDeployment(keycloakDesiredDeployment, 3, "")
+
+	currentState := common.ClusterState{
+		KeycloakDeployment: keycloakCurrentDeployment,
+	}
+
+	desiredState := common.DesiredClusterState{}
+	desiredState = append(desiredState, common.GenericUpdateAction{
+		Ref: keycloakDesiredDeployment,
+	})
+
+	kcAssert.ReplicasCount(t, desiredState, 3)
+
+	// when
+	migratedActions, err := migrator.Migrate(cr, &currentState, desiredState)
+
+	// then
+	assert.EqualError(t, err, "statefulSet Selector mismatch; please use Recreate migration strategy")
+	assert.Nil(t, migratedActions)
+}
+
+func TestKeycloakMigration_Test_Stateful_Set_Downscaled_On_Selector_Mismatch(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.Instances = 3
+	migrator, _ := GetMigrator(cr)
+
+	keycloakCurrentDeployment := model.KeycloakDeployment(cr, model.DatabaseSecret(cr), nil)
+	keycloakCurrentDeployment.Spec.Selector.MatchLabels[extraLabelName] = extraLabelValue
+	SetDeployment(keycloakCurrentDeployment, 3, "old_image")
+
+	keycloakDesiredDeployment := model.KeycloakDeployment(cr, model.DatabaseSecret(cr), nil)
+	SetDeployment(keycloakDesiredDeployment, 3, "")
+
+	currentState := common.ClusterState{
+		KeycloakDeployment: keycloakCurrentDeployment,
+	}
+
+	desiredState := common.DesiredClusterState{}
+	desiredState = append(desiredState, common.GenericUpdateAction{
+		Ref: keycloakDesiredDeployment,
+	})
+
+	kcAssert.ReplicasCount(t, desiredState, 3)
+
+	// when
+	migratedActions, err := migrator.Migrate(cr, &currentState, desiredState)
+
+	// then
+	assert.Nil(t, err)
+	assert.Equal(t, desiredState, migratedActions)
+	kcAssert.ReplicasCount(t, migratedActions, 0)
+	kcAssert.KcDeploymentUpdated(t, migratedActions, keycloakDesiredDeployment, true)
+	kcAssert.KcDeploymentRecreated(t, migratedActions, keycloakDesiredDeployment, false)
+	// migrator actually modifies desired deployment
+	assert.Equal(t, "old_image", keycloakDesiredDeployment.Spec.Template.Spec.Containers[0].Image)
+}
+
+func TestKeycloakMigration_Test_Stateful_Set_Recreated_After_Downscale(t *testing.T) {
+	// given
+	cr := &v1alpha1.Keycloak{}
+	cr.Spec.Instances = 3
+	migrator, _ := GetMigrator(cr)
+
+	keycloakCurrentDeployment := model.KeycloakDeployment(cr, model.DatabaseSecret(cr), nil)
+	keycloakCurrentDeployment.Spec.Selector.MatchLabels[extraLabelName] = extraLabelValue
+	SetDeployment(keycloakCurrentDeployment, 3, "old_image")
+
+	keycloakDesiredDeployment := model.KeycloakDeployment(cr, model.DatabaseSecret(cr), nil)
+	keycloakCurrentDeployment.Status.Replicas = 0
+
+	currentState := common.ClusterState{
+		KeycloakDeployment: keycloakCurrentDeployment,
+	}
+
+	desiredState := common.DesiredClusterState{}
+	desiredState = append(desiredState, common.GenericUpdateAction{
+		Ref: keycloakDesiredDeployment,
+	})
+
+	kcAssert.ReplicasCount(t, desiredState, 3)
+
+	// when
+	migratedActions, err := migrator.Migrate(cr, &currentState, desiredState)
+
+	// then
+	assert.Nil(t, err)
+	assert.NotEqual(t, desiredState, migratedActions)
+	kcAssert.ReplicasCountRecreate(t, migratedActions, 3)
+	kcAssert.KcDeploymentUpdated(t, migratedActions, keycloakDesiredDeployment, false)
+	kcAssert.KcDeploymentRecreated(t, migratedActions, keycloakDesiredDeployment, true)
+	// migrator actually modifies desired deployment
+	assert.NotEqual(t, "old_image", keycloakDesiredDeployment.Spec.Template.Spec.Containers[0].Image)
 }
 
 func SetDeployment(deployment *v1.StatefulSet, replicasCount int32, image string) {

@@ -10,9 +10,12 @@ func init() {
 	flag.BoolVar(&isProductBuild, "product", false, "Using RHSSO or Keycloak")
 }
 
+const keycloakProfile = "keycloak"
+const rhssoProfile = "RHSSO"
+
 func currentProfile() string {
 	if isProductBuild {
-		return "RHSSO"
+		return rhssoProfile
 	}
-	return "keycloak"
+	return keycloakProfile
 }
