@@ -205,6 +205,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret *v1
 							ImagePullPolicy: cr.Spec.KeycloakDeploymentSpec.ImagePullPolicy,
 						},
 					},
+					ServiceAccountName: cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName,
 				},
 			},
 		},
@@ -234,6 +235,7 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 	reconciled.Spec.Template.ObjectMeta.Labels = AddPodLabels(cr, reconciled.Spec.Template.ObjectMeta.Labels)
 	reconciled.Spec.Template.ObjectMeta.Annotations = AddPodAnnotations(cr, reconciled.Spec.Template.ObjectMeta.Annotations)
 	reconciled.Spec.Selector.MatchLabels = GetLabelsSelector()
+	reconciled.Spec.Template.Spec.ServiceAccountName = cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName
 
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	if !cr.Spec.DisableReplicasSyncing {

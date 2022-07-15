@@ -39,3 +39,11 @@ func TestRHSSODeploymentReconciled_testDisableRHSSOReplicasSyncingFalse(t *testi
 func TestRHSSODeploymentReconciled_testDisableRHSSOReplicasSyncingTrue(t *testing.T) {
 	testDisableDeploymentReplicasSyncingTrue(t, RHSSODeployment, RHSSODeploymentReconciled)
 }
+
+func TestRHSSODeployment_testServiceAccountSetExperimental(t *testing.T) {
+	testServiceAccountSet(t, RHSSODeployment)
+}
+
+func TestRHSSODeployment_testServiceAccountReconciledSetExperimental(t *testing.T) {
+	testServiceAccountReconciledSet(t, RHSSODeployment, RHSSODeploymentReconciled)
+}
