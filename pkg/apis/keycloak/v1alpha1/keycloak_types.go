@@ -178,6 +178,9 @@ type KeycloakExternal struct {
 	// The URL to use for the keycloak admin API. Needs to be set if external is true.
 	// +optional
 	URL string `json:"url,omitempty"`
+	// Context root for Keycloak. If not set, the default "/auth/" is used.
+	// Must end with "/".
+	ContextRoot string `json:"contextRoot,omitempty"`
 }
 
 type KeycloakExternalAccess struct {

@@ -24,7 +24,7 @@ import (
 )
 
 const (
-	authURL = "auth/realms/master/protocol/openid-connect/token"
+	authURL = "realms/master/protocol/openid-connect/token"
 )
 
 type Requester interface {
@@ -32,9 +32,10 @@ type Requester interface {
 }
 
 type Client struct {
-	requester Requester
-	URL       string
-	token     string
+	requester   Requester
+	URL         string
+	contextRoot string
+	token       string
 }
 
 // T is a generic type for keycloak spec resources
@@ -50,7 +51,7 @@ func (c *Client) create(obj T, resourcePath, resourceName string) (string, error
 
 	req, err := http.NewRequest(
 		"POST",
-		fmt.Sprintf("%s/auth/admin/%s", c.URL, resourcePath),
+		fmt.Sprintf("%sadmin/%s", c.GetFullKeycloakPath(), resourcePath),
 		bytes.NewBuffer(jsonValue),
 	)
 	if err != nil {
@@ -235,7 +236,7 @@ func (c *Client) CreateIdentityProvider(identityProvider *v1alpha1.KeycloakIdent
 
 // Generic get function for returning a Keycloak resource
 func (c *Client) get(resourcePath, resourceName string, unMarshalFunc func(body []byte) (T, error)) (T, error) {
-	u := fmt.Sprintf("%s/auth/admin/%s", c.URL, resourcePath)
+	u := fmt.Sprintf("%sadmin/%s", c.GetFullKeycloakPath(), resourcePath)
 	req, err := http.NewRequest(
 		"GET",
 		u,
@@ -394,7 +395,7 @@ func (c *Client) update(obj T, resourcePath, resourceName string) error {
 
 	req, err := http.NewRequest(
 		"PUT",
-		fmt.Sprintf("%s/auth/admin/%s", c.URL, resourcePath),
+		fmt.Sprintf("%sadmin/%s", c.GetFullKeycloakPath(), resourcePath),
 		bytes.NewBuffer(jsonValue),
 	)
 	if err != nil {
@@ -454,7 +455,7 @@ func (c *Client) UpdateClientOptionalClientScope(specClient *v1alpha1.KeycloakAP
 func (c *Client) delete(resourcePath, resourceName string, obj T) error {
 	req, err := http.NewRequest(
 		"DELETE",
-		fmt.Sprintf("%s/auth/admin/%s", c.URL, resourcePath),
+		fmt.Sprintf("%sadmin/%s", c.GetFullKeycloakPath(), resourcePath),
 		nil,
 	)
 
@@ -465,7 +466,7 @@ func (c *Client) delete(resourcePath, resourceName string, obj T) error {
 		}
 		req, err = http.NewRequest(
 			"DELETE",
-			fmt.Sprintf("%s/auth/admin/%s", c.URL, resourcePath),
+			fmt.Sprintf("%sadmin/%s", c.GetFullKeycloakPath(), resourcePath),
 			bytes.NewBuffer(jsonValue),
 		)
 		if err != nil {
@@ -550,7 +551,7 @@ func (c *Client) DeleteAuthenticatorConfig(configID, realmName string) error {
 func (c *Client) list(resourcePath, resourceName string, unMarshalListFunc func(body []byte) (T, error)) (T, error) {
 	req, err := http.NewRequest(
 		"GET",
-		fmt.Sprintf("%s/auth/admin/%s", c.URL, resourcePath),
+		fmt.Sprintf("%sadmin/%s", c.GetFullKeycloakPath(), resourcePath),
 		nil,
 	)
 	if err != nil {
@@ -806,7 +807,7 @@ func (c *Client) ListAuthenticationExecutionsForFlow(flowAlias, realmName string
 }
 
 func (c *Client) Ping() error {
-	u := c.URL + "/auth/"
+	u := c.GetFullKeycloakPath()
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
 		logrus.Errorf("error creating ping request %+v", err)
@@ -854,7 +855,7 @@ func (c *Client) login(user, pass string) error {
 
 	req, err := http.NewRequest(
 		"POST",
-		fmt.Sprintf("%s/%s", c.URL, authURL),
+		c.GetFullKeycloakPath()+authURL,
 		strings.NewReader(form.Encode()),
 	)
 	if err != nil {
@@ -881,8 +882,8 @@ func (c *Client) login(user, pass string) error {
 	}
 
 	if tokenRes.Error != "" {
-		logrus.Errorf("error with request: " + tokenRes.ErrorDescription)
-		return errors.Errorf(tokenRes.ErrorDescription)
+		logrus.Errorf("error with request: " + tokenRes.Error)
+		return errors.Errorf(tokenRes.Error)
 	}
 
 	c.token = tokenRes.AccessToken
@@ -898,6 +899,9 @@ func defaultRequester(serverCert []byte) (Requester, error) {
 	}
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.TLSClientConfig = tlsConfig
+
+	// https://github.com/keycloak/keycloak/issues/13315
+	transport.ForceAttemptHTTP2 = false
 
 	c := &http.Client{Transport: transport, Timeout: time.Second * 10}
 	return c, nil
@@ -1054,9 +1058,15 @@ func (i *LocalConfigKeycloakFactory) AuthenticatedClient(kc v1alpha1.Keycloak, i
 		return nil, err
 	}
 
+	var contextRoot string
+	if kc.Spec.External.Enabled && kc.Spec.Unmanaged {
+		contextRoot += kc.Spec.External.ContextRoot
+	}
+
 	client := &Client{
-		URL:       kcURL,
-		requester: requester,
+		URL:         kcURL,
+		requester:   requester,
+		contextRoot: contextRoot,
 	}
 	if err := client.login(user, pass); err != nil {
 		return nil, err
@@ -1123,4 +1133,14 @@ func validateKeycloakURL(url string, requester Requester) (string, error) {
 	}
 	_ = res.Body.Close()
 	return url, nil
+}
+
+func (c *Client) GetFullKeycloakPath() string {
+	URL := c.URL
+	if c.contextRoot != "" {
+		URL += c.contextRoot
+	} else {
+		URL += "/auth/"
+	}
+	return URL
 }

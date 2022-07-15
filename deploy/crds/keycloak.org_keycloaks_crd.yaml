@@ -54,6 +54,10 @@ spec:
                 description: Contains configuration for external Keycloak instances.
                   Unmanaged needs to be set to true to use this.
                 properties:
+                  contextRoot:
+                    description: Context root for Keycloak. If not set, the default
+                      "/auth/" is used. Must end with "/".
+                    type: string
                   enabled:
                     description: If set to true, this Keycloak will be treated as
                       an external instance. The unmanaged field also needs to be set
