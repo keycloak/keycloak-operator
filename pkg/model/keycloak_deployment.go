@@ -256,7 +256,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret 
 							Resources:       getResources(cr),
 						},
 					},
-					ServiceAccountName: getServiceAccountName(cr),
+					ServiceAccountName: cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName,
 				},
 			},
 		},
@@ -285,6 +285,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	reconciled.Spec.Template.ObjectMeta.Labels = AddPodLabels(cr, reconciled.Spec.Template.ObjectMeta.Labels)
 	reconciled.Spec.Template.ObjectMeta.Annotations = AddPodAnnotations(cr, reconciled.Spec.Template.ObjectMeta.Annotations)
 	reconciled.Spec.Selector.MatchLabels = GetLabelsSelector()
+	reconciled.Spec.Template.Spec.ServiceAccountName = cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName
 
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	if !cr.Spec.DisableReplicasSyncing {
@@ -537,13 +538,6 @@ func KeycloakPodAffinity(cr *v1alpha1.Keycloak) *v1.Affinity {
 			},
 		},
 	}
-}
-
-func getServiceAccountName(cr *v1alpha1.Keycloak) string {
-	if cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName == "" {
-		return "default"
-	}
-	return cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName
 }
 
 func GetLabelsSelector() map[string]string {
