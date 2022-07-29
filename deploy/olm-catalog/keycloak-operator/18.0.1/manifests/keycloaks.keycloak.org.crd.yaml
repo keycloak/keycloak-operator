@@ -37,12 +37,6 @@ spec:
                   PrometheusRule, ServiceMonitor and GrafanaDashboard objects and
                   users will have to create them manually, if needed.
                 type: boolean
-              disableReplicasSyncing:
-                description: Specify whether disabling the syncing of instances from
-                  the Keycloak CR to the statefulset replicas should be enabled or
-                  disabled. This option could be used when enabling HPA(horizontal
-                  pod autoscaler). Defaults to false.
-                type: boolean
               extensions:
                 description: A list of extensions, where each one is a URL to a JAR
                   files that will be deployed in Keycloak.
@@ -54,10 +48,6 @@ spec:
                 description: Contains configuration for external Keycloak instances.
                   Unmanaged needs to be set to true to use this.
                 properties:
-                  contextRoot:
-                    description: Context root for Keycloak. If not set, the default
-                      "/auth/" is used. Must end with "/".
-                    type: string
                   enabled:
                     description: If set to true, this Keycloak will be treated as
                       an external instance. The unmanaged field also needs to be set
@@ -120,8 +110,7 @@ spec:
                 description: Number of Keycloak instances in HA mode. Default is 1.
                 type: integer
               keycloakDeploymentSpec:
-                description: Resources (Requests and Limits) and ImagePullPolicy for
-                  KeycloakDeployment.
+                description: Resources (Requests and Limits) for KeycloakDeployment.
                 properties:
                   experimental:
                     description: 'Experimental section NOTE: This section might change
@@ -894,58 +883,9 @@ spec:
                           - name
                           type: object
                         type: array
-                      nodeSelector:
-                        additionalProperties:
-                          type: string
-                        description: NodeSelector to constrain pods to run on particular
-                          set of Node(s)
-                        type: object
                       serviceAccountName:
                         description: ServiceAccountName settings
                         type: string
-                      tolerations:
-                        description: Toleration for the Pods when using taints and
-                          toleration on nodes
-                        items:
-                          description: The pod this Toleration is attached to tolerates
-                            any taint that matches the triple <key,value,effect> using
-                            the matching operator <operator>.
-                          properties:
-                            effect:
-                              description: Effect indicates the taint effect to match.
-                                Empty means match all taint effects. When specified,
-                                allowed values are NoSchedule, PreferNoSchedule and
-                                NoExecute.
-                              type: string
-                            key:
-                              description: Key is the taint key that the toleration
-                                applies to. Empty means match all taint keys. If the
-                                key is empty, operator must be Exists; this combination
-                                means to match all values and all keys.
-                              type: string
-                            operator:
-                              description: Operator represents a key's relationship
-                                to the value. Valid operators are Exists and Equal.
-                                Defaults to Equal. Exists is equivalent to wildcard
-                                for value, so that a pod can tolerate all taints of
-                                a particular category.
-                              type: string
-                            tolerationSeconds:
-                              description: TolerationSeconds represents the period
-                                of time the toleration (which must be of effect NoExecute,
-                                otherwise this field is ignored) tolerates the taint.
-                                By default, it is not set, which means tolerate the
-                                taint forever (do not evict). Zero and negative values
-                                will be treated as 0 (evict immediately) by the system.
-                              format: int64
-                              type: integer
-                            value:
-                              description: Value is the taint value the toleration
-                                matches to. If the operator is Exists, the value should
-                                be empty, otherwise just a regular string.
-                              type: string
-                          type: object
-                        type: array
                       volumes:
                         description: Additional volume mounts
                         properties:
@@ -1012,14 +952,6 @@ spec:
                             type: array
                         type: object
                     type: object
-                  imagePullPolicy:
-                    default: Always
-                    description: ImagePullPolicy for the Containers.
-                    enum:
-                    - Always
-                    - Never
-                    - IfNotPresent
-                    type: string
                   podannotations:
                     additionalProperties:
                       type: string
@@ -1082,8 +1014,7 @@ spec:
                     type: boolean
                 type: object
               podDisruptionBudget:
-                description: Specify PodDisruptionBudget configuration. This field
-                  is deprecated and will be ignored on K8s >=1.25
+                description: Specify PodDisruptionBudget configuration.
                 properties:
                   enabled:
                     description: If set to true, the operator will create a PodDistruptionBudget
@@ -1092,17 +1023,8 @@ spec:
                     type: boolean
                 type: object
               postgresDeploymentSpec:
-                description: Resources (Requests and Limits) and ImagePullPolicy for
-                  PostgresDeployment.
+                description: Resources (Requests and Limits) for PostgresDeployment.
                 properties:
-                  imagePullPolicy:
-                    default: Always
-                    description: ImagePullPolicy for the Containers.
-                    enum:
-                    - Always
-                    - Never
-                    - IfNotPresent
-                    type: string
                   resources:
                     description: Resources (Requests and Limits) for the Pods.
                     properties:

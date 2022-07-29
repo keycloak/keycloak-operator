@@ -148,11 +148,7 @@ func RHSSOSslEnvVariables(dbSecret *v1.Secret, env []v1.EnvVar) []v1.EnvVar {
 }
 
 func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret *v1.Secret) *v13.StatefulSet {
-	labels := map[string]string{
-		"app":       ApplicationName,
-		"component": KeycloakDeploymentComponent,
-	}
-	podLabels := AddPodLabels(cr, labels)
+	podLabels := AddPodLabels(cr, GetLabelsSelector())
 	podAnnotations := cr.Spec.KeycloakDeploymentSpec.PodAnnotations
 	rhssoStatefulSet := &v13.StatefulSet{
 		ObjectMeta: v12.ObjectMeta{
@@ -164,7 +160,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret *v1
 		Spec: v13.StatefulSetSpec{
 			Replicas: SanitizeNumberOfReplicas(cr.Spec.Instances, true),
 			Selector: &v12.LabelSelector{
-				MatchLabels: labels,
+				MatchLabels: GetLabelsSelector(),
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: v12.ObjectMeta{
@@ -209,6 +205,7 @@ func RHSSODeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret *v1
 							ImagePullPolicy: cr.Spec.KeycloakDeploymentSpec.ImagePullPolicy,
 						},
 					},
+					ServiceAccountName: cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName,
 					Tolerations:  cr.Spec.KeycloakDeploymentSpec.Experimental.Tolerations,
 					NodeSelector: cr.Spec.KeycloakDeploymentSpec.Experimental.NodeSelector,
 				},
@@ -239,6 +236,8 @@ func RHSSODeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.Stateful
 	reconciled.ObjectMeta.Annotations = AddPodAnnotations(cr, reconciled.ObjectMeta.Annotations)
 	reconciled.Spec.Template.ObjectMeta.Labels = AddPodLabels(cr, reconciled.Spec.Template.ObjectMeta.Labels)
 	reconciled.Spec.Template.ObjectMeta.Annotations = AddPodAnnotations(cr, reconciled.Spec.Template.ObjectMeta.Annotations)
+	reconciled.Spec.Selector.MatchLabels = GetLabelsSelector()
+	reconciled.Spec.Template.Spec.ServiceAccountName = cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName
 
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	if !cr.Spec.DisableReplicasSyncing {

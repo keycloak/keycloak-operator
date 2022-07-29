@@ -12,7 +12,7 @@ import (
 )
 
 type createDeploymentStatefulSet func(*v1alpha1.Keycloak, *v1.Secret, *v1.Secret) *v13.StatefulSet
-type reconcileRHSSODeployment func(*v1alpha1.Keycloak, *v13.StatefulSet, *v1.Secret, *v1.Secret) *v13.StatefulSet
+type reconciledDeployment func(*v1alpha1.Keycloak, *v13.StatefulSet, *v1.Secret, *v1.Secret) *v13.StatefulSet
 
 func TestKeycloakDeployment_testExperimentalEnvs(t *testing.T) {
 	testExperimentalEnvs(t, KeycloakDeployment)
@@ -62,8 +62,8 @@ func TestKeycloakDeployment_testServiceAccountSetExperimental(t *testing.T) {
 	testServiceAccountSet(t, KeycloakDeployment)
 }
 
-func TestKeycloakDeployment_testServiceAccountDefaultExperimental(t *testing.T) {
-	testServiceAccountDefault(t, KeycloakDeployment)
+func TestKeycloakDeployment_testServiceAccountReconciledSetExperimental(t *testing.T) {
+	testServiceAccountReconciledSet(t, KeycloakDeployment, KeycloakDeploymentReconciled)
 }
 
 func TestKeycloakDeployment_testDeploymentSpecImagePolicy(t *testing.T) {
@@ -539,20 +539,22 @@ func testServiceAccountSet(t *testing.T, deploymentFunction createDeploymentStat
 	assert.Equal(t, "test", serviceAccountName)
 }
 
-func testServiceAccountDefault(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
+func testServiceAccountReconciledSet(t *testing.T, deploymentFunction createDeploymentStatefulSet, reconciliationFunction reconciledDeployment) {
 	//given
 	dbSecret := &v1.Secret{}
 	cr := &v1alpha1.Keycloak{}
-
-	//If serviceAccountName is not set in the cr, then the serviceAccountName should be default
+	statefulSet := deploymentFunction(cr, dbSecret, nil)
 
 	//when
-	serviceAccountName := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.ServiceAccountName
 
-	assert.Equal(t, "default", serviceAccountName)
+	//If serviceAccountName is set in the cr, is should manifest itself in the statefulset
+	cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName = "test2"
+	serviceAccountName := reconciliationFunction(cr, statefulSet, dbSecret, nil).Spec.Template.Spec.ServiceAccountName
+
+	assert.Equal(t, "test2", serviceAccountName)
 }
 
-func testDisableDeploymentReplicasSyncingFalse(t *testing.T, deploymentFunction createDeploymentStatefulSet, deploymentFunction2 reconcileRHSSODeployment) {
+func testDisableDeploymentReplicasSyncingFalse(t *testing.T, deploymentFunction createDeploymentStatefulSet, deploymentFunction2 reconciledDeployment) {
 	//given
 	dbSecret := &v1.Secret{}
 	cr := &v1alpha1.Keycloak{
@@ -570,7 +572,7 @@ func testDisableDeploymentReplicasSyncingFalse(t *testing.T, deploymentFunction 
 	assert.Equal(t, int32(2), *replicasCount)
 }
 
-func testDisableDeploymentReplicasSyncingTrue(t *testing.T, deploymentFunction createDeploymentStatefulSet, deploymentFunction2 reconcileRHSSODeployment) {
+func testDisableDeploymentReplicasSyncingTrue(t *testing.T, deploymentFunction createDeploymentStatefulSet, deploymentFunction2 reconciledDeployment) {
 	//given
 	dbSecret := &v1.Secret{}
 	cr := &v1alpha1.Keycloak{

@@ -349,3 +349,18 @@ func TestClient_useKeycloakServerCertificate(t *testing.T) {
 	defer resp.Body.Close()
 	assert.Equal(t, resp.StatusCode, 200)
 }
+
+func TestClient_GetFullKeycloakPath(t *testing.T) {
+	serverURL := "https://foo.bar:8080"
+	customContext := "/"
+
+	client := Client{
+		URL:         serverURL,
+		contextRoot: customContext,
+	}
+	assert.Equal(t, serverURL+customContext, client.GetFullKeycloakPath())
+
+	client.contextRoot = ""
+
+	assert.Equal(t, serverURL+"/auth/", client.GetFullKeycloakPath())
+}
