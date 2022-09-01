@@ -901,6 +901,9 @@ spec:
                   displayNameHtml:
                     description: Realm HTML display name.
                     type: string
+                  dockerAuthenticationFlow:
+                    description: Docker Authentication flow
+                    type: string
                   duplicateEmailsAllowed:
                     description: Duplicate emails
                     type: boolean
