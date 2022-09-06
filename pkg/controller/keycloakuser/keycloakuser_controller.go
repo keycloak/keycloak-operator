@@ -191,6 +191,7 @@ func (r *ReconcileKeycloakUser) Reconcile(request reconcile.Request) (reconcile.
 
 func (r *ReconcileKeycloakUser) manageSuccess(user *kc.KeycloakUser, deleted bool) error {
 	user.Status.Phase = kc.UserPhaseReconciled
+	user.Status.Message = ""
 
 	err := r.client.Status().Update(r.context, user)
 	if err != nil {
