@@ -333,6 +333,33 @@ func getDirectGrantFlow() keycloakv1alpha1.KeycloakAPIAuthenticationFlow {
 	}
 }
 
+func getResetCredentialsFlow() keycloakv1alpha1.KeycloakAPIAuthenticationFlow {
+	return keycloakv1alpha1.KeycloakAPIAuthenticationFlow{
+		Alias:                    "reset credentials",
+		ProviderID:               "basic-flow",
+		TopLevel:                 true,
+		AuthenticationExecutions: []keycloakv1alpha1.KeycloakAPIAuthenticationExecution{},
+	}
+}
+
+func getClientAuthenticationFlow() keycloakv1alpha1.KeycloakAPIAuthenticationFlow {
+	return keycloakv1alpha1.KeycloakAPIAuthenticationFlow{
+		Alias:                    "clients",
+		ProviderID:               "client-flow",
+		TopLevel:                 true,
+		AuthenticationExecutions: []keycloakv1alpha1.KeycloakAPIAuthenticationExecution{},
+	}
+}
+
+func getDockerAuthenticationFlow() keycloakv1alpha1.KeycloakAPIAuthenticationFlow {
+	return keycloakv1alpha1.KeycloakAPIAuthenticationFlow{
+		Alias:                    "docker auth",
+		ProviderID:               "basic-flow",
+		TopLevel:                 true,
+		AuthenticationExecutions: []keycloakv1alpha1.KeycloakAPIAuthenticationExecution{},
+	}
+}
+
 func keycloakRealmWithAuthenticatorFlowTest(t *testing.T, framework *test.Framework, ctx *test.Context, namespace string) error {
 	keycloakRealmCR := getKeycloakRealmCR(namespace)
 
@@ -388,7 +415,7 @@ func keycloakRealmWithAuthenticatorFlowTest(t *testing.T, framework *test.Framew
 		},
 	}
 
-	keycloakRealmCR.Spec.Realm.AuthenticationFlows = []keycloakv1alpha1.KeycloakAPIAuthenticationFlow{autoLinkFlow, getBrowserFlow(), getRegistrationFlow(), getDirectGrantFlow()}
+	keycloakRealmCR.Spec.Realm.AuthenticationFlows = []keycloakv1alpha1.KeycloakAPIAuthenticationFlow{autoLinkFlow, getBrowserFlow(), getRegistrationFlow(), getDirectGrantFlow(), getResetCredentialsFlow(), getClientAuthenticationFlow(), getDockerAuthenticationFlow()}
 
 	keycloakRealmCR.Spec.Realm.IdentityProviders = []*keycloakv1alpha1.KeycloakIdentityProvider{identityProvider}
 
