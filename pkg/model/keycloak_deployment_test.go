@@ -58,6 +58,14 @@ func TestKeycloakDeployment_testServiceAccountReconciledSetExperimental(t *testi
 	testServiceAccountReconciledSet(t, KeycloakDeployment, KeycloakDeploymentReconciled)
 }
 
+func TestKeycloakDeployment_testPriorityClassNameSetExperimental(t *testing.T) {
+	testPriorityClassNameSet(t, KeycloakDeployment)
+}
+
+func TestKeycloakDeployment_testPriorityClassNameReconciledSetExperimental(t *testing.T) {
+	testPriorityClassNameReconciledSet(t, KeycloakDeployment, KeycloakDeploymentReconciled)
+}
+
 func TestKeycloakDeployment_testDeploymentSpecImagePolicy(t *testing.T) {
 	testDeploymentSpecImagePolicy(t, KeycloakDeployment)
 }
@@ -502,6 +510,35 @@ func testServiceAccountReconciledSet(t *testing.T, deploymentFunction createDepl
 	serviceAccountName := reconciliationFunction(cr, statefulSet, dbSecret, nil).Spec.Template.Spec.ServiceAccountName
 
 	assert.Equal(t, "test2", serviceAccountName)
+}
+
+func testPriorityClassNameSet(t *testing.T, deploymentFunction createDeploymentStatefulSet) {
+	//given
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{}
+
+	//If priorityClassName is set in the cr, is should manifest itself in the statefulset
+	cr.Spec.KeycloakDeploymentSpec.Experimental.PriorityClassName = "app-critical"
+
+	//when
+	priorityClassName := deploymentFunction(cr, dbSecret, nil).Spec.Template.Spec.PriorityClassName
+
+	assert.Equal(t, "app-critical", priorityClassName)
+}
+
+func testPriorityClassNameReconciledSet(t *testing.T, deploymentFunction createDeploymentStatefulSet, reconciliationFunction reconciledDeployment) {
+	//given
+	dbSecret := &v1.Secret{}
+	cr := &v1alpha1.Keycloak{}
+	statefulSet := deploymentFunction(cr, dbSecret, nil)
+
+	//when
+
+	//If priorityClassName is set in the cr, is should manifest itself in the statefulset
+	cr.Spec.KeycloakDeploymentSpec.Experimental.PriorityClassName = "app-non-critical"
+	priorityClassName := reconciliationFunction(cr, statefulSet, dbSecret, nil).Spec.Template.Spec.PriorityClassName
+
+	assert.Equal(t, "app-non-critical", priorityClassName)
 }
 
 func testDisableDeploymentReplicasSyncingFalse(t *testing.T, deploymentFunction createDeploymentStatefulSet, deploymentFunction2 reconciledDeployment) {

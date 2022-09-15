@@ -47,3 +47,11 @@ func TestRHSSODeployment_testServiceAccountSetExperimental(t *testing.T) {
 func TestRHSSODeployment_testServiceAccountReconciledSetExperimental(t *testing.T) {
 	testServiceAccountReconciledSet(t, RHSSODeployment, RHSSODeploymentReconciled)
 }
+
+func TestRHSSODeployment_testPriorityClassNameSetExperimental(t *testing.T) {
+	testServiceAccountSet(t, RHSSODeployment)
+}
+
+func TestRHSSODeployment_testPriorityClassNameReconciledSetExperimental(t *testing.T) {
+	testServiceAccountReconciledSet(t, RHSSODeployment, RHSSODeploymentReconciled)
+}

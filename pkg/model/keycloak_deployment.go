@@ -257,6 +257,7 @@ func KeycloakDeployment(cr *v1alpha1.Keycloak, dbSecret *v1.Secret, dbSSLSecret 
 						},
 					},
 					ServiceAccountName: cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName,
+					PriorityClassName:  cr.Spec.KeycloakDeploymentSpec.Experimental.PriorityClassName,
 				},
 			},
 		},
@@ -286,6 +287,7 @@ func KeycloakDeploymentReconciled(cr *v1alpha1.Keycloak, currentState *v13.State
 	reconciled.Spec.Template.ObjectMeta.Annotations = AddPodAnnotations(cr, reconciled.Spec.Template.ObjectMeta.Annotations)
 	reconciled.Spec.Selector.MatchLabels = GetLabelsSelector()
 	reconciled.Spec.Template.Spec.ServiceAccountName = cr.Spec.KeycloakDeploymentSpec.Experimental.ServiceAccountName
+	reconciled.Spec.Template.Spec.PriorityClassName = cr.Spec.KeycloakDeploymentSpec.Experimental.PriorityClassName
 
 	reconciled.ResourceVersion = currentState.ResourceVersion
 	if !cr.Spec.DisableReplicasSyncing {

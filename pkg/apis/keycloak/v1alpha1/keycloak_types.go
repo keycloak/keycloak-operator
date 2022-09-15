@@ -146,6 +146,9 @@ type ExperimentalSpec struct {
 	// ServiceAccountName settings
 	// +optional
 	ServiceAccountName string `json:"serviceAccountName,omitempty"`
+	// PriorityClassName settings
+	// +optional
+	PriorityClassName string `json:"priorityClassName,omitempty"`
 }
 
 type VolumesSpec struct {
